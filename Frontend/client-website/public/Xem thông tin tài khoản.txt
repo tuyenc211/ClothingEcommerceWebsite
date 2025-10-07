@@ -1,0 +1,161 @@
+UseCase ID
+QLTK01
+Mô tả
+Cho phép người dùng (Admin, Nhân viên, Khách hàng) xem đầy đủ thông tin cá nhân của mình, bao gồm các thông tin cơ bản và chi tiết.
+Tác nhân (Actor)
+Admin / Nhân viên / Khách hàng
+Sự ưu tiên (Priority)
+Cao (High)
+Trigger
+Người dùng click vào mục "Thông tin tài khoản" trên thanh menu.
+Điều kiện cần (Pre-condition)
+Người dùng đã đăng nhập vào hệ thống.
+Tài khoản của người dùng tồn tại và đang hoạt động.
+Điều kiện sau (Post-condition)
+Hệ thống hiển thị đúng và đầy đủ thông tin tài khoản của người dùng.
+Người dùng có thể xem và cập nhật thông tin của mình
+Luồng cơ bản (Basic flow)
+  Người dùng đăng nhập và chọn "Thông tin tài khoản" từ menu.
+  Hệ thống truy xuất dữ liệu tài khoản từ cơ sở dữ liệu.
+  Hệ thống hiển thị thông tin tài khoản bao gồm:
+Email: (chỉ đọc/disabled)
+Họ và tên: (có thể chỉnh sửa)
+Sinh nhật: (có thể chỉnh sửa)
+Số điện thoại: (có thể chỉnh sửa)
+Địa chỉ giao hàng: (có thể chỉnh sửa)
+Người dùng xem thông tin hiện tại
+Nếu muốn thay đổi, người dùng chỉnh sửa trực tiếp trên form
+Người dùng click nút "Lưu thay đổi"
+Hệ thống kiểm tra tính hợp lệ của dữ liệu
+Hệ thống cập nhật thông tin vào cơ sở dữ liệu
+Hiển thị thông báo "Cập nhật thông tin thành công"
+Luồng thay thế (Alternative flow)
+A1 – Người dùng không thay đổi thông tin:
+Người dùng chỉ xem thông tin mà không chỉnh sửa gì
+Rời khỏi trang mà không click "Lưu thay đổi"
+Không có thay đổi nào được lưu
+Luồng ngoại lệ (Exception flow)
+  E1 – Mất kết nối Internet:
+Hiển thị thông báo “Không thể tải thông tin, vui lòng thử lại sau”.
+  E2 – Lỗi truy xuất dữ liệu:
+Hiển thị thông báo “Có lỗi xảy ra, vui lòng thử lại”.
+Ràng buộc (Business rules)
+  Khách hàng chỉ được xem thông tin tài khoản của chính mình, trừ Admin có quyền xem thông tin người khác.
+  Dữ liệu hiển thị phải đồng bộ với cơ sở dữ liệu mới nhất.
+  Không hiển thị mật khẩu của người dùng.
+Yêu cầu phi chức năng (Non-functional requirement)
+  Bảo mật:
+Kiểm tra quyền truy cập trước khi hiển thị dữ liệu.
+Mã hóa thông tin nhạy cảm trên đường truyền (HTTPS).
+  Hiệu năng:
+Thời gian tải thông tin < 2 giây.
+  Giao diện:
+Responsive, hỗ trợ đa nền tảng.
+Thông tin trình bày rõ ràng, dễ đọc.
+
+
+
+Sửa thông tin tài khoản
+Đặc tả usecase cho Sửa thông tin tài khoản
+UseCase ID
+QLTK02
+Mô tả
+Cho phép người dùng cập nhật thông tin cá nhân của mình thông qua form tích hợp xem/chỉnh sửa. Admin có thể cập nhật thông tin của người khác.
+Tác nhân (Actor)
+Admin / Nhân viên / Khách hàng
+Sự ưu tiên (Priority)
+Cao (High)
+Trigger
+Người dùng chỉnh sửa thông tin trên form và click nút "Lưu thay đổi"
+Điều kiện cần (Pre-condition)
+Người dùng đã truy cập vào trang thông tin tài khoản (Use case QLTK01)
+Form thông tin đã được hiển thị với dữ liệu hiện tại
+Người dùng có quyền chỉnh sửa thông tin (chính mình hoặc Admin)
+Điều kiện sau (Post-condition)
+Thông tin tài khoản được cập nhật thành công trong cơ sở dữ liệu.
+Hệ thống hiển thị thông tin mới sau khi chỉnh sửa.
+Luồng cơ bản (Basic flow)
+Người dùng đã ở trang thông tin tài khoản với form có thể chỉnh sửa
+Hệ thống hiển thị form chứa thông tin hiện tại:
+Họ và tên
+Email (không cho phép thay đổi trừ khi Admin chỉnh sửa)
+Số điện thoại
+Địa chỉ
+Người dùng click nút "Lưu thay đổi".
+Hệ thống kiểm tra tính hợp lệ của dữ liệu:
+Email đúng định dạng (nếu thay đổi)
+Số điện thoại hợp lệ
+Hệ thống lưu thông tin mới vào cơ sở dữ liệu
+Hệ thống cập nhật form với thông tin mới
+Hiển thị thông báo "Cập nhật thông tin thành công"
+Luồng thay thế (Alternative flow)
+Người dùng hủy thao tác chỉnh sửa:
+Click sang trang khác → Đóng form → Không thay đổi dữ liệu.
+Luồng ngoại lệ (Exception flow)
+Dữ liệu không hợp lệ:
+Hiển thị thông báo lỗi tương ứng
+Lỗi lưu dữ liệu:
+Hiển thị thông báo “Có lỗi xảy ra, vui lòng thử lại sau”.
+Mất kết nối Internet:
+Hiển thị thông báo “Không thể cập nhật, vui lòng kiểm tra kết nối”.
+Ràng buộc (Business rules)
+Người dùng thường chỉ được chỉnh sửa thông tin của chính mình.
+Admin được quyền chỉnh sửa thông tin của bất kỳ tài khoản nào (trừ mật khẩu).
+Email là duy nhất, nếu thay đổi phải kiểm tra trùng lặp.
+Yêu cầu phi chức năng (Non-functional requirement)
+Bảo mật:
+Kiểm tra quyền truy cập trước khi lưu dữ liệu.
+Sử dụng HTTPS để mã hóa dữ liệu.
+Hiệu năng:
+Thời gian cập nhật < 2 giây.
+Giao diện:
+Responsive, hỗ trợ đa thiết bị.
+Thông báo lỗi rõ ràng và dễ hiểu.
+
+UseCase ID
+QLDH01
+Mô tả
+Cho phép người dùng (Admin, Nhân viên, Khách hàng) xem danh sách đơn hàng của mình hoặc tất cả đơn hàng tùy theo quyền hạn.
+Tác nhân (Actor)
+Admin, Nhân viên: Xem tất cả đơn hàng trong hệ thống.
+Khách hàng: Chỉ xem đơn hàng của chính mình.
+Sự ưu tiên (Priority)
+Cao (High)
+Trigger
+Người dùng chọn menu "Đơn hàng" hoặc "Quản lý đơn hàng".
+Điều kiện cần (Pre-condition)
+Người dùng đã đăng nhập hệ thống.
+Có dữ liệu đơn hàng trong hệ thống.
+Điều kiện sau (Post-condition)
+Hệ thống hiển thị danh sách đơn hàng kèm thông tin cơ bản.
+Người dùng có thể thao tác tiếp như: xem chi tiết, hủy đơn (nếu được phép).
+Luồng cơ bản (Basic flow)
+Người dùng truy cập chức năng Xem danh sách đơn hàng.
+Hệ thống truy vấn cơ sở dữ liệu và lấy danh sách đơn hàng phù hợp với quyền của người dùng.
+Hệ thống hiển thị danh sách đơn hàng gồm:
+Mã đơn hàng.
+Ngày đặt hàng.
+Trạng thái đơn hàng.
+Tổng giá trị đơn hàng.
+Phương thức thanh toán.
+Luồng thay thế (Alternative flow)
+A1 – Không có đơn hàng:
+Hệ thống hiển thị thông báo “Không tìm thấy đơn hàng nào”.
+Luồng ngoại lệ (Exception flow)
+  E1 – Lỗi kết nối cơ sở dữ liệu:
+Hiển thị thông báo “Không thể tải danh sách đơn hàng, vui lòng thử lại”.
+  E2 – Phiên đăng nhập hết hạn:
+Chuyển hướng đến trang đăng nhập kèm thông báo.
+Ràng buộc (Business rules)
+  Admin/Nhân viên có thể xem tất cả đơn hàng.
+  Khách hàng chỉ được xem đơn hàng của chính mình.
+  Danh sách đơn hàng được sắp xếp mặc định theo ngày đặt hàng mới nhất.
+Yêu cầu phi chức năng (Non-functional requirement)
+Hiệu năng:
+Tải danh sách ≤ 2 giây cho dưới 500 đơn hàng.
+Bảo mật:
+Kiểm tra quyền truy cập trước khi hiển thị dữ liệu.
+Trải nghiệm người dùng:
+Có chức năng, phân trang.
+Giao diện dễ đọc, rõ ràng.
+
