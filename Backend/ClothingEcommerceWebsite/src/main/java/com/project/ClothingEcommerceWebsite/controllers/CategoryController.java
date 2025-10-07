@@ -23,7 +23,8 @@ public class CategoryController {
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> getCategory(@PathVariable Long id) {
-        return ResponseEntity.ok().body("");
+            Category category = categoryService.getCategoryById(id);
+            return ResponseEntity.ok(category);
     }
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCategory() {
