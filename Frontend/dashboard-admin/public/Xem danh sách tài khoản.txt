@@ -1,0 +1,212 @@
+Xem danh sách tài khoản
+Đặc tả usecase cho Xem danh sách tài khoản
+UseCase ID
+QLND01
+Mô tả
+Cho phép Admin xem danh sách tất cả các tài khoản trong hệ thống.
+Tác nhân (Actor)
+Admin
+Sự ưu tiên (Priority)
+Cao (High)
+Trigger
+Admin chọn chức năng "Xem danh sách tài khoản" từ menu quản trị.
+Điều kiện cần (Pre-condition)
+Admin đã đăng nhập hợp lệ vào hệ thống.
+Admin có quyền quản lý người dùng.
+Điều kiện sau (Post-condition)
+Danh sách tài khoản được hiển thị đầy đủ kèm thông tin chi tiết.
+Hệ thống sẵn sàng cho Admin thực hiện các thao tác khác (xem chi tiết, sửa, xóa, phân quyền).
+Luồng cơ bản (Basic flow)
+Admin đăng nhập và truy cập trang quản lý người dùng.
+Admin chọn "Xem danh sách tài khoản".
+Hệ thống truy vấn cơ sở dữ liệu để lấy danh sách tài khoản.
+Hệ thống hiển thị danh sách tài khoản dưới dạng bảng gồm:
+Họ và tên
+Email
+Vai trò (Admin, Nhân viên, Khách hàng)
+Địa chỉ
+Trạng thái tài khoản
+Admin có thể tìm kiếm hoặc lọc theo các tiêu chí như: tên, email, vai trò, trạng thái.
+Luồng thay thế (Alternative flow)
+Tìm kiếm tài khoản:
+Admin nhập từ khóa (tên, email, địa chỉ, vai trò).
+Hệ thống hiển thị kết quả tìm kiếm.
+Lọc theo tiêu chí:
+Admin chọn bộ lọc.
+Hệ thống hiển thị danh sách đã lọc.
+Luồng ngoại lệ (Exception flow)
+Không có tài khoản nào: Hiển thị thông báo “Không tìm thấy tài khoản”.
+Lỗi truy vấn dữ liệu: Hiển thị thông báo lỗi và yêu cầu thử lại.
+Phiên làm việc hết hạn: Chuyển hướng về trang đăng nhập.
+Ràng buộc (Business rules)
+Chỉ Admin mới được xem toàn bộ thông tin tài khoản.
+Phải ẩn các thông tin nhạy cảm (mật khẩu, token).
+Dữ liệu hiển thị phải được phân trang khi danh sách dài.
+Yêu cầu phi chức năng (Non-functional requirement)
+Bảo mật:
+Xác thực quyền truy cập trước khi hiển thị dữ liệu.
+Mã hóa dữ liệu khi truyền qua mạng.
+Hiệu năng:
+Truy vấn danh sách ≤ 2 giây.
+Hỗ trợ phân trang, tải dữ liệu theo lô (lazy loading).
+Trải nghiệm người dùng:
+Giao diện bảng dễ đọc, có thể sắp xếp theo cột.
+Responsive trên mọi thiết bị.
+
+
+Tạo tài khoản nhân viên
+Đặc tả usecase cho Tạo tài khoản nhân viên 
+UseCase ID
+QLND03
+Mô tả
+Cho phép Admin tạo tài khoản mới cho nhân viên với thông tin cá nhân, thông tin liên hệ, vai trò và thông tin đăng nhập, để nhân viên có thể truy cập hệ thống và thực hiện các chức năng được phân quyền.
+Tác nhân (Actor)
+Admin
+Sự ưu tiên (Priority)
+Cao (High)
+Trigger
+Admin chọn chức năng "Thêm nhân viên" trong trang quản lý người dùng.
+Điều kiện cần (Pre-condition)
+Admin đã đăng nhập vào hệ thống.
+Admin có quyền quản lý người dùng.
+Có kết nối internet ổn định.
+Điều kiện sau (Post-condition)
+Tài khoản nhân viên mới được lưu vào cơ sở dữ liệu.
+Nhân viên nhận được thông tin đăng nhập (qua email hoặc thông báo).
+Tài khoản nhân viên ở trạng thái hoạt động mặc định (trừ khi Admin đặt khác).
+Luồng cơ bản (Basic flow)
+Admin truy cập trang quản lý người dùng.
+Admin chọn "Tạo tài khoản nhân viên".
+Hệ thống hiển thị form tạo tài khoản gồm các trường:
+Họ và tên
+Email (tên đăng nhập)
+Số điện thoại
+Mật khẩu
+Vai trò (Nhân viên)
+Trạng thái (Hoạt động / Bị khóa)
+Admin nhập đầy đủ thông tin.
+Admin click "Lưu".
+Hệ thống kiểm tra dữ liệu:
+Email hợp lệ và chưa tồn tại.
+Mật khẩu đáp ứng yêu cầu bảo mật.
+Các trường bắt buộc không được để trống.
+Hệ thống lưu tài khoản mới vào cơ sở dữ liệu.
+Hệ thống hiển thị thông báo "Tạo tài khoản thành công" và trở về danh sách tài khoản.
+Luồng thay thế (Alternative flow)
+Email đã tồn tại:
+Hệ thống hiển thị thông báo "Email đã được đăng ký" → Admin nhập email khác.
+Luồng ngoại lệ (Exception flow)
+Mất kết nối internet: Hiển thị thông báo lỗi, giữ lại dữ liệu đã nhập.
+Lỗi lưu dữ liệu: Hiển thị thông báo “Có lỗi xảy ra, vui lòng thử lại sau”.
+Ràng buộc (Business rules)
+Email phải duy nhất và đúng định dạng.
+Mật khẩu phải:
+Tối thiểu 6 ký tự.
+Chỉ Admin mới được phép tạo tài khoản nhân viên.
+Yêu cầu phi chức năng (Non-functional requirement)
+Bảo mật: Mã hóa mật khẩu, sử dụng HTTPS khi truyền dữ liệu.
+Hiệu năng: Thời gian tạo tài khoản ≤ 2 giây.
+Trải nghiệm người dùng: Form thân thiện, có kiểm tra dữ liệu theo thời gian thực, responsive trên mọi thiết bị.
+
+Xóa tài khoản nhân viên
+Đặc tả usecase cho Xóa tài khoản nhân viên
+UseCase ID
+QLND04
+Mô tả
+Cho phép Admin xóa tài khoản nhân viên khỏi hệ thống khi nhân viên nghỉ việc hoặc không còn sử dụng tài khoản.
+Tác nhân (Actor)
+Admin
+Sự ưu tiên (Priority)
+Cao (High)
+Trigger
+Admin chọn chức năng "Xóa" tại tài khoản nhân viên trong danh sách tài khoản.
+Điều kiện cần (Pre-condition)
+Admin đã đăng nhập vào hệ thống.
+Admin có quyền quản lý người dùng.
+Tài khoản cần xóa phải tồn tại và thuộc loại Nhân viên.
+Điều kiện sau (Post-condition)
+Tài khoản nhân viên bị xóa khỏi hệ thống hoặc chuyển sang trạng thái đã vô hiệu hóa (nếu dùng xóa mềm).
+Nhân viên không thể đăng nhập và truy cập hệ thống bằng tài khoản đó.
+Luồng cơ bản (Basic flow)
+Admin truy cập trang danh sách tài khoản.
+Admin tìm đến tài khoản nhân viên cần xóa.
+Admin click "Xóa".
+Hệ thống hiển thị hộp thoại xác nhận:
+Nội dung: “Bạn có chắc chắn muốn xóa tài khoản này?”
+Tùy chọn: Xác nhận / Hủy
+Admin chọn "Xác nhận".
+Hệ thống thực hiện xóa tài khoản khỏi cơ sở dữ liệu (hoặc đánh dấu trạng thái là “Đã vô hiệu hóa”).
+Hệ thống hiển thị thông báo "Xóa tài khoản thành công" và cập nhật danh sách tài khoản.
+Luồng thay thế (Alternative flow)
+Admin hủy thao tác xóa:
+Chọn "Hủy" → Đóng hộp thoại → Không thay đổi dữ liệu.
+Luồng ngoại lệ (Exception flow)
+Không tìm thấy tài khoản:
+Hệ thống hiển thị thông báo “Tài khoản không tồn tại”.
+Lỗi hệ thống khi xóa:
+Hiển thị thông báo “Có lỗi xảy ra, vui lòng thử lại sau”.
+Mất kết nối internet:
+Hiển thị thông báo lỗi, dữ liệu không bị thay đổi.
+Ràng buộc (Business rules)
+Chỉ Admin mới được phép xóa tài khoản nhân viên.
+Nếu hệ thống dùng xóa mềm, phải lưu lịch sử xóa để có thể khôi phục.
+Yêu cầu phi chức năng (Non-functional requirement)
+Bảo mật:
+Xác thực quyền truy cập trước khi xóa.
+Hiệu năng:
+Thao tác xóa ≤ 1 giây.
+Trải nghiệm người dùng:
+Có bước xác nhận trước khi xóa.
+Thông báo rõ ràng sau khi xóa.
+
+
+Phân quyền nhân viên
+Đặc tả usecase cho Phân quyền nhân viên
+UseCase ID
+QLND05
+Mô tả
+Cho phép Admin gán hoặc thay đổi quyền hạn (vai trò) của nhân viên trong hệ thống, đảm bảo nhân viên chỉ truy cập và thực hiện được các chức năng phù hợp với vai trò được phân.
+Tác nhân (Actor)
+Admin
+Sự ưu tiên (Priority)
+Cao (High)
+Trigger
+Admin chọn chức năng "Phân quyền" tại tài khoản nhân viên trong danh sách tài khoản.
+Điều kiện cần (Pre-condition)
+Admin đã đăng nhập vào hệ thống.
+Admin có quyền quản lý người dùng và phân quyền.
+Nhân viên được chọn để phân quyền phải tồn tại trong hệ thống.
+Điều kiện sau (Post-condition)
+Quyền hạn (role) của nhân viên được cập nhật trong hệ thống.
+Nhân viên chỉ có thể thực hiện các chức năng tương ứng với quyền mới.
+Luồng cơ bản (Basic flow)
+Admin truy cập trang danh sách tài khoản nhân viên.
+Admin chọn "Chỉnh sửa" ở tài khoản nhân viên cần chỉnh sửa.
+Hệ thống hiển thị form phân quyền với các tùy chọn vai trò 
+Admin chọn quyền hạn phù hợp.
+Admin click "Lưu".
+Hệ thống cập nhật thông tin quyền hạn của nhân viên trong cơ sở dữ liệu.
+Hệ thống hiển thị thông báo "Phân quyền thành công" và trở về trang danh sách tài khoản.
+Luồng thay thế (Alternative flow)
+Admin hủy thao tác phân quyền:
+Chọn "Hủy" → Đóng form → Không thay đổi dữ liệu.
+Luồng ngoại lệ (Exception flow)
+Không tìm thấy tài khoản nhân viên:
+Hệ thống hiển thị thông báo “Tài khoản không tồn tại”.
+Lỗi hệ thống khi lưu quyền hạn:
+Hiển thị thông báo “Có lỗi xảy ra, vui lòng thử lại sau”.
+Mất kết nối internet:
+Hiển thị thông báo lỗi, quyền hạn không bị thay đổi.
+Ràng buộc (Business rules)
+Chỉ Admin mới được phân quyền cho nhân viên.
+Không được thay đổi quyền của Admin khác.
+Danh sách quyền hạn phải được định nghĩa rõ ràng trong hệ thống.
+Yêu cầu phi chức năng (Non-functional requirement)
+Bảo mật:
+Xác thực quyền truy cập trước khi phân quyền.
+Hiệu năng:
+Thao tác phân quyền ≤ 1 giây.
+Trải nghiệm người dùng:
+Giao diện phân quyền trực quan, dễ sử dụng.
+Có bước xác nhận trước khi lưu thay đổi.
+
