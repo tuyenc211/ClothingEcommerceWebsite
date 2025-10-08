@@ -9,11 +9,11 @@ interface Params {
 }
 
 interface NewsDetailPageProps {
-  params: Params;
+  params: Promise<Params>;
 }
 
-export default function NewsDetailPage({ params }: NewsDetailPageProps) {
-  const articleSlug = params.slug;
+export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
+  const { slug: articleSlug } = await params;
   const article = newsArticles.find((article) => article.slug === articleSlug);
 
   // Nếu không tìm thấy bài viết, hiển thị 404
