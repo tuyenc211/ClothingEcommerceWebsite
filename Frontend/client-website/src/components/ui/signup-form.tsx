@@ -16,7 +16,7 @@ type SignupFormData = {
 };
 
 interface SignupFormProps extends React.ComponentProps<"form"> {
-  onSubmit?: (data: SignupFormData) => Promise<void>;
+  handleSignup?: (data: SignupFormData) => Promise<void>;
   onGoogleSignup?: () => Promise<void>;
   onFacebookSignup?: () => Promise<void>;
   isLoading?: boolean;
@@ -24,7 +24,7 @@ interface SignupFormProps extends React.ComponentProps<"form"> {
 
 export function SignupForm({
   className,
-  onSubmit,
+  handleSignup,
   onGoogleSignup,
   onFacebookSignup,
   isLoading = false,
@@ -42,8 +42,8 @@ export function SignupForm({
   const password = watch("password");
 
   const handleFormSubmit = async (data: SignupFormData) => {
-    if (onSubmit) {
-      await onSubmit(data);
+    if (handleSignup) {
+      await handleSignup(data);
     }
   };
 
