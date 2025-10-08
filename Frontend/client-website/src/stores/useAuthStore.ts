@@ -1,40 +1,52 @@
 import { create } from "zustand";
 import { toast } from "sonner";
-import { SignUpData, LoginData, ResetPasswordData } from "@/types";
+import { SignUpData, LoginData } from "@/types";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { persist } from "zustand/middleware";
 
 // Role interface matching database schema
 export interface Role {
-  id: number; // BIGINT PRIMARY KEY AUTO_INCREMENT
-  name: string; // VARCHAR(100) NOT NULL
+  id: number;
+  name: string;
 }
 
 // Address interface matching database schema
 export interface Address {
-  id: number; // BIGINT PRIMARY KEY AUTO_INCREMENT
-  user_id: number; // BIGINT NOT NULL references users(id)
-  line: string; // VARCHAR(255) NOT NULL
-  ward?: string; // VARCHAR(100)
-  district?: string; // VARCHAR(100)
-  province?: string; // VARCHAR(100)
-  country?: string; // VARCHAR(100) DEFAULT 'VN'
-  isDefault: boolean; // TINYINT(1) DEFAULT 0
+  id: number;
+  user_id: number;
+  line: string;
+  ward?: string;
+  district?: string;
+  province?: string;
+  country?: string;
+  isDefault: boolean;
 }
 
 // User interface matching database schema
 export interface User {
-  id: number; // BIGINT PRIMARY KEY AUTO_INCREMENT
-  email: string; // VARCHAR(255) NOT NULL UNIQUE
-  password?: string; // VARCHAR(255) NOT NULL (hidden in responses)
-  fullName: string; // VARCHAR(255) NOT NULL
-  phone?: string; // VARCHAR(30)
-  isActive: boolean; // TINYINT(1) NOT NULL DEFAULT 1
+  id: number;
+  email: string;
+  password?: string;
+  fullName: string;
+  phone?: string;
+  isActive: boolean;
+  roles?: Role[];
+  addresses?: Address[];
+}
 
-  // Relationships (populated from joins)
-  roles?: Role[]; // From user_roles table
-  addresses?: Address[]; // From addresses table
+// JWT Token Response
+export interface TokenResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  tokenType: string;
+}
+
+// Auth Response
+export interface AuthResponse {
+  user: User;
+  tokens: TokenResponse;
 }
 
 interface AuthStore {
@@ -45,13 +57,18 @@ interface AuthStore {
   isForgettingPassword: boolean;
   isResettingPassword: boolean;
   hasInitialized: boolean;
+  isRefreshingToken: boolean;
+
+  // Token management
+  refreshToken: () => Promise<void>;
+  getAccessToken: () => Promise<string | null>;
 
   // User management
   updateProfile: (data: Partial<User>) => Promise<void>;
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
 
   // Address management
-  addAddress: (address: Omit<Address, "id" | "userId">) => Promise<void>;
+  addAddress: (address: Omit<Address, "id" | "user_id">) => Promise<void>;
   updateAddress: (id: number, address: Partial<Address>) => Promise<void>;
   deleteAddress: (id: number) => Promise<void>;
   setDefaultAddress: (id: number) => Promise<void>;
@@ -81,15 +98,50 @@ const useAuthStore = create<AuthStore>()(
       isCheckingAuth: false,
       isForgettingPassword: false,
       isResettingPassword: false,
+      isRefreshingToken: false,
       hasInitialized: false,
+
       initialize: () => {
         set({ hasInitialized: true });
       },
+
+      // Get access token from cookies via API call
+      getAccessToken: async () => {
+        try {
+          const response = await privateClient.get("/auth/token");
+          return response.data.accessToken;
+        } catch (error) {
+          console.error("Failed to get access token:", error);
+          return null;
+        }
+      },
+
+      // Refresh token
+      refreshToken: async () => {
+        if (get().isRefreshingToken) return;
+
+        set({ isRefreshingToken: true });
+        try {
+          await privateClient.post("/auth/refresh");
+          // Server sẽ set cookie mới
+        } catch (error) {
+          // Nếu refresh thất bại, logout user
+          set({ authUser: null });
+          if (typeof window !== 'undefined') {
+            window.location.href = '/user/login';
+          }
+          throw error;
+        } finally {
+          set({ isRefreshingToken: false });
+        }
+      },
+
       checkAuth: async () => {
         if (get().isCheckingAuth) return;
+        
         set({ isCheckingAuth: true });
         try {
-          const res = await privateClient.get("/auth/check-auth");
+          const res = await privateClient.get("/auth/me");
           set({
             authUser: res.data?.user,
             hasInitialized: true,
@@ -104,14 +156,21 @@ const useAuthStore = create<AuthStore>()(
       login: async (data: LoginData) => {
         set({ isLoggingIn: true });
         try {
-          const res = await privateClient.post("/auth/login", data);
+          const res = await privateClient.post("/auth/login", data, {
+            withCredentials: true, // Đảm bảo cookies được gửi
+          });
+          
           console.log("✅ Login thành công, response:", res);
-          set({ authUser: res.data.user, hasInitialized: true });
+          
+          // Server sẽ set httpOnly cookies cho tokens
+          set({ 
+            authUser: res.data.user, 
+            hasInitialized: true 
+          });
+          
           toast.success("Đăng nhập thành công");
         } catch (error: unknown) {
-          set({ isLoggingIn: false });
           const axiosError = error as AxiosError<{ message: string }>;
-
           const errorMessage =
             axiosError?.response?.data?.message ||
             "Đã xảy ra lỗi khi đăng nhập";
@@ -128,43 +187,41 @@ const useAuthStore = create<AuthStore>()(
         set({ isSigningUp: true });
 
         try {
-          // Simulate API call - replace with actual API when backend is ready
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          const res = await privateClient.post("/auth/register", data, {
+            withCredentials: true,
+          });
 
-          // Mock successful signup
-          const authUser: User = {
-            id: Date.now(), // BIGINT PRIMARY KEY AUTO_INCREMENT
-            email: data.email,
-            phone: data.phoneNumber,
-            fullName: data.fullName,
-            isActive: true,
-            roles: [{ id: 1, name: "Customer" }],
-            addresses: [],
-          };
-
+          // Server sẽ set httpOnly cookies cho tokens
           set({
-            authUser: authUser,
-            isSigningUp: false,
+            authUser: res.data.user,
+            hasInitialized: true,
           });
 
           toast.success("Đăng ký thành công");
         } catch (error) {
           set({ isSigningUp: false });
-          toast.error("Đăng ký thất bại");
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message || "Đăng ký thất bại";
+          
+          toast.error(errorMessage);
           throw error;
+        } finally {
+          set({ isSigningUp: false });
         }
       },
+
       logout: async () => {
         try {
-          await privateClient.post("/auth/logout");
-          set({ authUser: null, hasInitialized: true });
-          toast.success("Đăng xuất thành công");
+          await privateClient.post("/auth/logout", {}, {
+            withCredentials: true,
+          });
+          // Server sẽ clear cookies
         } catch (error) {
           console.log("Error logging out:", error);
-          set({
-            authUser: null,
-            hasInitialized: true,
-          });
+        } finally {
+          set({ authUser: null, hasInitialized: true });
+          toast.success("Đăng xuất thành công");
         }
       },
 
@@ -194,9 +251,7 @@ const useAuthStore = create<AuthStore>()(
         try {
           const response = await privateClient.post(
             `/auth/reset-password/${token}`,
-            {
-              password,
-            }
+            { password }
           );
           toast.success("Mật khẩu đã được đặt lại thành công");
           return response.data;
@@ -217,15 +272,10 @@ const useAuthStore = create<AuthStore>()(
       // User management
       updateProfile: async (data: Partial<User>) => {
         try {
-          // Mock API call
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          const currentUser = get().authUser;
-          if (currentUser) {
-            const updatedUser = { ...currentUser, ...data };
-            set({ authUser: updatedUser });
-            toast.success("Cập nhật thông tin thành công");
-          }
+          const response = await privateClient.put("/users/profile", data);
+          const updatedUser = response.data.user;
+          set({ authUser: updatedUser });
+          toast.success("Cập nhật thông tin thành công");
         } catch (error) {
           toast.error("Cập nhật thông tin thất bại");
           throw error;
@@ -245,18 +295,12 @@ const useAuthStore = create<AuthStore>()(
         }
       },
 
-      // Address management
-      addAddress: async (address: Omit<Address, "id" | "userId">) => {
+      // Address management - Giữ nguyên logic mock hoặc cập nhật với API thật
+      addAddress: async (address: Omit<Address, "id" | "user_id">) => {
         try {
-          // Mock API call
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          const newAddress: Address = {
-            ...address,
-            id: Date.now(),
-            user_id: get().authUser?.id || 0,
-          };
-
+          const response = await privateClient.post("/users/addresses", address);
+          const newAddress = response.data.address;
+          
           const currentUser = get().authUser;
           if (currentUser) {
             const updatedUser = {
@@ -274,9 +318,8 @@ const useAuthStore = create<AuthStore>()(
 
       updateAddress: async (id: number, address: Partial<Address>) => {
         try {
-          // Mock API call
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
+          await privateClient.put(`/users/addresses/${id}`, address);
+          
           const currentUser = get().authUser;
           if (currentUser) {
             const updatedAddresses = currentUser.addresses?.map((addr) =>
@@ -298,9 +341,8 @@ const useAuthStore = create<AuthStore>()(
 
       deleteAddress: async (id: number) => {
         try {
-          // Mock API call
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
+          await privateClient.delete(`/users/addresses/${id}`);
+          
           const currentUser = get().authUser;
           if (currentUser) {
             const updatedAddresses = currentUser.addresses?.filter(
@@ -322,9 +364,8 @@ const useAuthStore = create<AuthStore>()(
 
       setDefaultAddress: async (id: number) => {
         try {
-          // Mock API call
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
+          await privateClient.patch(`/users/addresses/${id}/default`);
+          
           const currentUser = get().authUser;
           if (currentUser) {
             const updatedAddresses = currentUser.addresses?.map((addr) => ({
@@ -354,7 +395,9 @@ const useAuthStore = create<AuthStore>()(
       hasRole: (roleName: string) => {
         const currentUser = get().authUser;
         return (
-          currentUser?.roles?.some((role) => role.name === roleName) || false
+          currentUser?.roles?.some(
+            (role) => role.name.toLowerCase() === roleName.toLowerCase()
+          ) || false
         );
       },
 
