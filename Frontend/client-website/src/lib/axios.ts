@@ -1,20 +1,41 @@
-import axios from "axios";
-import type { AxiosInstance, AxiosResponse, AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 
-const API_URL =
-  /* import.meta.env.MODE === "production"
-    ? "https://corn-films.onrender.com/api/v1"
-    : */ "http://localhost:3001/api/v1";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
-const privateClient: AxiosInstance = axios.create({
+const privateClient = axios.create({
   baseURL: API_URL,
-  withCredentials: true,
+  withCredentials: true, // gửi cookie với mỗi request
+  headers: { "Content-Type": "application/json" },
 });
 
+let isRefreshing = false;
+
 privateClient.interceptors.response.use(
-  (response: AxiosResponse) => response,
-  (error: AxiosError) => {
-    // Reject tất cả các error, không chỉ 401
+  (res) => res,
+  async (error: AxiosError) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const originalRequest = error.config as any;
+
+    // Nếu token hết hạn
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) return Promise.reject(error);
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        await privateClient.post("/auth/refresh");
+        return privateClient(originalRequest); // gọi lại request gốc
+      } catch (err) {
+        if (typeof window !== "undefined") {
+          window.location.href = "/user/login";
+        }
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     return Promise.reject(error);
   }
 );
