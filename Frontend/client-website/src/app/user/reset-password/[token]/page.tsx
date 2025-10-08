@@ -2,21 +2,16 @@
 
 import { ResetPasswordForm } from "@/components/ui/reset-password-form";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import useAuthStore from "@/stores/useAuthStore";
 import { toast } from "sonner";
 
-interface ResetPasswordPageProps {
-  params: {
-    token: string;
-  };
-}
-
-export default function ResetPasswordPage({ params }: ResetPasswordPageProps) {
+export default function ResetPasswordPage() {
+  const params = useParams();
   const { authUser, isCheckingAuth, checkAuth } = useAuthStore();
   const [isValidToken, setIsValidToken] = useState<boolean | null>(null);
   const router = useRouter();
-  const { token } = params;
+  const { token } = params as { token: string };
 
   useEffect(() => {
     // Check auth status when page loads
