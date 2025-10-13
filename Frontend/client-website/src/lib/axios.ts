@@ -16,16 +16,24 @@ privateClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     if (error.response?.status === 401) {
-      // Clear auth state
       if (typeof window !== "undefined") {
-        // Có thể clear localStorage nếu cần
-        localStorage.removeItem("auth-storage");
+        const path = window.location.pathname;
+        const isAuthPage =
+          path.startsWith("/user/login") ||
+          path.startsWith("/user/signup") ||
+          path.startsWith("/user/forgot-password") ||
+          path.startsWith("/user/reset-password");
 
-        // Redirect về login
-        window.location.href = "/user/login";
+        // Chỉ redirect nếu KHÔNG ở trang auth
+        if (!isAuthPage) {
+          localStorage.removeItem("auth-storage");
+          window.location.replace("/user/login");
+        } else {
+          // Ở trang auth: chỉ clear state, đừng redirect
+          localStorage.removeItem("auth-storage");
+        }
       }
     }
-
     return Promise.reject(error);
   }
 );
