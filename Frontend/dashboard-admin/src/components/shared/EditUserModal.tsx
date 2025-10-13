@@ -136,24 +136,37 @@ export default function EditUserModal({
     switch (role.toLowerCase()) {
       case "admin":
         return (
-          <Badge className="bg-purple-500 hover:bg-purple-600 text-white">
+          <Badge
+            key={role}
+            className="bg-purple-500 hover:bg-purple-600 text-white"
+          >
             Admin
           </Badge>
         );
       case "staff":
         return (
-          <Badge className="bg-blue-500 hover:bg-blue-600 text-white">
+          <Badge
+            key={role}
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+          >
             Nhân viên
           </Badge>
         );
       case "customer":
         return (
-          <Badge className="bg-green-500 hover:bg-green-600 text-white">
+          <Badge
+            key={role}
+            className="bg-green-500 hover:bg-green-600 text-white"
+          >
             Khách hàng
           </Badge>
         );
       default:
-        return <Badge variant="outline">{role}</Badge>;
+        return (
+          <Badge key={role} variant="outline">
+            {role}
+          </Badge>
+        );
     }
   };
 
@@ -179,7 +192,7 @@ export default function EditUserModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
@@ -213,7 +226,7 @@ export default function EditUserModal({
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Họ và tên */}
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="fullName">Họ và tên *</Label>
                 <Input
                   id="fullName"
@@ -226,6 +239,7 @@ export default function EditUserModal({
                   }
                   className={errors.fullName ? "border-red-500" : ""}
                   disabled={isLoading}
+                  placeholder="Nhập họ và tên"
                 />
                 {errors.fullName && (
                   <p className="text-sm text-red-500 mt-1">{errors.fullName}</p>
@@ -233,10 +247,9 @@ export default function EditUserModal({
               </div>
 
               {/* Email (readonly) */}
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="flex items-center gap-3">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     value={user.email}
@@ -244,16 +257,12 @@ export default function EditUserModal({
                     className="bg-muted cursor-not-allowed"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Email không thể thay đổi
-                </p>
               </div>
 
               {/* Số điện thoại */}
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="phone">Số điện thoại *</Label>
                 <div className="flex items-center gap-3">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
                   <Input
                     id="phone"
                     value={formData.phone}
@@ -274,10 +283,9 @@ export default function EditUserModal({
               </div>
 
               {/* Địa chỉ */}
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="address">Địa chỉ</Label>
                 <div className="flex items-start gap-3">
-                  <MapPin className="h-4 w-4 text-muted-foreground mt-3" />
                   <Textarea
                     id="address"
                     value={formData.address}

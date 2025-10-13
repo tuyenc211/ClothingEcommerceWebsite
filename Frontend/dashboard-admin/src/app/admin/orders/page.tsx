@@ -1,3 +1,4 @@
+"use client";
 import { useOrderStore } from "@/stores/orderStore";
 import { OrderStatsCards } from "@/components/orders/OrderStatsCards";
 import { OrderTable } from "@/components/orders/OrderTable";

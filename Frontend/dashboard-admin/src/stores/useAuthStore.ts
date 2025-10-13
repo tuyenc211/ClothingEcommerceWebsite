@@ -42,6 +42,7 @@ interface AuthStore {
   authUser: User | null;
   isSigningUp: boolean;
   isLoggingIn: boolean;
+  isLoggingOut: boolean;
   isCheckingAuth: boolean;
   isForgettingPassword: boolean;
   isResettingPassword: boolean;
@@ -82,6 +83,7 @@ const useAuthStore = create<AuthStore>()(
       authUser: null,
       isSigningUp: false,
       isLoggingIn: false,
+      isLoggingOut: false,
       isCheckingAuth: false,
       isForgettingPassword: false,
       isResettingPassword: false,
@@ -238,15 +240,26 @@ const useAuthStore = create<AuthStore>()(
         }
       },
       logout: async () => {
+        set({ isLoggingOut: true });
         try {
-          await privateClient.post("/auth/logout");
-          set({ authUser: null, hasInitialized: true });
+          // TODO: Thay thế bằng API call thật khi có backend
+          // await privateClient.post("/auth/logout");
+
+          // Simulate API call delay để tránh flicker
+          await new Promise((resolve) => setTimeout(resolve, 300));
+
+          set({
+            authUser: null,
+            hasInitialized: true,
+            isLoggingOut: false,
+          });
           toast.success("Đăng xuất thành công");
         } catch (error) {
           console.log("Error logging out:", error);
           set({
             authUser: null,
             hasInitialized: true,
+            isLoggingOut: false,
           });
         }
       },

@@ -30,6 +30,7 @@ import { Package, AlertTriangle, Search, Filter, Edit } from "lucide-react";
 import Link from "next/link";
 import { useProductStore, StockStatus } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
+import { formatCurrency } from "@/lib/utils";
 
 export default function InventoryOverviewPage() {
   const { products, recalculateAllTotalQuantities } = useProductStore();
@@ -282,7 +283,10 @@ export default function InventoryOverviewPage() {
               {filteredData.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
-                    <div className="text-muted-foreground">
+                    <div
+                      key={filteredData.length}
+                      className="text-muted-foreground"
+                    >
                       Không tìm thấy sản phẩm
                     </div>
                   </TableCell>
@@ -315,7 +319,7 @@ export default function InventoryOverviewPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      {item.basePrice.toLocaleString("vi-VN")}đ
+                      {formatCurrency(item.basePrice)}
                     </TableCell>
                     <TableCell>
                       {getStockBadge(item.status, item.totalStock)}

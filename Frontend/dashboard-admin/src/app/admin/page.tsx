@@ -26,6 +26,7 @@ import {
   Users,
   Package,
 } from "lucide-react";
+import { RevenueChart } from "@/components/shared/RevenueChart";
 
 // Mock data - similar to Admin project
 const mockStats = [
@@ -107,47 +108,23 @@ const mockOrders = [
   },
 ];
 
-const mockMonthlyData = [
-  { month: "Jan", income: 12000, orders: 120 },
-  { month: "Feb", income: 15000, orders: 150 },
-  { month: "Mar", income: 18000, orders: 180 },
-  { month: "Apr", income: 22000, orders: 220 },
-  { month: "May", income: 25000, orders: 250 },
-  { month: "Jun", income: 28000, orders: 280 },
-];
-
 function StatCard({
   title,
   value,
-  change,
-  trend,
   icon: Icon,
 }: {
   title: string;
   value: string;
-  change: string;
-  trend: "up" | "down";
   icon: React.ElementType;
 }) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className="gap-0">
+      <CardHeader className="flex flex-row items-center justify-center  space-y-0 ">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex justify-center">
         <div className="text-2xl font-bold">{value}</div>
-        <div className="flex items-center text-xs">
-          {trend === "up" ? (
-            <TrendingUp className="mr-1 h-3 w-3 text-green-500" />
-          ) : (
-            <TrendingDown className="mr-1 h-3 w-3 text-red-500" />
-          )}
-          <span className={trend === "up" ? "text-green-500" : "text-red-500"}>
-            {change}
-          </span>
-          <span className="text-muted-foreground ml-1">from last month</span>
-        </div>
       </CardContent>
     </Card>
   );
@@ -189,7 +166,7 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome to Cart Corner Admin Dashboard
+          Chào mừng bạn đến với Dashboard Admin của Aristino.
         </p>
       </div>
 
@@ -204,37 +181,14 @@ export default function DashboardPage() {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            {/* Chart Card */}
-            <Card className="col-span-4">
-              <CardHeader>
-                <CardTitle>Monthly Revenue</CardTitle>
-                <CardDescription>
-                  Your revenue for the last 6 months
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                  <div className="text-center">
-                    <TrendingUp className="h-12 w-12 mx-auto mb-2" />
-                    <p>Chart will be integrated with recharts</p>
-                    <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-                      {mockMonthlyData.slice(-3).map((data, index) => (
-                        <div key={index} className="text-center">
-                          <div className="font-semibold">{data.month}</div>
-                          <div>${data.income.toLocaleString()}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Revenue Chart */}
+            <div className="col-span-4">
+              <RevenueChart />
+            </div>
 
             {/* Recent Sales */}
             <Card className="col-span-3">
@@ -265,28 +219,6 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Analytics</CardTitle>
-              <CardDescription>
-                Detailed analysis of your orders
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <ShoppingCart className="h-12 w-12 mx-auto mb-2" />
-                  <p>Analytics charts will be added here</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="reports" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Recent Orders</CardTitle>

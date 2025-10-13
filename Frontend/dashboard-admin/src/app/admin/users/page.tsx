@@ -107,8 +107,6 @@ export default function UsersManagementPage() {
               return roleName === "staff";
             case "admin":
               return roleName === "admin";
-            case "super_admin":
-              return roleName === "super_admin";
             default:
               return false;
           }
