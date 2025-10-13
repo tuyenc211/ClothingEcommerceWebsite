@@ -35,20 +35,6 @@ export interface User {
   addresses?: Address[];
 }
 
-// JWT Token Response
-export interface TokenResponse {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-  tokenType: string;
-}
-
-// Auth Response
-export interface AuthResponse {
-  user: User;
-  tokens: TokenResponse;
-}
-
 interface AuthStore {
   authUser: User | null;
   isSigningUp: boolean;
@@ -57,11 +43,6 @@ interface AuthStore {
   isForgettingPassword: boolean;
   isResettingPassword: boolean;
   hasInitialized: boolean;
-  isRefreshingToken: boolean;
-
-  // Token management
-  refreshToken: () => Promise<void>;
-  getAccessToken: () => Promise<string | null>;
 
   // User management
   updateProfile: (data: Partial<User>) => Promise<void>;
@@ -86,7 +67,7 @@ interface AuthStore {
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, password: string) => Promise<void>;
-  initialize: () => void;
+  setHasInitialized: (value: boolean) => void;
 }
 
 const useAuthStore = create<AuthStore>()(
@@ -98,55 +79,32 @@ const useAuthStore = create<AuthStore>()(
       isCheckingAuth: false,
       isForgettingPassword: false,
       isResettingPassword: false,
-      isRefreshingToken: false,
       hasInitialized: false,
 
-      initialize: () => {
-        set({ hasInitialized: true });
-      },
-
-      // Get access token from cookies via API call
-      getAccessToken: async () => {
-        try {
-          const response = await privateClient.get("/auth/token");
-          return response.data.accessToken;
-        } catch (error) {
-          console.error("Failed to get access token:", error);
-          return null;
-        }
-      },
-
-      // Refresh token
-      refreshToken: async () => {
-        if (get().isRefreshingToken) return;
-
-        set({ isRefreshingToken: true });
-        try {
-          await privateClient.post("/auth/refresh");
-          // Server sẽ set cookie mới
-        } catch (error) {
-          // Nếu refresh thất bại, logout user
-          set({ authUser: null });
-          if (typeof window !== 'undefined') {
-            window.location.href = '/user/login';
-          }
-          throw error;
-        } finally {
-          set({ isRefreshingToken: false });
-        }
+      setHasInitialized: (value: boolean) => {
+        set({ hasInitialized: value });
       },
 
       checkAuth: async () => {
-        if (get().isCheckingAuth) return;
+        const currentState = get();
         
+        // Prevent multiple simultaneous checks
+        if (currentState.isCheckingAuth) {
+          console.log("Already checking auth, skipping...");
+          return;
+        }
+
         set({ isCheckingAuth: true });
+        
         try {
           const res = await privateClient.get("/auth/me");
           set({
-            authUser: res.data?.user,
+            authUser: res.data?.user || res.data,
             hasInitialized: true,
           });
+          console.log("✅ Check auth success:", res.data);
         } catch (error) {
+          console.log("❌ Check auth failed:", error);
           set({ authUser: null, hasInitialized: true });
         } finally {
           set({ isCheckingAuth: false });
@@ -156,28 +114,25 @@ const useAuthStore = create<AuthStore>()(
       login: async (data: LoginData) => {
         set({ isLoggingIn: true });
         try {
-          const res = await privateClient.post("/auth/login", data, {
-            withCredentials: true, // Đảm bảo cookies được gửi
+          const res = await privateClient.post("/auth/login", data);
+          
+          console.log("✅ Login success:", res.data);
+          
+          // Backend sẽ set httpOnly cookie
+          set({
+            authUser: res.data.user || res.data,
+            hasInitialized: true,
           });
-          
-          console.log("✅ Login thành công, response:", res);
-          
-          // Server sẽ set httpOnly cookies cho tokens
-          set({ 
-            authUser: res.data.user, 
-            hasInitialized: true 
-          });
-          
+
           toast.success("Đăng nhập thành công");
         } catch (error: unknown) {
           const axiosError = error as AxiosError<{ message: string }>;
           const errorMessage =
-            axiosError?.response?.data?.message ||
-            "Đã xảy ra lỗi khi đăng nhập";
+            axiosError?.response?.data?.message || "Đã xảy ra lỗi khi đăng nhập";
 
-          console.log("❌ Error message:", errorMessage);
+          console.log("❌ Login error:", errorMessage);
           toast.error(errorMessage);
-          throw error as AxiosError;
+          throw error;
         } finally {
           set({ isLoggingIn: false });
         }
@@ -187,23 +142,19 @@ const useAuthStore = create<AuthStore>()(
         set({ isSigningUp: true });
 
         try {
-          const res = await privateClient.post("/auth/register", data, {
-            withCredentials: true,
-          });
+          const res = await privateClient.post("/auth/register", data);
 
-          // Server sẽ set httpOnly cookies cho tokens
           set({
-            authUser: res.data.user,
+            authUser: res.data.user || res.data,
             hasInitialized: true,
           });
 
           toast.success("Đăng ký thành công");
         } catch (error) {
-          set({ isSigningUp: false });
           const axiosError = error as AxiosError<{ message: string }>;
           const errorMessage =
             axiosError?.response?.data?.message || "Đăng ký thất bại";
-          
+
           toast.error(errorMessage);
           throw error;
         } finally {
@@ -213,12 +164,9 @@ const useAuthStore = create<AuthStore>()(
 
       logout: async () => {
         try {
-          await privateClient.post("/auth/logout", {}, {
-            withCredentials: true,
-          });
-          // Server sẽ clear cookies
+          await privateClient.post("/auth/logout");
         } catch (error) {
-          console.log("Error logging out:", error);
+          console.log("Logout error:", error);
         } finally {
           set({ authUser: null, hasInitialized: true });
           toast.success("Đăng xuất thành công");
@@ -229,9 +177,7 @@ const useAuthStore = create<AuthStore>()(
         set({ isForgettingPassword: true });
         try {
           await privateClient.post("/auth/forgot-password", { email });
-          toast.success(
-            "Liên kết khôi phục mật khẩu đã được gửi đến email của bạn"
-          );
+          toast.success("Liên kết khôi phục mật khẩu đã được gửi đến email của bạn");
         } catch (error: unknown) {
           const axiosError = error as AxiosError<{ message: string }>;
           const errorMessage =
@@ -240,7 +186,7 @@ const useAuthStore = create<AuthStore>()(
 
           console.log("❌ Forgot password error:", errorMessage);
           toast.error(errorMessage);
-          throw error as AxiosError;
+          throw error;
         } finally {
           set({ isForgettingPassword: false });
         }
@@ -263,7 +209,7 @@ const useAuthStore = create<AuthStore>()(
 
           console.log("❌ Reset password error:", errorMessage);
           toast.error(errorMessage);
-          throw error as AxiosError;
+          throw error;
         } finally {
           set({ isResettingPassword: false });
         }
@@ -273,7 +219,7 @@ const useAuthStore = create<AuthStore>()(
       updateProfile: async (data: Partial<User>) => {
         try {
           const response = await privateClient.put("/users/profile", data);
-          const updatedUser = response.data.user;
+          const updatedUser = response.data.user || response.data;
           set({ authUser: updatedUser });
           toast.success("Cập nhật thông tin thành công");
         } catch (error) {
@@ -295,12 +241,12 @@ const useAuthStore = create<AuthStore>()(
         }
       },
 
-      // Address management - Giữ nguyên logic mock hoặc cập nhật với API thật
+      // Address management
       addAddress: async (address: Omit<Address, "id" | "user_id">) => {
         try {
           const response = await privateClient.post("/users/addresses", address);
-          const newAddress = response.data.address;
-          
+          const newAddress = response.data.address || response.data;
+
           const currentUser = get().authUser;
           if (currentUser) {
             const updatedUser = {
@@ -319,7 +265,7 @@ const useAuthStore = create<AuthStore>()(
       updateAddress: async (id: number, address: Partial<Address>) => {
         try {
           await privateClient.put(`/users/addresses/${id}`, address);
-          
+
           const currentUser = get().authUser;
           if (currentUser) {
             const updatedAddresses = currentUser.addresses?.map((addr) =>
@@ -342,7 +288,7 @@ const useAuthStore = create<AuthStore>()(
       deleteAddress: async (id: number) => {
         try {
           await privateClient.delete(`/users/addresses/${id}`);
-          
+
           const currentUser = get().authUser;
           if (currentUser) {
             const updatedAddresses = currentUser.addresses?.filter(
@@ -365,7 +311,7 @@ const useAuthStore = create<AuthStore>()(
       setDefaultAddress: async (id: number) => {
         try {
           await privateClient.patch(`/users/addresses/${id}/default`);
-          
+
           const currentUser = get().authUser;
           if (currentUser) {
             const updatedAddresses = currentUser.addresses?.map((addr) => ({
