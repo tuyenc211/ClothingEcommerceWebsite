@@ -102,9 +102,6 @@ const useAuthStore = create<AuthStore>()(
 
         try {
           const res = await privateClient.post("/auth/register", data);
-
-          set({ authUser: res.data.user || res.data });
-
           toast.success("Đăng ký thành công");
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;

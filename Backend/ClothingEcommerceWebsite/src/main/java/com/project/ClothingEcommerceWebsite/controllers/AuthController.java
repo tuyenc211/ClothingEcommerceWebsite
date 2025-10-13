@@ -86,4 +86,19 @@ public class AuthController {
         User newUser = userService.createUser(request);
         return ResponseEntity.ok(newUser);
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie clearAccess = ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE, clearAccess.toString())
+                .build();
+    }
 }

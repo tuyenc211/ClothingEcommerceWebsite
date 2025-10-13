@@ -32,7 +32,6 @@ export function middleware(request: NextRequest) {
   // Redirect unauthenticated users to login
   if (!accessToken && matchedRoute?.requireAuth) {
     const loginUrl = new URL("/user/login", request.url);
-    loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
