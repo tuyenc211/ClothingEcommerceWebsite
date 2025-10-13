@@ -191,302 +191,300 @@ export default function UserProfilePage() {
   };
 
   return (
-    <ProtectedRoute fallback={<LoadingSpinner />}>
-      <UserLayout>
-        <div className="space-y-6">
-          {/* Profile Information Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl uppercase font-bold">
-                Thông Tin Cá Nhân
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="flex items-center space-x-6">
-                  <div>
-                    <h2 className="text-2xl font-semibold text-gray-900 uppercase">
-                      {authUser?.fullName}
-                    </h2>
-                    <p className="text-gray-600">{authUser?.email}</p>
-                  </div>
+    // <ProtectedRoute fallback={<LoadingSpinner />}>
+    <UserLayout>
+      <div className="space-y-6">
+        {/* Profile Information Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl uppercase font-bold">
+              Thông Tin Cá Nhân
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="flex items-center space-x-6">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900 uppercase">
+                    {authUser?.fullName}
+                  </h2>
+                  <p className="text-gray-600">{authUser?.email}</p>
                 </div>
+              </div>
 
-                {/* Form Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Họ và Tên</Label>
-                    <Input
-                      id="fullName"
-                      {...register("fullName")}
-                      disabled={!isEditing}
-                      className={!isEditing ? "bg-gray-50" : ""}
-                    />
-                    {errors.fullName && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {errors.fullName.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      {...register("email")}
-                      disabled={!isEditing}
-                      className={!isEditing ? "bg-gray-50" : ""}
-                    />
-                    {errors.email && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {errors.email.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">Số Điện Thoại</Label>
-                    <Input
-                      id="phoneNumber"
-                      {...register("phoneNumber")}
-                      disabled={!isEditing}
-                      className={!isEditing ? "bg-gray-50" : ""}
-                    />
-                    {errors.phoneNumber && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {errors.phoneNumber.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Address Section */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
-                    Địa chỉ
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="province">Tỉnh/Thành phố</Label>
-                      {isEditing ? (
-                        <Select
-                          value={selectedProvinceCode}
-                          onValueChange={handleProvinceChange}
-                        >
-                          <SelectTrigger>
-                            <SelectValue
-                              placeholder={
-                                isLoadingProvinces
-                                  ? "Đang tải..."
-                                  : "Chọn tỉnh/thành phố"
-                              }
-                            />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-70 overflow-y-auto">
-                            {provinces.map((province) => (
-                              <SelectItem
-                                key={province.province_id}
-                                value={province.code}
-                              >
-                                {province.full_name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          value={getProvinceName()}
-                          disabled
-                          className="bg-gray-50"
-                          placeholder="Chưa chọn"
-                        />
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="ward">Xã/Phường</Label>
-                      {isEditing ? (
-                        <Select
-                          value={selectedWardCode}
-                          onValueChange={handleWardChange}
-                          disabled={!selectedProvinceCode}
-                        >
-                          <SelectTrigger>
-                            <SelectValue
-                              placeholder={
-                                !selectedProvinceCode
-                                  ? "Chọn tỉnh/thành phố trước"
-                                  : isLoadingWards
-                                  ? "Đang tải..."
-                                  : "Chọn xã/phường"
-                              }
-                            />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-70 overflow-y-auto">
-                            {wards.map((ward) => (
-                              <SelectItem key={ward.ward_id} value={ward.code}>
-                                {ward.full_name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          value={getWardName()}
-                          disabled
-                          className="bg-gray-50"
-                          placeholder="Chưa chọn"
-                        />
-                      )}
-                    </div>
-
-                    <div className="md:col-span-2 space-y-2">
-                      <Label htmlFor="address">Địa chỉ cụ thể</Label>
-                      <Input
-                        id="address"
-                        {...register("address")}
-                        disabled={!isEditing}
-                        className={!isEditing ? "bg-gray-50" : ""}
-                        placeholder="Số nhà, tên đường..."
-                      />
-                      {errors.address && (
-                        <p className="text-sm text-red-600 mt-1">
-                          {errors.address.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex justify-end space-x-3">
-                  {!isEditing ? (
-                    <Button onClick={() => setIsEditing(true)}>
-                      Chỉnh Sửa
-                    </Button>
-                  ) : (
-                    <>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleCancel}
-                      >
-                        Hủy
-                      </Button>
-                      <Button type="submit" disabled={isSaving}>
-                        <Save className="h-4 w-4 mr-2" />
-                        {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
-                      </Button>
-                    </>
+              {/* Form Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Họ và Tên</Label>
+                  <Input
+                    id="fullName"
+                    {...register("fullName")}
+                    disabled={!isEditing}
+                    className={!isEditing ? "bg-gray-50" : ""}
+                  />
+                  {errors.fullName && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {errors.fullName.message}
+                    </p>
                   )}
                 </div>
-              </form>
-            </CardContent>
-          </Card>
 
-          {/* Change Password Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl uppercase font-bold flex items-center gap-2">
-                <Lock className="h-5 w-5" />
-                Đổi Mật Khẩu
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form
-                onSubmit={handlePasswordSubmit(onPasswordSubmit)}
-                className="space-y-6"
-              >
-                <div className="grid grid-cols-1 gap-6">
-                  {/* Current Password */}
-                  <div className="space-y-2">
-                    <Label htmlFor="currentPassword">Mật khẩu hiện tại</Label>
-                    <div className="relative">
-                      <Input
-                        id="currentPassword"
-                        type={showCurrentPassword ? "text" : "password"}
-                        {...registerPassword("currentPassword")}
-                        placeholder="Nhập mật khẩu hiện tại"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() =>
-                          setShowCurrentPassword(!showCurrentPassword)
-                        }
-                      >
-                        {showCurrentPassword ? (
-                          <EyeOff className="h-4 w-4 text-gray-500" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-gray-500" />
-                        )}
-                      </Button>
-                    </div>
-                    {passwordErrors.currentPassword && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {passwordErrors.currentPassword.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* New Password */}
-                  <div className="space-y-2">
-                    <Label htmlFor="newPassword">Mật khẩu mới</Label>
-                    <div className="relative">
-                      <Input
-                        id="newPassword"
-                        type={showNewPassword ? "text" : "password"}
-                        {...registerPassword("newPassword")}
-                        placeholder="Nhập mật khẩu mới"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                      >
-                        {showNewPassword ? (
-                          <EyeOff className="h-4 w-4 text-gray-500" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-gray-500" />
-                        )}
-                      </Button>
-                    </div>
-                    {passwordErrors.newPassword && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {passwordErrors.newPassword.message}
-                      </p>
-                    )}
-                    <p className="text-xs text-gray-500">
-                      Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ
-                      thường và số
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    {...register("email")}
+                    disabled={!isEditing}
+                    className={!isEditing ? "bg-gray-50" : ""}
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {errors.email.message}
                     </p>
-                  </div>
+                  )}
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex justify-end space-x-3">
-                  <Button type="button" variant="outline">
-                    Hủy
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isChangingPassword}
-                    onClick={() => resetPassword()}
-                  >
-                    <Lock className="h-4 w-4 mr-2" />
-                    {isChangingPassword ? "Đang xử lý..." : "Đổi mật khẩu"}
-                  </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber">Số Điện Thoại</Label>
+                  <Input
+                    id="phoneNumber"
+                    {...register("phoneNumber")}
+                    disabled={!isEditing}
+                    className={!isEditing ? "bg-gray-50" : ""}
+                  />
+                  {errors.phoneNumber && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {errors.phoneNumber.message}
+                    </p>
+                  )}
                 </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </UserLayout>
-    </ProtectedRoute>
+              </div>
+
+              {/* Address Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
+                  Địa chỉ
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="province">Tỉnh/Thành phố</Label>
+                    {isEditing ? (
+                      <Select
+                        value={selectedProvinceCode}
+                        onValueChange={handleProvinceChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={
+                              isLoadingProvinces
+                                ? "Đang tải..."
+                                : "Chọn tỉnh/thành phố"
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-70 overflow-y-auto">
+                          {provinces.map((province) => (
+                            <SelectItem
+                              key={province.province_id}
+                              value={province.code}
+                            >
+                              {province.full_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        value={getProvinceName()}
+                        disabled
+                        className="bg-gray-50"
+                        placeholder="Chưa chọn"
+                      />
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="ward">Xã/Phường</Label>
+                    {isEditing ? (
+                      <Select
+                        value={selectedWardCode}
+                        onValueChange={handleWardChange}
+                        disabled={!selectedProvinceCode}
+                      >
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={
+                              !selectedProvinceCode
+                                ? "Chọn tỉnh/thành phố trước"
+                                : isLoadingWards
+                                ? "Đang tải..."
+                                : "Chọn xã/phường"
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-70 overflow-y-auto">
+                          {wards.map((ward) => (
+                            <SelectItem key={ward.ward_id} value={ward.code}>
+                              {ward.full_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        value={getWardName()}
+                        disabled
+                        className="bg-gray-50"
+                        placeholder="Chưa chọn"
+                      />
+                    )}
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2">
+                    <Label htmlFor="address">Địa chỉ cụ thể</Label>
+                    <Input
+                      id="address"
+                      {...register("address")}
+                      disabled={!isEditing}
+                      className={!isEditing ? "bg-gray-50" : ""}
+                      placeholder="Số nhà, tên đường..."
+                    />
+                    {errors.address && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {errors.address.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3">
+                {!isEditing ? (
+                  <Button onClick={() => setIsEditing(true)}>Chỉnh Sửa</Button>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCancel}
+                    >
+                      Hủy
+                    </Button>
+                    <Button type="submit" disabled={isSaving}>
+                      <Save className="h-4 w-4 mr-2" />
+                      {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
+                    </Button>
+                  </>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Change Password Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl uppercase font-bold flex items-center gap-2">
+              <Lock className="h-5 w-5" />
+              Đổi Mật Khẩu
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form
+              onSubmit={handlePasswordSubmit(onPasswordSubmit)}
+              className="space-y-6"
+            >
+              <div className="grid grid-cols-1 gap-6">
+                {/* Current Password */}
+                <div className="space-y-2">
+                  <Label htmlFor="currentPassword">Mật khẩu hiện tại</Label>
+                  <div className="relative">
+                    <Input
+                      id="currentPassword"
+                      type={showCurrentPassword ? "text" : "password"}
+                      {...registerPassword("currentPassword")}
+                      placeholder="Nhập mật khẩu hiện tại"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
+                    >
+                      {showCurrentPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-500" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-500" />
+                      )}
+                    </Button>
+                  </div>
+                  {passwordErrors.currentPassword && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {passwordErrors.currentPassword.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* New Password */}
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">Mật khẩu mới</Label>
+                  <div className="relative">
+                    <Input
+                      id="newPassword"
+                      type={showNewPassword ? "text" : "password"}
+                      {...registerPassword("newPassword")}
+                      placeholder="Nhập mật khẩu mới"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                    >
+                      {showNewPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-500" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-500" />
+                      )}
+                    </Button>
+                  </div>
+                  {passwordErrors.newPassword && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {passwordErrors.newPassword.message}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ
+                    thường và số
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3">
+                <Button type="button" variant="outline">
+                  Hủy
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isChangingPassword}
+                  onClick={() => resetPassword()}
+                >
+                  <Lock className="h-4 w-4 mr-2" />
+                  {isChangingPassword ? "Đang xử lý..." : "Đổi mật khẩu"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </UserLayout>
+    // </ProtectedRoute>
   );
 }

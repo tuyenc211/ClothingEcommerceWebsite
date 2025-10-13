@@ -86,16 +86,8 @@ const useAuthStore = create<AuthStore>()(
       },
 
       checkAuth: async () => {
-        const currentState = get();
-        
-        // Prevent multiple simultaneous checks
-        if (currentState.isCheckingAuth) {
-          console.log("Already checking auth, skipping...");
-          return;
-        }
-
         set({ isCheckingAuth: true });
-        
+
         try {
           const res = await privateClient.get("/auth/me");
           set({
@@ -115,9 +107,9 @@ const useAuthStore = create<AuthStore>()(
         set({ isLoggingIn: true });
         try {
           const res = await privateClient.post("/auth/login", data);
-          
+
           console.log("✅ Login success:", res.data);
-          
+
           // Backend sẽ set httpOnly cookie
           set({
             authUser: res.data.user || res.data,
@@ -128,7 +120,8 @@ const useAuthStore = create<AuthStore>()(
         } catch (error: unknown) {
           const axiosError = error as AxiosError<{ message: string }>;
           const errorMessage =
-            axiosError?.response?.data?.message || "Đã xảy ra lỗi khi đăng nhập";
+            axiosError?.response?.data?.message ||
+            "Đã xảy ra lỗi khi đăng nhập";
 
           console.log("❌ Login error:", errorMessage);
           toast.error(errorMessage);
@@ -177,7 +170,9 @@ const useAuthStore = create<AuthStore>()(
         set({ isForgettingPassword: true });
         try {
           await privateClient.post("/auth/forgot-password", { email });
-          toast.success("Liên kết khôi phục mật khẩu đã được gửi đến email của bạn");
+          toast.success(
+            "Liên kết khôi phục mật khẩu đã được gửi đến email của bạn"
+          );
         } catch (error: unknown) {
           const axiosError = error as AxiosError<{ message: string }>;
           const errorMessage =
@@ -244,7 +239,10 @@ const useAuthStore = create<AuthStore>()(
       // Address management
       addAddress: async (address: Omit<Address, "id" | "user_id">) => {
         try {
-          const response = await privateClient.post("/users/addresses", address);
+          const response = await privateClient.post(
+            "/users/addresses",
+            address
+          );
           const newAddress = response.data.address || response.data;
 
           const currentUser = get().authUser;
