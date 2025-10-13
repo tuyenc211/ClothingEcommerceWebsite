@@ -20,7 +20,7 @@ import {
 import { toast } from "sonner";
 import { Save, Lock, Eye, EyeOff } from "lucide-react";
 import { useAddress } from "@/hooks/useAddress";
-import ProtectedRoute from "@/components/common/ProtectedRoute";
+// import ProtectedRoute from "@/components/common/ProtectedRoute";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 const profileSchema = z.object({
