@@ -72,6 +72,7 @@ public class SercurityConfiguration {
                         authz -> authz
                                 .antMatchers("/api/v1/auth/login").permitAll()
                                 .antMatchers("/api/v1/auth/register").permitAll()
+                                .antMatchers("/api/v1/auth/me").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))

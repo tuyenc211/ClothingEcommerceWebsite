@@ -1,16 +1,15 @@
-FROM maven:3-openjdk-17 AS build
-WORKDIR /app
-
+#
+# Build stage
+#
+FROM maven:3.8.3-openjdk-17 AS build
 COPY . .
-RUN mvn clean package -DskipTests
+RUN mvn clean install
 
-
-# Run stage
-
-FROM openjdk:17-jdk-slim
-WORKDIR /app
-
-COPY --from=build /app/target/DrComputer-0.0.1-SNAPSHOT.war drcomputer.war
+#
+# Package stage
+#
+FROM eclipse-temurin:17-jdk
+COPY --from=build /target/your-build.jar demo.jar
+# ENV PORT=8080
 EXPOSE 8080
-
-ENTRYPOINT ["java","-jar","drcomputer.war"]
+ENTRYPOINT ["java","-jar","demo.jar"]
