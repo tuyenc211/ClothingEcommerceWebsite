@@ -2,9 +2,9 @@
 
 import { Swiper } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
-// import "swiper/css";
-// import "swiper/css/pagination";
-// import "swiper/css/navigation";
+import "swiper/css";
+import "swiper/css/pagination";
+import "swiper/css/navigation";
 // Scrollbar CSS is included in the main swiper CSS in newer versions
 
 interface AutoSwiperProps {

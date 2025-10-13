@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { toast } from "react-toastify";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
+import { Button } from "@/components/ui/button";
 // Mock reviews data
 export default function ProductDetailPage() {
   const { productId } = useParams();
@@ -38,8 +39,6 @@ export default function ProductDetailPage() {
   const { addToCart } = useCartStore();
   const { colors } = useColorStore();
   const { sizes } = useSizeStore();
-
-  // Get product data
   const product = useMemo(() => {
     if (typeof productId === "string") {
       const id = parseInt(productId, 10);
@@ -57,23 +56,6 @@ export default function ProductDetailPage() {
     }
     return [];
   }, [product]);
-
-  // Get available colors and sizes from variants
-  // const availableColors = useMemo(() => {
-  //   const colorIds = [
-  //     ...new Set(variants.map((v) => v.color_id).filter(Boolean)),
-  //   ];
-  //   return colors.filter((c) => colorIds.includes(c.id));
-  // }, [variants, colors]);
-
-  // const availableSizes = useMemo(() => {
-  //   const sizeIds = [
-  //     ...new Set(variants.map((v) => v.size_id).filter(Boolean)),
-  //   ];
-  //   return sizes.filter((s) => sizeIds.includes(s.id));
-  // }, [variants, sizes]);
-
-  // Component state
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -85,7 +67,22 @@ export default function ProductDetailPage() {
       (v) => v.color_id === selectedColor.id && v.size_id === selectedSize.id
     );
   }, [selectedColor, selectedSize, variants]);
+  const maxQuantity = selectedVariant?.inventory?.quantity || 0;
+  const getStockStatus = () => {
+    if (!selectedVariant?.inventory) return null;
+    const qty = selectedVariant.inventory.quantity;
 
+    if (qty === 0)
+      return { text: "Hết hàng", class: "bg-red-100 text-red-800" };
+    if (qty <= 10)
+      return {
+        text: `Còn hàng: ${qty}`,
+        class: "bg-yellow-100 text-yellow-800",
+      };
+    return { text: `Còn hàng: ${qty}`, class: "bg-green-100 text-green-800" };
+  };
+
+  const stockStatus = getStockStatus();
   // If product not found
   if (!product) {
     return (
@@ -110,7 +107,7 @@ export default function ProductDetailPage() {
 
   // Handlers
   const handleQuantityChange = (action: "increment" | "decrement") => {
-    if (action === "increment" && quantity < 10) {
+    if (action === "increment" && quantity < maxQuantity) {
       setQuantity((prev) => prev + 1);
     } else if (action === "decrement" && quantity > 1) {
       setQuantity((prev) => prev - 1);
@@ -197,13 +194,6 @@ export default function ProductDetailPage() {
           </Breadcrumb>
 
           {/* Back button */}
-          <button
-            onClick={() => router.back()}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors mt-2 sm:mt-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Quay lại</span>
-          </button>
         </div>
       </div>
 
@@ -256,32 +246,18 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* Price - RESPONSIVE */}
-            <div>
-              <div className="flex  sm:items-center space-y-2 space-x-4">
-                <span className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  {selectedVariant
-                    ? formatPrice(selectedVariant.price)
-                    : formatPrice(product.base_price)}
+            {/* Price */}
+            <div className="flex items-center gap-4">
+              <span className="text-3xl font-bold">
+                {formatPrice(product.base_price)}
+              </span>
+              {stockStatus && (
+                <span
+                  className={`text-sm font-medium px-3 py-1 rounded-full ${stockStatus.class}`}
+                >
+                  {stockStatus.text}
                 </span>
-                {selectedVariant?.inventory && (
-                  <div className="flex items-center space-x-2">
-                    <span
-                      className={`text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full ${
-                        selectedVariant.inventory.quantity > 10
-                          ? "bg-green-100 text-green-800"
-                          : selectedVariant.inventory.quantity > 0
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {selectedVariant.inventory.quantity > 0
-                        ? `Còn hàng: ${selectedVariant.inventory.quantity}`
-                        : "Hết hàng"}
-                    </span>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
 
             {/* Color Selection - RESPONSIVE */}
@@ -352,37 +328,24 @@ export default function ProductDetailPage() {
                   <button
                     onClick={() => handleQuantityChange("increment")}
                     className="p-2 sm:p-3 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={quantity === 10}
+                    disabled={quantity >= maxQuantity}
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                <span className="text-xs sm:text-sm text-gray-600">
-                  Tối đa 10 sản phẩm
-                </span>
               </div>
             </div>
 
             {/* Add to Cart Button - RESPONSIVE */}
-            <div className="space-y-3 sm:space-y-4 pt-2 sm:pt-4">
-              <button
+            <div className="space-y-3 sm:space-y-4 pt-4 ">
+              <Button
                 onClick={handleAddToCart}
                 disabled={!selectedSize || !selectedColor}
-                className="w-full bg-gray-900 text-white py-3 sm:py-4 px-4 sm:px-6 rounded-lg font-medium hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 sm:space-x-3 text-sm sm:text-base"
+                className="w-full bg-gray-900 text-white py-6 px-4 sm:px-6 rounded-sm font-medium hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 text-lg"
               >
                 <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span>Thêm vào giỏ hàng</span>
-              </button>
-
-              {(!selectedSize || !selectedColor) && (
-                <p className="text-xs sm:text-sm text-red-600 text-center">
-                  {!selectedColor && !selectedSize
-                    ? "Vui lòng chọn màu sắc và kích cỡ"
-                    : !selectedColor
-                    ? "Vui lòng chọn màu sắc"
-                    : "Vui lòng chọn kích cỡ"}
-                </p>
-              )}
+              </Button>
             </div>
 
             {/* Product Details - RESPONSIVE */}
@@ -473,16 +436,7 @@ export default function ProductDetailPage() {
                   </h3>
                   <div className="flex items-center space-x-2">
                     <div className="flex items-center">
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-5 h-5 ${
-                            i < Math.floor(averageRating || 0)
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
+                      {renderStars(averageRating)}
                     </div>
                     <span className="text-lg font-medium">
                       {averageRating || 0}
@@ -514,16 +468,7 @@ export default function ProductDetailPage() {
                             </div>
                             <div className="flex items-center space-x-2 mt-1">
                               <div className="flex">
-                                {Array.from({ length: 5 }, (_, i) => (
-                                  <Star
-                                    key={i}
-                                    className={`w-4 h-4 ${
-                                      i < review.rating
-                                        ? "fill-yellow-400 text-yellow-400"
-                                        : "text-gray-300"
-                                    }`}
-                                  />
-                                ))}
+                                {renderStars(review.rating)}
                               </div>
                             </div>
                           </div>
@@ -541,10 +486,7 @@ export default function ProductDetailPage() {
                   <h4 className="font-medium text-gray-900 mb-4">
                     Viết đánh giá của bạn
                   </h4>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-gray-600 text-center">
-                      Đăng nhập để viết đánh giá cho sản phẩm này
-                    </p>
+                  <div className=" p-4 rounded-lg">
                     <button className="w-full mt-4 bg-gray-900 text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors">
                       Đăng nhập để đánh giá
                     </button>

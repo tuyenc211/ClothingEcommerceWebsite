@@ -45,6 +45,7 @@
     "react-hook-form": "^7.62.0",
     "react-icons": "^5.5.0",
     "react-toastify": "^11.0.5",
+    "recharts": "^2.15.4",
     "sharp": "^0.34.3",
     "slugify": "^1.6.6",
     "sonner": "^2.0.7",

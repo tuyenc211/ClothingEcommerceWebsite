@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,8 +22,6 @@ import {
   FolderOpen,
   ClipboardList,
   Gift,
-  FileText,
-  MessageSquare,
   LogOut,
   Menu,
   X,
@@ -275,9 +272,16 @@ export default function AdminLayout({
   const { authUser, logout } = useAuthStore();
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // Không cần manual redirect vì ProtectedRoute sẽ tự động handle
+      // router.push("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Fallback redirect trong trường hợp có lỗi
+      router.push("/login");
+    }
   };
 
   return (

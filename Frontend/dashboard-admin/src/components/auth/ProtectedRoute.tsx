@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import useAuthStore from "@/stores/useAuthStore";
-import { Loader2 } from "lucide-react";
 
 // ✅ Danh sách các route công khai (không cần auth)
 const PUBLIC_ROUTES = ["/login", "/signup"];
@@ -11,7 +10,7 @@ const PUBLIC_ROUTES = ["/login", "/signup"];
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { authUser, isCheckingAuth, checkAuth, hasInitialized } =
+  const { authUser, isCheckingAuth, isLoggingOut, checkAuth, hasInitialized } =
     useAuthStore();
 
   // ✅ Check xem có phải public route không
@@ -34,14 +33,15 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     if (isPublicRoute) return;
 
     // Nếu đã initialize và không có user -> redirect về login
-    if (hasInitialized && !authUser && !isCheckingAuth) {
-      const callbackUrl = encodeURIComponent(pathname);
-      router.push(`/login?callbackUrl=${callbackUrl}`);
+    // Nhưng không redirect khi đang trong quá trình logout để tránh flicker
+    if (hasInitialized && !authUser && !isCheckingAuth && !isLoggingOut) {
+      router.push(`/login`);
     }
   }, [
     authUser,
     hasInitialized,
     isCheckingAuth,
+    isLoggingOut,
     router,
     pathname,
     isPublicRoute,
@@ -52,8 +52,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Hiển thị loading khi đang check auth hoặc chưa initialize
-  if (!hasInitialized || isCheckingAuth) {
+  // Hiển thị loading khi đang check auth, chưa initialize, hoặc đang logout
+  if (!hasInitialized || isCheckingAuth || isLoggingOut) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="flex flex-col items-center space-y-4">
