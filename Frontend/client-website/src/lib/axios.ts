@@ -1,38 +1,28 @@
 import axios, { AxiosError } from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8088/api/v1";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8088/api/v1";
 
 const privateClient = axios.create({
   baseURL: API_URL,
-  withCredentials: true, // gửi cookie với mỗi request
-  headers: { "Content-Type": "application/json" },
+  withCredentials: true, // Tự động gửi cookie (accessToken) với mỗi request
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-let isRefreshing = false;
-
+// Response interceptor - Chỉ handle redirect khi 401
 privateClient.interceptors.response.use(
-  (res) => res,
+  (response) => response,
   async (error: AxiosError) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const originalRequest = error.config as any;
+    if (error.response?.status === 401) {
+      // Clear auth state
+      if (typeof window !== "undefined") {
+        // Có thể clear localStorage nếu cần
+        localStorage.removeItem("auth-storage");
 
-    // Nếu token hết hạn
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) return Promise.reject(error);
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      try {
-        await privateClient.post("/auth/refresh");
-        return privateClient(originalRequest); // gọi lại request gốc
-      } catch (err) {
-        if (typeof window !== "undefined") {
-          window.location.href = "/user/login";
-        }
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
+        // Redirect về login
+        window.location.href = "/user/login";
       }
     }
 

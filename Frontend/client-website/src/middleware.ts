@@ -4,13 +4,24 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("accessToken")?.value;
 
-  const isAuthPage =
-    request.nextUrl.pathname.startsWith("/user/login") ||
-    request.nextUrl.pathname.startsWith("/user/signup");
+  const pathname = request.nextUrl.pathname;
 
-  const protectedRoutes = ["/user", "/cart/checkout", "/orders"];
-  const isProtectedRoute = protectedRoutes.some(
-    (route) => request.nextUrl.pathname.startsWith(route) && !isAuthPage
+  // Auth pages
+  const isAuthPage =
+    pathname.startsWith("/user/login") ||
+    pathname.startsWith("/user/signup") ||
+    pathname.startsWith("/user/forgot-password");
+
+  // Protected routes
+  const protectedRoutes = [
+    { path: "/user", requireAuth: true },
+    { path: "/cart/checkout", requireAuth: true },
+    { path: "/orders", requireAuth: true },
+    { path: "/admin", requireAuth: true, adminOnly: true },
+  ];
+
+  const matchedRoute = protectedRoutes.find(
+    (route) => pathname.startsWith(route.path) && !isAuthPage
   );
 
   // Redirect authenticated users away from auth pages
@@ -19,15 +30,26 @@ export function middleware(request: NextRequest) {
   }
 
   // Redirect unauthenticated users to login
-  if (!accessToken && isProtectedRoute) {
+  if (!accessToken && matchedRoute?.requireAuth) {
     const loginUrl = new URL("/user/login", request.url);
-    loginUrl.searchParams.set("from", request.nextUrl.pathname);
+    loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
   }
+
+  // Admin check (nếu cần - phải decode JWT)
+  // if (accessToken && matchedRoute?.adminOnly) {
+  //   // Decode JWT và check role
+  //   // Nếu không phải admin, redirect về home
+  // }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/user/:path*", "/cart/checkout", "/orders/:path*"],
+  matcher: [
+    "/user/:path*",
+    "/cart/checkout",
+    "/orders/:path*",
+    "/admin/:path*",
+  ],
 };

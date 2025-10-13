@@ -8,7 +8,7 @@ import useAuthStore from "@/stores/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Package, LogOut, ChevronRight, Home } from "lucide-react";
-import ProtectedRoute from "@/components/common/ProtectedRoute";
+// import ProtectedRoute from "@/components/common/ProtectedRoute";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 interface UserLayoutProps {
   children: ReactNode;
