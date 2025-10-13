@@ -5,13 +5,11 @@ import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { persist } from "zustand/middleware";
 
-// Role interface matching database schema
 export interface Role {
   id: number;
   name: string;
 }
 
-// Address interface matching database schema
 export interface Address {
   id: number;
   user_id: number;
@@ -23,7 +21,6 @@ export interface Address {
   isDefault: boolean;
 }
 
-// User interface matching database schema
 export interface User {
   id: number;
   email: string;
@@ -39,10 +36,8 @@ interface AuthStore {
   authUser: User | null;
   isSigningUp: boolean;
   isLoggingIn: boolean;
-  isCheckingAuth: boolean;
   isForgettingPassword: boolean;
   isResettingPassword: boolean;
-  hasInitialized: boolean;
 
   // User management
   updateProfile: (data: Partial<User>) => Promise<void>;
@@ -61,13 +56,11 @@ interface AuthStore {
   isCustomer: () => boolean;
 
   // Auth actions
-  checkAuth: () => Promise<void>;
   signup: (data: SignUpData) => Promise<void>;
   login: (data: LoginData) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, password: string) => Promise<void>;
-  setHasInitialized: (value: boolean) => void;
 }
 
 const useAuthStore = create<AuthStore>()(
@@ -76,32 +69,8 @@ const useAuthStore = create<AuthStore>()(
       authUser: null,
       isSigningUp: false,
       isLoggingIn: false,
-      isCheckingAuth: false,
       isForgettingPassword: false,
       isResettingPassword: false,
-      hasInitialized: false,
-
-      setHasInitialized: (value: boolean) => {
-        set({ hasInitialized: value });
-      },
-
-      checkAuth: async () => {
-        set({ isCheckingAuth: true });
-
-        try {
-          const res = await privateClient.get("/auth/me");
-          set({
-            authUser: res.data?.user || res.data,
-            hasInitialized: true,
-          });
-          console.log("✅ Check auth success:", res.data);
-        } catch (error) {
-          console.log("❌ Check auth failed:", error);
-          set({ authUser: null, hasInitialized: true });
-        } finally {
-          set({ isCheckingAuth: false });
-        }
-      },
 
       login: async (data: LoginData) => {
         set({ isLoggingIn: true });
@@ -110,11 +79,8 @@ const useAuthStore = create<AuthStore>()(
 
           console.log("✅ Login success:", res.data);
 
-          // Backend sẽ set httpOnly cookie
-          set({
-            authUser: res.data.user || res.data,
-            hasInitialized: true,
-          });
+          // Backend set cookie, frontend lưu user data
+          set({ authUser: res.data.user || res.data });
 
           toast.success("Đăng nhập thành công");
         } catch (error: unknown) {
@@ -137,10 +103,7 @@ const useAuthStore = create<AuthStore>()(
         try {
           const res = await privateClient.post("/auth/register", data);
 
-          set({
-            authUser: res.data.user || res.data,
-            hasInitialized: true,
-          });
+          set({ authUser: res.data.user || res.data });
 
           toast.success("Đăng ký thành công");
         } catch (error) {
@@ -161,7 +124,7 @@ const useAuthStore = create<AuthStore>()(
         } catch (error) {
           console.log("Logout error:", error);
         } finally {
-          set({ authUser: null, hasInitialized: true });
+          set({ authUser: null });
           toast.success("Đăng xuất thành công");
         }
       },
@@ -210,7 +173,6 @@ const useAuthStore = create<AuthStore>()(
         }
       },
 
-      // User management
       updateProfile: async (data: Partial<User>) => {
         try {
           const response = await privateClient.put("/users/profile", data);
@@ -236,7 +198,6 @@ const useAuthStore = create<AuthStore>()(
         }
       },
 
-      // Address management
       addAddress: async (address: Omit<Address, "id" | "user_id">) => {
         try {
           const response = await privateClient.post(
@@ -335,7 +296,6 @@ const useAuthStore = create<AuthStore>()(
         return currentUser?.addresses?.find((addr) => addr.isDefault);
       },
 
-      // Role management
       hasRole: (roleName: string) => {
         const currentUser = get().authUser;
         return (
@@ -357,7 +317,6 @@ const useAuthStore = create<AuthStore>()(
       name: "auth-storage",
       partialize: (state) => ({
         authUser: state.authUser,
-        hasInitialized: state.hasInitialized,
       }),
     }
   )
