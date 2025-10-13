@@ -1,12 +1,14 @@
 "use client";
-import { useEffect, ReactNode } from "react";
+
+import { useEffect, ReactNode, useRef } from "react";
 import { useRouter } from "next/navigation";
 import useAuthStore from "@/stores/useAuthStore";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+
 interface ProtectedRouteProps {
   children: ReactNode;
   redirectTo?: string;
-  fallback?: ReactNode; // Custom loading component
+  fallback?: ReactNode;
 }
 
 const ProtectedRoute = ({
@@ -15,30 +17,41 @@ const ProtectedRoute = ({
   fallback,
 }: ProtectedRouteProps) => {
   const router = useRouter();
-  const { authUser, isCheckingAuth, checkAuth, hasInitialized } =
-    useAuthStore();
+  const { authUser, isCheckingAuth, checkAuth, hasInitialized } = useAuthStore();
+  const hasChecked = useRef(false);
 
   useEffect(() => {
-    // Chỉ check auth nếu chưa init hoặc chưa có user
-    if (!hasInitialized) {
+    // Chỉ check auth nếu chưa init và chưa check
+    if (!hasInitialized && !hasChecked.current) {
+      hasChecked.current = true;
       checkAuth();
     }
   }, [hasInitialized, checkAuth]);
+
+  useEffect(() => {
+    // Redirect nếu không có user và đã check xong
+    if (hasInitialized && !authUser && !isCheckingAuth) {
+      router.replace(redirectTo);
+    }
+  }, [hasInitialized, authUser, isCheckingAuth, redirectTo, router]);
+
+  // Loading state
   if (!hasInitialized || isCheckingAuth) {
     return (
       fallback || (
         <div className="flex min-h-screen items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          <LoadingSpinner />
         </div>
       )
     );
   }
+
+  // Not authenticated
   if (!authUser) {
-    router.replace(redirectTo); // Dùng replace thay vì push
     return null;
   }
 
-  // Render children chỉ khi đã có user
+  // Authenticated - render children
   return <>{children}</>;
 };
 

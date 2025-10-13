@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, ReactNode } from "react";
+import { useEffect, ReactNode, useRef } from "react";
 import useAuthStore from "@/stores/useAuthStore";
 
 interface AuthProviderProps {
@@ -9,13 +9,15 @@ interface AuthProviderProps {
 
 export default function AuthProvider({ children }: AuthProviderProps) {
   const { hasInitialized, checkAuth } = useAuthStore();
+  const hasChecked = useRef(false);
 
   useEffect(() => {
-    // Auto check auth khi app load lần đầu
-    if (!hasInitialized) {
+    // Chỉ check auth một lần duy nhất khi mount
+    if (!hasInitialized && !hasChecked.current) {
+      hasChecked.current = true;
       checkAuth();
     }
-  }, [hasInitialized, checkAuth]);
+  }, []); // Empty dependency array - chỉ chạy một lần
 
   return <>{children}</>;
 }
