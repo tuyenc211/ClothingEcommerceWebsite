@@ -42,16 +42,48 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Page<Category> getAllCategories(Long parentId, Boolean isActive, String keyword, Pageable pageable) {
-        return null;
+        if (keyword != null && !keyword.isBlank()) {
+            return categoryRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        }
+        if (parentId != null) {
+            return categoryRepository.findByParentId(parentId, pageable);
+        }
+        if (isActive != null) {
+            return categoryRepository.findByIsActive(isActive, pageable);
+        }
+        return categoryRepository.findAll(pageable);
     }
 
     @Override
     public Category updateCategory(Long id, CreateCategoryRequest request) {
-        return null;
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+        if (request.getName() != null && !request.getName().isBlank()) {
+            category.setName(request.getName());
+            category.setSlug(SlugUtil.toSlug(request.getName()));
+        }
+        if (request.getSlug() != null && !request.getSlug().isBlank()) {
+            category.setSlug(SlugUtil.toSlug(request.getSlug()));
+        }
+        if (request.getParentId() != null) {
+            Category parent = categoryRepository.findById(request.getParentId())
+                    .orElseThrow(() -> new RuntimeException("Parent category not found"));
+            category.setParent(parent);
+        }
+        if (request.getIsActive() != null) {
+            category.setIsActive(request.getIsActive());
+        }
+        return categoryRepository.save(category);
     }
 
     @Override
     public void deleteCategory(Long id) {
-
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+        boolean hasChildren = categoryRepository.existsByParent(id);
+        if (hasChildren) {
+            throw new RuntimeException("Cannot delete category that has subcategories");
+        }
+        categoryRepository.delete(category);
     }
 }
