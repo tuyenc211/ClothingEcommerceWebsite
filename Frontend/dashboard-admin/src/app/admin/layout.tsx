@@ -30,7 +30,7 @@ import {
   Warehouse,
 } from "lucide-react";
 import Link from "next/link";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+// import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 interface SidebarItem {
   title: string;
@@ -285,7 +285,7 @@ export default function AdminLayout({
   };
 
   return (
-    <ProtectedRoute>
+    // <ProtectedRoute>
       <div className="flex h-screen bg-gray-100">
         {/* Desktop Sidebar */}
         <div
@@ -399,6 +399,6 @@ export default function AdminLayout({
           <main className="flex-1 overflow-auto p-6">{children}</main>
         </div>
       </div>
-    </ProtectedRoute>
+    // </ProtectedRoute>
   );
 }
