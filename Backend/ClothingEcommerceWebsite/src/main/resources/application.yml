@@ -7,7 +7,7 @@ spring:
     username: root
     password: 20112004
   jpa:
-    show-sql: true
+    show-sql: no
     hibernate:
       ddl-auto: none
     properties:

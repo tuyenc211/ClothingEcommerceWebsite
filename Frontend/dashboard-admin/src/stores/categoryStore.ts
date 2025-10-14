@@ -34,10 +34,6 @@ interface CategoryState {
 
   // Local Actions
   getCategory: (id: number) => Category | undefined;
-  getCategoryBySlug: (slug: string) => Category | undefined;
-  getRootCategories: () => Category[];
-  getChildCategories: (parentId: number) => Category[];
-  getActiveCategories: () => Category[];
   clearError: () => void;
 }
 
@@ -158,25 +154,8 @@ export const useCategoryStore = create<CategoryState>()(
 
       // Local Actions
       getCategory: (id) => {
-        return get().categories.find((category) => category.id === id);
-      },
-
-      getCategoryBySlug: (slug) => {
-        return get().categories.find((category) => category.slug === slug);
-      },
-
-      getRootCategories: () => {
-        return get().categories.filter((category) => !category.parentId);
-      },
-
-      getChildCategories: (parentId) => {
-        return get().categories.filter(
-          (category) => category.parentId === parentId
-        );
-      },
-
-      getActiveCategories: () => {
-        return get().categories.filter((category) => category.isActive);
+        const categories = get().categories || [];
+        return categories.find((category) => category.id === id);
       },
 
       clearError: () => set({ error: null }),

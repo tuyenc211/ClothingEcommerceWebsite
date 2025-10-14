@@ -23,7 +23,7 @@ public class Category {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    private Category parent;
+    private Category parentId;
 
     @Column(nullable = false, length = 150)
     private String name;

@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -27,10 +29,10 @@ public class CategoryServiceImpl implements CategoryService {
                 ? SlugUtil.toSlug(request.getName())
                 : SlugUtil.toSlug(request.getSlug());
         Category category = Category.builder()
-                .parent(parent)
+                .parentId(parent)
                 .name(request.getName())
                 .slug(slug)
-                .isActive(request.getIsActive())
+                .isActive(true)
                 .build();
         categoryRepository.save(category);
         return category;
@@ -41,17 +43,8 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Page<Category> getAllCategories(Long parentId, Boolean isActive, String keyword, Pageable pageable) {
-        if (keyword != null && !keyword.isBlank()) {
-            return categoryRepository.findByNameContainingIgnoreCase(keyword, pageable);
-        }
-        if (parentId != null) {
-            return categoryRepository.findByParentId(parentId, pageable);
-        }
-        if (isActive != null) {
-            return categoryRepository.findByIsActive(isActive, pageable);
-        }
-        return categoryRepository.findAll(pageable);
+    public List<Category> getAllCategories() {
+        return categoryRepository.findAll();
     }
 
     @Override
@@ -68,7 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (request.getParentId() != null) {
             Category parent = categoryRepository.findById(request.getParentId())
                     .orElseThrow(() -> new RuntimeException("Parent category not found"));
-            category.setParent(parent);
+            category.setParentId(parent);
         }
         if (request.getIsActive() != null) {
             category.setIsActive(request.getIsActive());
@@ -80,7 +73,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void deleteCategory(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
-        boolean hasChildren = categoryRepository.existsByParent(id);
+        boolean hasChildren = categoryRepository.existsByParentIdId(id);
         if (hasChildren) {
             throw new RuntimeException("Cannot delete category that has subcategories");
         }

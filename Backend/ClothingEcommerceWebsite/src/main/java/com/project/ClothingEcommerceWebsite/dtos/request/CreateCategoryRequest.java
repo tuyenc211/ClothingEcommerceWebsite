@@ -12,5 +12,5 @@ public class CreateCategoryRequest {
     @NotNull(message = "Name not null")
     private String name;
     private String slug;
-    private Boolean isActive = true;
+    private Boolean isActive;
 }
