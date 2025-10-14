@@ -14,16 +14,14 @@ import { toast } from "sonner";
 
 interface CategoryFormData {
   name: string;
-  isActive: boolean;
 }
 
 export default function AddCategoryPage() {
   const router = useRouter();
-  const { addCategory } = useCategoryStore();
+  const { createCategory } = useCategoryStore();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CategoryFormData>({
     name: "",
-    isActive: true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -48,26 +46,20 @@ export default function AddCategoryPage() {
     setLoading(true);
 
     try {
-      addCategory({
+      await createCategory({
         name: formData.name.trim(),
-        slug: formData.name.trim().toLowerCase().replace(/\s+/g, "-"),
-        isActive: formData.isActive,
       });
 
-      toast.success("Thêm danh mục cha thành công!");
       router.push("/admin/categories");
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi thêm danh mục");
       console.error("Error adding category:", error);
+      // Error handling is already done in the store with toast
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (
-    field: keyof CategoryFormData,
-    value: string | boolean
-  ) => {
+  const handleInputChange = (field: keyof CategoryFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -115,17 +107,13 @@ export default function AddCategoryPage() {
               )}
             </div>
 
-            {/* Trạng thái */}
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="isActive"
-                checked={formData.isActive}
-                onCheckedChange={(checked) =>
-                  handleInputChange("isActive", checked)
-                }
-                disabled={loading}
-              />
-              <Label htmlFor="isActive">Kích hoạt danh mục</Label>
+            {/* Note about default status */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="text-sm text-blue-700">
+                <strong>Lưu ý:</strong> Danh mục sẽ được kích hoạt mặc định sau
+                khi tạo. Bạn có thể thay đổi trạng thái này trong phần chỉnh sửa
+                danh mục.
+              </p>
             </div>
 
             {/* Action buttons */}
