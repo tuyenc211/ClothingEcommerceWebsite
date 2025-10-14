@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +28,7 @@ import { useCategoryStore } from "@/stores/categoryStore";
 import { toast } from "sonner";
 
 export default function SubcategoriesPage() {
-  const { categories, deleteCategory, getCategory } = useCategoryStore();
+  const { categories, deleteCategory, getCategory, fetchCategories } = useCategoryStore();
 
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
@@ -39,6 +39,10 @@ export default function SubcategoriesPage() {
     categoryId: null,
     categoryName: "",
   });
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   // Chỉ lấy danh mục con (có parentId)
   const subcategories = categories.filter((category) => category.parentId);
