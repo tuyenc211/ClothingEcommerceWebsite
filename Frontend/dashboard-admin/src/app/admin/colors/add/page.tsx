@@ -26,7 +26,7 @@ export default function AddEditColorPage() {
   const router = useRouter();
   const params = useParams();
   const isEdit = !!params?.id;
-  const { addColor, updateColor, getColor } = useColorStore();
+  const { createColor, updateColor, getColor, fetchColors } = useColorStore();
   const id = Number(params?.id);
   const [formData, setFormData] = useState<ColorForm>({
     name: "",
@@ -35,6 +35,11 @@ export default function AddEditColorPage() {
 
   const [errors, setErrors] = useState<Partial<ColorForm>>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // Fetch colors first to ensure we have data
+    fetchColors();
+  }, [fetchColors]);
 
   useEffect(() => {
     if (isEdit && id) {
@@ -81,18 +86,16 @@ export default function AddEditColorPage() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       if (isEdit && id) {
-        updateColor(id, formData);
+        await updateColor(id, formData);
       } else {
-        addColor(formData);
+        await createColor(formData);
       }
 
       router.push("/admin/colors");
     } catch (error) {
       console.error("Error saving color:", error);
+      // Error handling is already done in the store with toast
     } finally {
       setIsLoading(false);
     }

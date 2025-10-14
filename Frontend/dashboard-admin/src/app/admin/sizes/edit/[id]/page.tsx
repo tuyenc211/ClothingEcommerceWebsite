@@ -27,7 +27,7 @@ export default function EditSizePage() {
   const router = useRouter();
   const params = useParams();
   const id = Number(params?.id);
-  const { updateSize, getSize, sizes } = useSizeStore();
+  const { updateSize, getSize, sizes, fetchSizes } = useSizeStore();
 
   const [formData, setFormData] = useState<SizeForm>({
     code: "",
@@ -40,6 +40,11 @@ export default function EditSizePage() {
   >({} as Record<keyof SizeForm, string | undefined>);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Fetch sizes first to ensure we have data
+  useEffect(() => {
+    fetchSizes();
+  }, [fetchSizes]);
+
   useEffect(() => {
     if (id) {
       const existingSize = getSize(id);
@@ -50,8 +55,12 @@ export default function EditSizePage() {
           sortOrder: existingSize.sortOrder,
         });
       } else {
-        // Size not found, redirect to sizes list
-        router.push("/admin/sizes");
+        // Size not found, redirect to sizes list (might need time for data to load)
+        setTimeout(() => {
+          if (!getSize(id)) {
+            router.push("/admin/sizes");
+          }
+        }, 1000);
       }
     }
   }, [id, getSize, router]);
@@ -105,11 +114,8 @@ export default function EditSizePage() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       if (id) {
-        updateSize(id, {
+        await updateSize(id, {
           code: formData.code.toUpperCase(),
           name: formData.name,
           sortOrder: formData.sortOrder,
@@ -119,6 +125,7 @@ export default function EditSizePage() {
       router.push("/admin/sizes");
     } catch (error) {
       console.error("Error updating size:", error);
+      // Error handling is already done in the store with toast
     } finally {
       setIsLoading(false);
     }
