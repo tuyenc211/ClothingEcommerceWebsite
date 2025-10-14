@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { toast } from "sonner";
-import { SignUpData, LoginData } from "@/types";
+import { LoginData } from "@/types";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { persist } from "zustand/middleware";
@@ -39,9 +39,7 @@ export interface User {
 
 interface AuthStore {
   authUser: User | null;
-  isSigningUp: boolean;
   isLoggingIn: boolean;
-  isLoggingOut: boolean;
   isCheckingAuth: boolean;
   isForgettingPassword: boolean;
   isResettingPassword: boolean;
@@ -66,7 +64,6 @@ interface AuthStore {
 
   // Auth actions
   checkAuth: () => Promise<void>;
-  signup: (data: SignUpData) => Promise<void>;
   login: (data: LoginData) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -77,9 +74,7 @@ const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
       authUser: null,
-      isSigningUp: false,
       isLoggingIn: false,
-      isLoggingOut: false,
       isCheckingAuth: false,
       isForgettingPassword: false,
       isResettingPassword: false,
@@ -154,54 +149,14 @@ const useAuthStore = create<AuthStore>()(
           set({ isLoggingIn: false });
         }
       },
-
-      signup: async (data: SignUpData) => {
-        set({ isSigningUp: true });
-
-        try {
-          // Simulate API call - replace with actual API when backend is ready
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          // Mock successful signup - Default to Admin role for dashboard access
-          const authUser: User = {
-            id: Date.now(), // BIGINT PRIMARY KEY AUTO_INCREMENT
-            email: data.email,
-            phone: data.phoneNumber,
-            fullName: data.fullName,
-            isActive: true,
-            roles: [{ id: 1, name: "Admin" }], // Default to Admin role
-            addresses: [],
-          };
-
-          set({
-            authUser: authUser,
-            isSigningUp: false,
-          });
-
-          toast.success("Đăng ký thành công");
-        } catch (error) {
-          set({ isSigningUp: false });
-          toast.error("Đăng ký thất bại");
-          throw error;
-        }
-      },
       logout: async () => {
-        set({ isLoggingOut: true });
         try {
           await privateClient.post("/auth/logout");
-          console.log("✅ Logout thành công");
-
-          set({
-            authUser: null,
-            isLoggingOut: false,
-          });
-          toast.success("Đăng xuất thành công");
         } catch (error) {
-          console.log("Error logging out:", error);
-          set({
-            authUser: null,
-            isLoggingOut: false,
-          });
+          console.log("Logout error:", error);
+        } finally {
+          set({ authUser: null });
+          toast.success("Đăng xuất thành công");
         }
       },
 

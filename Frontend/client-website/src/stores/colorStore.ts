@@ -1,6 +1,7 @@
-import { mockColors } from "@/data/productv2";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import privateClient from "@/lib/axios";
+import { AxiosError } from "axios";
 
 export interface Color {
   id: number;
@@ -13,15 +14,13 @@ interface ColorState {
   isLoading: boolean;
   error: string | null;
 
-  // Actions
+  // API Actions
+  fetchColors: () => Promise<void>;
+
+  // Local Actions
   setColors: (colors: Color[]) => void;
-  addColor: (color: Omit<Color, "id">) => void;
-  updateColor: (id: number, updates: Partial<Color>) => void;
-  deleteColor: (id: number) => void;
   getColor: (id: number) => Color | undefined;
   clearError: () => void;
-
-  // Computed
 }
 
 // Fashion colors for clothing store
@@ -29,39 +28,33 @@ interface ColorState {
 export const useColorStore = create<ColorState>()(
   persist(
     (set, get) => ({
-      colors: mockColors,
+      colors: [],
       isLoading: false,
       error: null,
 
+      // API Actions
+      fetchColors: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await privateClient.get("/colors");
+          const colors = response.data?.data || response.data || [];
+
+          set({ colors, isLoading: false });
+          console.log("✅ Fetched colors:", colors);
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message || "Lỗi khi tải danh sách màu";
+
+          set({ error: errorMessage, isLoading: false });
+          console.error("❌ Fetch colors error:", errorMessage);
+          // Client-website không cần toast error vì có thể là chức năng không quan trọng
+          throw error;
+        }
+      },
+
+      // Local Actions
       setColors: (colors) => set({ colors }),
-
-      addColor: (colorData) => {
-        const newColor: Color = {
-          ...colorData,
-          id: Date.now(),
-        };
-
-        set((state) => ({
-          colors: [newColor, ...state.colors],
-          error: null,
-        }));
-      },
-
-      updateColor: (id, updates) => {
-        set((state) => ({
-          colors: state.colors.map((color) =>
-            color.id === id ? { ...color, ...updates } : color
-          ),
-          error: null,
-        }));
-      },
-
-      deleteColor: (id) => {
-        set((state) => ({
-          colors: state.colors.filter((color) => color.id !== id),
-          error: null,
-        }));
-      },
 
       getColor: (id) => {
         return get().colors.find((color) => color.id === id);

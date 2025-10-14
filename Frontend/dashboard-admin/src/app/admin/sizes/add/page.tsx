@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSizeStore } from "@/stores/sizeStore";
 import {
@@ -25,7 +25,7 @@ interface SizeForm {
 
 export default function AddSizePage() {
   const router = useRouter();
-  const { addSize, sizes } = useSizeStore();
+  const { addSize, sizes, fetchSizes } = useSizeStore();
   const [formData, setFormData] = useState<SizeForm>({
     code: "",
     name: "",
@@ -36,6 +36,11 @@ export default function AddSizePage() {
     Record<keyof SizeForm, string | undefined>
   >({} as Record<keyof SizeForm, string | undefined>);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch sizes when component mounts
+  useEffect(() => {
+    fetchSizes();
+  }, [fetchSizes]);
 
   const handleInputChange = (field: keyof SizeForm, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -83,10 +88,7 @@ export default function AddSizePage() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      addSize({
+      await addSize({
         code: formData.code.toUpperCase(),
         name: formData.name,
         sortOrder: formData.sortOrder,
@@ -95,6 +97,7 @@ export default function AddSizePage() {
       router.push("/admin/sizes");
     } catch (error) {
       console.error("Error saving size:", error);
+      // Error handling is already done in the store with toast
     } finally {
       setIsLoading(false);
     }

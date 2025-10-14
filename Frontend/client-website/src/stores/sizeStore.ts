@@ -1,6 +1,7 @@
-import { mockSizes } from "@/data/productv2";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import privateClient from "@/lib/axios";
+import { AxiosError } from "axios";
 
 export interface Size {
   id: number;
@@ -14,49 +15,47 @@ interface SizeState {
   isLoading: boolean;
   error: string | null;
 
-  // Actions
-  addSize: (size: Omit<Size, "id">) => void;
-  updateSize: (id: number, size: Partial<Size>) => void;
-  deleteSize: (id: number) => void;
+  // API Actions
+  fetchSizes: () => Promise<void>;
+
+  // Local Actions
   getSize: (id: number) => Size | undefined;
   getSizes: () => Size[];
   clearError: () => void;
-  // Computed
 }
 
 export const useSizeStore = create<SizeState>()(
   persist(
     (set, get) => ({
-      sizes: mockSizes,
+      sizes: [],
       isLoading: false,
       error: null,
 
-      addSize: (size) => {
-        const newSize: Size = {
-          ...size,
-          id: Date.now(),
-        };
+      // API Actions
+      fetchSizes: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await privateClient.get("/sizes");
+          const sizes = response.data?.data || response.data || [];
 
-        set((state) => ({
-          sizes: [newSize, ...state.sizes],
-          error: null,
-        }));
+          set({
+            sizes: sizes.sort((a: Size, b: Size) => a.sortOrder - b.sortOrder),
+            isLoading: false,
+          });
+
+          console.log("✅ Sizes fetched:", sizes);
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message || "Lỗi khi tải danh sách size";
+
+          set({ error: errorMessage, isLoading: false });
+          console.error("❌ Fetch sizes error:", errorMessage);
+          // Client-website không cần toast error vì có thể là chức năng không quan trọng
+        }
       },
 
-      updateSize: (id, size) => {
-        set((state) => ({
-          sizes: state.sizes.map((s) => (s.id === id ? { ...s, ...size } : s)),
-          error: null,
-        }));
-      },
-
-      deleteSize: (id) => {
-        set((state) => ({
-          sizes: state.sizes.filter((s) => s.id !== id),
-          error: null,
-        }));
-      },
-
+      // Local Actions
       getSize: (id) => {
         return get().sizes.find((s) => s.id === id);
       },
@@ -69,6 +68,9 @@ export const useSizeStore = create<SizeState>()(
     }),
     {
       name: "size-storage",
+      partialize: (state) => ({
+        sizes: state.sizes,
+      }),
     }
   )
 );

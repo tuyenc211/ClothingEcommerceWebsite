@@ -275,130 +275,127 @@ export default function AdminLayout({
   const handleLogout = async () => {
     try {
       await logout();
-      // Không cần manual redirect vì ProtectedRoute sẽ tự động handle
-      // router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
-      // Fallback redirect trong trường hợp có lỗi
       router.push("/login");
     }
   };
 
   return (
     // <ProtectedRoute>
-      <div className="flex h-screen bg-gray-100">
-        {/* Desktop Sidebar */}
-        <div
-          className={cn(
-            "hidden md:flex md:flex-col md:fixed md:inset-y-0 bg-gray-900 transition-all duration-300",
-            collapsed ? "md:w-20" : "md:w-64"
-          )}
+    <div className="flex h-screen bg-gray-100">
+      {/* Desktop Sidebar */}
+      <div
+        className={cn(
+          "hidden md:flex md:flex-col md:fixed md:inset-y-0 bg-gray-900 transition-all duration-300",
+          collapsed ? "md:w-20" : "md:w-64"
+        )}
+      >
+        <ScrollArea className="flex-1">
+          <Sidebar
+            collapsed={collapsed}
+            className="text-white"
+            handleLogout={handleLogout}
+          />
+        </ScrollArea>
+      </div>
+
+      {/* Mobile Sidebar */}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent
+          side="left"
+          className="p-0 bg-gray-900 text-white border-gray-700"
         >
-          <ScrollArea className="flex-1">
+          <ScrollArea className="h-full">
             <Sidebar
-              collapsed={collapsed}
+              collapsed={false}
               className="text-white"
               handleLogout={handleLogout}
             />
           </ScrollArea>
-        </div>
+        </SheetContent>
+      </Sheet>
 
-        {/* Mobile Sidebar */}
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetContent
-            side="left"
-            className="p-0 bg-gray-900 text-white border-gray-700"
-          >
-            <ScrollArea className="h-full">
-              <Sidebar
-                collapsed={false}
-                className="text-white"
-                handleLogout={handleLogout}
-              />
-            </ScrollArea>
-          </SheetContent>
-        </Sheet>
-
-        {/* Main Content */}
-        <div
-          className={cn(
-            "flex-1 flex flex-col overflow-hidden transition-all duration-300",
-            collapsed ? "md:ml-20" : "md:ml-64"
-          )}
-        >
-          {/* Header */}
-          <header className="bg-white shadow-sm border-b">
-            <div className="flex items-center justify-between px-4 py-3">
-              <div className="flex items-center space-x-4">
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="md:hidden"
-                      onClick={() => setMobileOpen(true)}
-                    >
-                      <Menu className="h-6 w-6" />
-                    </Button>
-                  </SheetTrigger>
-                </Sheet>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="hidden md:flex"
-                  onClick={() => setCollapsed(!collapsed)}
-                >
-                  {collapsed ? (
+      {/* Main Content */}
+      <div
+        className={cn(
+          "flex-1 flex flex-col overflow-hidden transition-all duration-300",
+          collapsed ? "md:ml-20" : "md:ml-64"
+        )}
+      >
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center space-x-4">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden"
+                    onClick={() => setMobileOpen(true)}
+                  >
                     <Menu className="h-6 w-6" />
-                  ) : (
-                    <X className="h-6 w-6" />
-                  )}
-                </Button>
-              </div>
+                  </Button>
+                </SheetTrigger>
+              </Sheet>
 
-              <div className="flex items-center space-x-4">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden md:flex"
+                onClick={() => setCollapsed(!collapsed)}
+              >
+                {collapsed ? (
+                  <Menu className="h-6 w-6" />
+                ) : (
+                  <X className="h-6 w-6" />
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-10 w-auto rounded-full p-2"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="hidden md:block text-left">
+                        <p className="text-sm font-medium">
+                          {authUser?.fullName || "Admin"}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {authUser?.email}
+                        </p>
+                      </div>
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>Xem hồ sơ</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
                     <Button
                       variant="ghost"
-                      className="relative h-10 w-auto rounded-full p-2"
+                      className="w-full justify-start text-left text-red-600 hover:text-red-400"
+                      onClick={handleLogout}
                     >
-                      <div className="flex items-center space-x-2">
-                        <div className="hidden md:block text-left">
-                          <p className="text-sm font-medium">
-                            {authUser?.fullName || "Admin"}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {authUser?.email}
-                          </p>
-                        </div>
-                      </div>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Đăng xuất
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Xem hồ sơ</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-left text-red-600 hover:text-red-400"
-                        onClick={handleLogout}
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Đăng xuất
-                      </Button>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          </header>
+          </div>
+        </header>
 
-          {/* Page Content */}
-          <main className="flex-1 overflow-auto p-6">{children}</main>
-        </div>
+        {/* Page Content */}
+        <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
+    </div>
     // </ProtectedRoute>
   );
 }
