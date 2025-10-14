@@ -18,7 +18,7 @@ export function LoginForm({
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/admin";
 
-  const { login, loginAsAdmin, isLoggingIn, authUser } = useAuthStore();
+  const { login, isLoggingIn, authUser } = useAuthStore();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,15 +40,6 @@ export function LoginForm({
     } catch (error) {
       // Error đã được xử lý trong store và hiển thị toast
       console.log("Login failed:", error);
-    }
-  };
-
-  const handleQuickLogin = async () => {
-    try {
-      await loginAsAdmin();
-      // Router sẽ tự động chuyển hướng thông qua useEffect
-    } catch (error) {
-      console.log("Quick login failed:", error);
     }
   };
 
@@ -108,40 +99,6 @@ export function LoginForm({
                 )}
                 Login
               </Button>
-
-              {/* Divider */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or
-                  </span>
-                </div>
-              </div>
-
-              {/* Nút đăng nhập nhanh với Admin */}
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                disabled={isLoggingIn}
-                onClick={handleQuickLogin}
-              >
-                {isLoggingIn && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                🚀 Đăng nhập nhanh với Admin
-              </Button>
-
-              {/* Thông tin tài khoản demo */}
-              <div className="text-center text-sm text-muted-foreground">
-                <p className="font-medium">Tài khoản demo có sẵn:</p>
-                <p>📧 admin@fashionstore.vn (Admin)</p>
-                <p>📧 staff@fashionstore.vn (Staff)</p>
-              </div>
-            </div>
           </form>
 
           {/* Ảnh bên phải */}

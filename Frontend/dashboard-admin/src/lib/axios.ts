@@ -1,20 +1,35 @@
-import axios from "axios";
-import type { AxiosInstance, AxiosResponse, AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 
 const API_URL =
-  /* import.meta.env.MODE === "production"
-    ? "https://corn-films.onrender.com/api/v1"
-    : */ "http://localhost:3001/api/v1";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8088/api/v1";
 
-const privateClient: AxiosInstance = axios.create({
+const privateClient = axios.create({
   baseURL: API_URL,
-  withCredentials: true,
+  withCredentials: true, // Tự động gửi cookie (accessToken) với mỗi request
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
+// Response interceptor - Handle redirect khi 401 cho dashboard-admin
 privateClient.interceptors.response.use(
-  (response: AxiosResponse) => response,
-  (error: AxiosError) => {
-    // Reject tất cả các error, không chỉ 401
+  (response) => response,
+  async (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      if (typeof window !== "undefined") {
+        const path = window.location.pathname;
+        const isAuthPage = path.startsWith("/login");
+
+        // Chỉ redirect nếu KHÔNG ở trang auth
+        if (!isAuthPage) {
+          localStorage.removeItem("auth-storage");
+          window.location.replace("/login");
+        } else {
+          // Ở trang auth: chỉ clear state, đừng redirect
+          localStorage.removeItem("auth-storage");
+        }
+      }
+    }
     return Promise.reject(error);
   }
 );

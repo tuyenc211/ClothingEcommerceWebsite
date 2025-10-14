@@ -4,7 +4,6 @@ import { SignUpData, LoginData } from "@/types";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { persist } from "zustand/middleware";
-import { mockUsers } from "@/data/productv2";
 
 // Role interface matching database schema
 export interface Role {
@@ -46,7 +45,6 @@ interface AuthStore {
   isCheckingAuth: boolean;
   isForgettingPassword: boolean;
   isResettingPassword: boolean;
-  hasInitialized: boolean;
 
   // User management
   updateProfile: (data: Partial<User>) => Promise<void>;
@@ -70,11 +68,9 @@ interface AuthStore {
   checkAuth: () => Promise<void>;
   signup: (data: SignUpData) => Promise<void>;
   login: (data: LoginData) => Promise<void>;
-  loginAsAdmin: () => Promise<void>; // Đăng nhập nhanh với tài khoản Admin
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, password: string) => Promise<void>;
-  initialize: () => void;
 }
 
 const useAuthStore = create<AuthStore>()(
@@ -87,35 +83,32 @@ const useAuthStore = create<AuthStore>()(
       isCheckingAuth: false,
       isForgettingPassword: false,
       isResettingPassword: false,
-      hasInitialized: false,
-      initialize: () => {
-        set({ hasInitialized: true });
-      },
       checkAuth: async () => {
         if (get().isCheckingAuth) return;
         set({ isCheckingAuth: true });
         try {
-          // TODO: Thay thế bằng API call thật khi có backend
-          // const res = await privateClient.get("/auth/check-auth");
+          const res = await privateClient.get("/auth/check-auth");
 
-          // Simulate API call delay
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          // Kiểm tra vai trò - chỉ cho phép Admin và Staff truy cập dashboard
+          const user = res.data.user || res.data;
+          const hasValidRole = user?.roles?.some(
+            (role: Role) =>
+              role.name === "Admin" ||
+              role.name === "Staff" ||
+              role.name === "admin" ||
+              role.name === "staff"
+          );
 
-          // Kiểm tra xem có user nào đã được lưu trong localStorage không
-          const currentUser = get().authUser;
-          if (currentUser) {
-            // Validate user từ mockUsers
-            const validUser = mockUsers.find((u) => u.id === currentUser.id);
-            if (validUser) {
-              set({ authUser: validUser, hasInitialized: true });
-            } else {
-              set({ authUser: null, hasInitialized: true });
-            }
-          } else {
-            set({ authUser: null, hasInitialized: true });
+          if (!hasValidRole) {
+            set({ authUser: null });
+            toast.error("Bạn không có quyền truy cập vào trang quản trị");
+            return;
           }
-        } catch {
-          set({ authUser: null, hasInitialized: true });
+
+          set({ authUser: user });
+        } catch (error) {
+          console.log("CheckAuth error:", error);
+          set({ authUser: null });
         } finally {
           set({ isCheckingAuth: false });
         }
@@ -124,22 +117,15 @@ const useAuthStore = create<AuthStore>()(
       login: async (data: LoginData) => {
         set({ isLoggingIn: true });
         try {
-          // TODO: Thay thế bằng API call thật khi có backend
-          // const res = await privateClient.post("/auth/login", data);
+          const res = await privateClient.post("/auth/login", data);
 
-          // Simulate API call delay
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          console.log("✅ Login response:", res.data);
 
-          // Tìm user trong mock data dựa trên email
-          const user = mockUsers.find((u) => u.email === data.email);
-
-          if (!user) {
-            throw new Error("Email hoặc mật khẩu không đúng");
-          }
+          const user = res.data.user || res.data;
 
           // Kiểm tra vai trò người dùng - chỉ cho phép Admin và Staff
           const hasValidRole = user?.roles?.some(
-            (role: Role) => role.name === "Admin" || role.name === "Staff"
+            (role: Role) => role.name === "ADMIN" || role.name === "STAFF"
           );
 
           if (!hasValidRole) {
@@ -148,60 +134,20 @@ const useAuthStore = create<AuthStore>()(
             throw new Error("Unauthorized access");
           }
 
-          console.log("✅ Login thành công với mock user:", user);
-          set({ authUser: user, hasInitialized: true });
+          // Backend sẽ set cookie, frontend lưu user data
+          set({ authUser: user });
           toast.success(
-            `Đăng nhập thành công với vai trò ${user.roles?.[0]?.name}`
+            `Đăng nhập thành công với vai trò ${
+              user.roles?.[0]?.name || "ADMIN"
+            }`
           );
         } catch (error: unknown) {
-          set({ isLoggingIn: false });
-
-          let errorMessage = "Đã xảy ra lỗi khi đăng nhập";
-
-          if (error instanceof Error) {
-            errorMessage = error.message;
-          } else {
-            const axiosError = error as AxiosError<{ message: string }>;
-            errorMessage = axiosError?.response?.data?.message || errorMessage;
-          }
-
-          console.log("❌ Error message:", errorMessage);
-          toast.error(errorMessage);
-          throw error;
-        } finally {
-          set({ isLoggingIn: false });
-        }
-      },
-
-      loginAsAdmin: async () => {
-        set({ isLoggingIn: true });
-        try {
-          // Simulate API call delay
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          // Tự động đăng nhập với tài khoản Admin đầu tiên
-          const adminUser = mockUsers.find((u) =>
-            u.roles?.some((role) => role.name === "Admin")
-          );
-
-          if (!adminUser) {
-            throw new Error("Không tìm thấy tài khoản Admin trong mock data");
-          }
-
-          console.log("✅ Đăng nhập tự động với Admin:", adminUser);
-          set({ authUser: adminUser, hasInitialized: true });
-          toast.success(
-            `Đăng nhập thành công với tài khoản ${adminUser.fullName} (${adminUser.roles?.[0]?.name})`
-          );
-        } catch (error: unknown) {
-          set({ isLoggingIn: false });
-
+          const axiosError = error as AxiosError<{ message: string }>;
           const errorMessage =
-            error instanceof Error
-              ? error.message
-              : "Đã xảy ra lỗi khi đăng nhập tự động";
+            axiosError?.response?.data?.message ||
+            "Đã xảy ra lỗi khi đăng nhập";
 
-          console.log("❌ Auto login error:", errorMessage);
+          console.log("❌ Login error:", errorMessage);
           toast.error(errorMessage);
           throw error;
         } finally {
@@ -242,15 +188,11 @@ const useAuthStore = create<AuthStore>()(
       logout: async () => {
         set({ isLoggingOut: true });
         try {
-          // TODO: Thay thế bằng API call thật khi có backend
-          // await privateClient.post("/auth/logout");
-
-          // Simulate API call delay để tránh flicker
-          await new Promise((resolve) => setTimeout(resolve, 300));
+          await privateClient.post("/auth/logout");
+          console.log("✅ Logout thành công");
 
           set({
             authUser: null,
-            hasInitialized: true,
             isLoggingOut: false,
           });
           toast.success("Đăng xuất thành công");
@@ -258,7 +200,6 @@ const useAuthStore = create<AuthStore>()(
           console.log("Error logging out:", error);
           set({
             authUser: null,
-            hasInitialized: true,
             isLoggingOut: false,
           });
         }
@@ -478,7 +419,6 @@ const useAuthStore = create<AuthStore>()(
       name: "auth-storage",
       partialize: (state) => ({
         authUser: state.authUser,
-        hasInitialized: state.hasInitialized,
       }),
     }
   )
