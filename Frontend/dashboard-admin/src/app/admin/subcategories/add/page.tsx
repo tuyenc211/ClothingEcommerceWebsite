@@ -27,7 +27,7 @@ interface SubcategoryFormData {
 
 export default function AddSubcategoryPage() {
   const router = useRouter();
-  const { addChildCategory, getRootCategories } = useCategoryStore();
+  const { createCategory,categories } = useCategoryStore();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<SubcategoryFormData>({
     name: "",
@@ -35,9 +35,8 @@ export default function AddSubcategoryPage() {
     isActive: true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-
+const parentCategories = categories.filter(cat => !cat.parentId);
   // Lấy danh sách danh mục cha
-  const parentCategories = getRootCategories().filter((cat) => cat.isActive);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -64,10 +63,9 @@ export default function AddSubcategoryPage() {
     setLoading(true);
 
     try {
-      addChildCategory(formData.parentId!, {
+      createCategory({
+        parentId: formData.parentId!,
         name: formData.name.trim(),
-        slug: formData.name.trim().toLowerCase().replace(/\s+/g, "-"),
-        isActive: formData.isActive,
       });
 
       toast.success("Thêm danh mục con thành công!");

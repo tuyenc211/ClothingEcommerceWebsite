@@ -29,8 +29,10 @@ export default function EditSubcategoryPage() {
   const router = useRouter();
   const params = useParams();
   const categoryId = parseInt(params.id as string);
-  const { getCategory, updateCategory, getRootCategories } = useCategoryStore();
+  const { getCategory, updateCategory,categories,fetchCategories } = useCategoryStore();
+  const parentCategories = categories.filter(cat => !cat.parentId);
 
+  useEffect(() => { fetchCategories(); }, [fetchCategories]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [formData, setFormData] = useState<SubcategoryFormData>({
@@ -41,7 +43,6 @@ export default function EditSubcategoryPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Lấy danh sách danh mục cha
-  const parentCategories = getRootCategories().filter((cat) => cat.isActive);
 
   useEffect(() => {
     const category = getCategory(categoryId);
@@ -159,7 +160,7 @@ export default function EditSubcategoryPage() {
                   <SelectValue placeholder="Chọn danh mục cha" />
                 </SelectTrigger>
                 <SelectContent>
-                  {parentCategories.map((category) => (
+                  {categories.map((category) => (
                     <SelectItem
                       key={category.id}
                       value={category.id.toString()}
