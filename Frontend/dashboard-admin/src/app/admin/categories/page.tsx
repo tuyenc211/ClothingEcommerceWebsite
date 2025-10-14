@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +28,13 @@ import { useCategoryStore } from "@/stores/categoryStore";
 import { toast } from "sonner";
 
 export default function CategoriesPage() {
-  const { deleteCategory, getRootCategories } = useCategoryStore();
+  const {
+    deleteCategory,
+    getRootCategories,
+    fetchCategories,
+    isLoading,
+    error,
+  } = useCategoryStore();
 
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
@@ -62,6 +68,30 @@ export default function CategoriesPage() {
   const handleDeleteCancel = () => {
     setDeleteDialog({ open: false, categoryId: null, categoryName: "" });
   };
+
+  // Fetch categories when component mounts
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">Lỗi: {error}</p>
+          <Button onClick={() => fetchCategories()}>Thử lại</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

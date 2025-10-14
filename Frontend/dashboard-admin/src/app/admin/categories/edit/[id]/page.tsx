@@ -21,7 +21,7 @@ export default function EditCategoryPage() {
   const router = useRouter();
   const params = useParams();
   const categoryId = parseInt(params.id as string);
-  const { getCategory, updateCategory } = useCategoryStore();
+  const { getCategory, updateCategory, fetchCategories } = useCategoryStore();
 
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -32,17 +32,34 @@ export default function EditCategoryPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    // Fetch categories first to ensure we have data
+    fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
     const category = getCategory(categoryId);
     if (category) {
       setFormData({
         name: category.name,
         isActive: category.isActive,
       });
+      setInitialLoading(false);
     } else {
-      toast.error("Không tìm thấy danh mục");
-      router.push("/admin/categories");
+      // Category might not be loaded yet, wait a bit
+      setTimeout(() => {
+        const categoryAfterFetch = getCategory(categoryId);
+        if (categoryAfterFetch) {
+          setFormData({
+            name: categoryAfterFetch.name,
+            isActive: categoryAfterFetch.isActive,
+          });
+          setInitialLoading(false);
+        } else {
+          toast.error("Không tìm thấy danh mục");
+          router.push("/admin/categories");
+        }
+      }, 1000);
     }
-    setInitialLoading(false);
   }, [categoryId, getCategory, router]);
 
   const validateForm = () => {
@@ -66,17 +83,15 @@ export default function EditCategoryPage() {
     setLoading(true);
 
     try {
-      updateCategory(categoryId, {
+      await updateCategory(categoryId, {
         name: formData.name.trim(),
-        slug: formData.name.trim().toLowerCase().replace(/\s+/g, "-"),
         isActive: formData.isActive,
       });
 
-      toast.success("Cập nhật danh mục cha thành công!");
       router.push("/admin/categories");
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi cập nhật danh mục");
       console.error("Error updating category:", error);
+      // Error handling is already done in the store with toast
     } finally {
       setLoading(false);
     }
