@@ -33,16 +33,8 @@ public class CategoryController {
     }
 
     @GetMapping("")
-    public ResponseEntity<?> getAllCategories(
-            @RequestParam(required = false) Long parentId,
-            @RequestParam(required = false) Boolean isActive,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Category> categories = categoryService.getAllCategories(parentId, isActive, keyword, pageable);
-        return ResponseEntity.ok(categories);
+    public ResponseEntity<?> getAllCategories() {
+        return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
     @PutMapping("/{id}")

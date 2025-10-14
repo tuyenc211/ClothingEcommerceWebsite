@@ -30,11 +30,15 @@ import { toast } from "sonner";
 export default function CategoriesPage() {
   const {
     deleteCategory,
-    getRootCategories,
+    categories,
     fetchCategories,
     isLoading,
     error,
   } = useCategoryStore();
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
@@ -46,8 +50,7 @@ export default function CategoriesPage() {
     categoryName: "",
   });
 
-  // Chỉ lấy danh mục cha   có parentId
-  const rootCategories = getRootCategories();
+  const rootCategories = categories.filter((category) => !category.parentId);
 
   const handleDeleteClick = (id: number, name: string) => {
     setDeleteDialog({
@@ -68,11 +71,6 @@ export default function CategoriesPage() {
   const handleDeleteCancel = () => {
     setDeleteDialog({ open: false, categoryId: null, categoryName: "" });
   };
-
-  // Fetch categories when component mounts
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
 
   if (isLoading) {
     return (
