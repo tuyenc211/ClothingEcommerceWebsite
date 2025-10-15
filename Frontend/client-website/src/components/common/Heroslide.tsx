@@ -7,7 +7,7 @@ import Image from "next/image";
 
 export default function Heroslide() {
   return (
-    <AutoSwiper>
+    <AutoSwiper className="px-8 py-2 rounded-md">
       {banner.map((item) => (
         <SwiperSlide key={item.id}>
           <div className="relative w-full h-[250px] md:h-[700px] sm:h-[350px]">

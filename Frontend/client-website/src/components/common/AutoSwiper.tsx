@@ -46,7 +46,7 @@ const AutoSwiper = ({
         grabCursor={true}
         centeredSlides={true}
         style={{ width: "100%", height: "max-content" }}
-        className="!pb-6"
+        className="!pb-1"
       >
         {children}
       </Swiper>

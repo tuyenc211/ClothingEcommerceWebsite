@@ -26,7 +26,7 @@ const ListItem = ({
 }: {
   className?: string;
   title: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   href: string;
 }) => {
   return (
@@ -40,7 +40,9 @@ const ListItem = ({
           )}
           {...props}
         >
-          <div className="text-sm font-medium leading-none">{title}</div>
+          <div className="text-sm text-center uppercase font-mmedium leading-none">
+            {title}
+          </div>
           <p className="text-sm leading-snug text-muted-foreground">
             {children}
           </p>
@@ -202,9 +204,7 @@ export default function Header() {
                                 key={child.id}
                                 title={child.name}
                                 href={`/categories/${parent.slug}/${child.slug}`}
-                              >
-                                {child.name}
-                              </ListItem>
+                              ></ListItem>
                             ))}
                           </ul>
                         </NavigationMenuContent>

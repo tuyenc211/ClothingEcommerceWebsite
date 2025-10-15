@@ -92,7 +92,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-black w-full mx-auto p-6 md:p-15">
+    <footer className="bg-black w-full mx-auto p-6 md:p-12">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {/* Cột 1: Thông tin công ty */}
         <div className="text-white">
