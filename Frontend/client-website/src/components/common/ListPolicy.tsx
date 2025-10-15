@@ -42,27 +42,39 @@ const policyData: PolicyItem[] = [
   },
 ];
 
-export default function ListPolicy() {
+// export default function ListPolicy() {
+//   return (
+//     <div className="border-t  py-2 ">
+//       <div className="container mx-auto ">
+//         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 md:gap-4">
+
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+import { InfiniteSlider } from "@/components/ui/infinite-slider";
+
+function InfiniteSliderBasic() {
   return (
-    <div className="border-t  py-2 ">
-      <div className="container mx-auto ">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 md:gap-4">
-          {policyData.map((policy) => (
-            <div
-              key={policy.id}
-              className="flex items-start text-start  gap-3 py-2 md:py-4 px-5  space-x-4"
-            >
-              <div className="mb-4">{policy.icon}</div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-800 mb-1">
-                  {policy.title}
-                </h3>
-                <h4 className=" text-gray-600">{policy.description}</h4>
-              </div>
-            </div>
-          ))}
+    <InfiniteSlider gap={24} reverse className="w-full h-full bg-white">
+      {policyData.map((policy) => (
+        <div
+          key={policy.id}
+          className="flex items-start text-start  gap-3 py-2 md:py-4 px-5  space-x-4"
+        >
+          <div className="mb-4">{policy.icon}</div>
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-gray-800 mb-1">
+              {policy.title}
+            </h3>
+            <h4 className=" text-gray-600">{policy.description}</h4>
+          </div>
         </div>
-      </div>
-    </div>
+      ))}
+    </InfiniteSlider>
   );
 }
+
+export default InfiniteSliderBasic;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import {
   Card,
@@ -25,8 +25,9 @@ import { useProductStore } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useForm, Controller } from "react-hook-form";
 
 interface ProductFormValues {
@@ -39,6 +40,11 @@ interface ProductFormValues {
   sizes: number[];
   is_published: boolean;
   images: File[];
+}
+
+interface ImagePreview {
+  file: File;
+  url: string;
 }
 
 export default function AddProductPage() {
@@ -73,6 +79,9 @@ export default function AddProductPage() {
       images: [],
     },
   });
+
+  // State cho image previews
+  const [imagePreviews, setImagePreviews] = useState<ImagePreview[]>([]);
 
   // Load product when editing
   useEffect(() => {
@@ -120,9 +129,10 @@ export default function AddProductPage() {
             is_published: existingProduct.is_published,
             images: [] as File[],
           };
-
-          console.log("Resetting form with values:", formValues);
           reset(formValues);
+
+          // Reset image previews khi chỉnh sửa sản phẩm
+          setImagePreviews([]);
         }, 100);
       }
     }
@@ -161,8 +171,39 @@ export default function AddProductPage() {
   // handle manual image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setValue("images", [...(files || [])]);
+
+    // Tạo preview URLs cho các ảnh mới
+    const newPreviews: ImagePreview[] = files.map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+    }));
+
+    // Cập nhật state previews và form
+    setImagePreviews((prev) => [...prev, ...newPreviews]);
+    setValue("images", [...(watch("images") || []), ...files]);
   };
+
+  // Xóa ảnh khỏi preview
+  const removeImage = (index: number) => {
+    const currentImages = watch("images") || [];
+    const newImages = currentImages.filter((_, i) => i !== index);
+
+    // Cleanup URL để tránh memory leak
+    URL.revokeObjectURL(imagePreviews[index].url);
+
+    // Cập nhật state và form
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    setValue("images", newImages);
+  };
+
+  // Cleanup URLs khi component unmount
+  useEffect(() => {
+    return () => {
+      imagePreviews.forEach((preview) => {
+        URL.revokeObjectURL(preview.url);
+      });
+    };
+  }, [imagePreviews]);
 
   return (
     <div className="space-y-6">
@@ -425,9 +466,12 @@ export default function AddProductPage() {
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Ảnh Sản Phẩm</CardTitle>
-              <CardDescription>Tải lên hình ảnh sản phẩm</CardDescription>
+              <CardDescription>
+                Tải lên hình ảnh sản phẩm ({imagePreviews.length} ảnh đã chọn)
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Upload Area */}
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                 <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
                 <p className="text-sm text-gray-600 mb-2">
@@ -447,6 +491,38 @@ export default function AddProductPage() {
                   </label>
                 </Button>
               </div>
+
+              {/* Preview Grid */}
+              {imagePreviews.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium mb-3">Xem trước ảnh:</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative group">
+                        <div className="aspect-square overflow-hidden rounded-lg border border-gray-200">
+                          <Image
+                            src={preview.url}
+                            alt={`Preview ${index + 1}`}
+                            width={200}
+                            height={200}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                            unoptimized={true}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeImage(index)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
