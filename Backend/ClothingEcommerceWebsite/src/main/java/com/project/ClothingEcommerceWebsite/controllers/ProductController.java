@@ -1,4 +1,7 @@
 package com.project.ClothingEcommerceWebsite.controllers;
+import com.project.ClothingEcommerceWebsite.dtos.request.CreateProductVariantRequest;
+import com.project.ClothingEcommerceWebsite.models.Product;
+import com.project.ClothingEcommerceWebsite.services.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,9 +11,17 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("${api.prefix}/products")
 @RequiredArgsConstructor
 public class ProductController {
+
+    private final ProductService productService;
+
     @PostMapping("")
-    public ResponseEntity<?> createProduct() {
-        return ResponseEntity.ok().body("");
+    public ResponseEntity<?> createProduct(@RequestBody CreateProductVariantRequest request) {
+        Product product = productService.createProductWithVariants(request);
+        return ResponseEntity.ok(product);
+    }
+    @PostMapping("")
+    public ResponseEntity<?> getAllProduct() {
+        return ResponseEntity.ok(productService.getAllProduct());
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> getProductById(@PathVariable Long id) {

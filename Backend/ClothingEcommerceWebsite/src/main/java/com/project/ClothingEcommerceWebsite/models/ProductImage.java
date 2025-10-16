@@ -5,7 +5,7 @@ import lombok.*;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "product_variants")
+@Table(name = "product_images")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,8 +17,12 @@ public class ProductImage {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @Column(name = "image_url", length = 500, nullable = false)
+    private String imageUrl;
 
+    @Column(name = "position")
+    private Integer position;
 }
