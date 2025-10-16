@@ -8,26 +8,18 @@ import { toast } from "sonner";
 
 export default function ResetPasswordPage() {
   const params = useParams();
-  const { authUser, isCheckingAuth, checkAuth } = useAuthStore();
+  const { authUser } = useAuthStore();
   const [isValidToken, setIsValidToken] = useState<boolean | null>(null);
   const router = useRouter();
   const { token } = params as { token: string };
-
-  useEffect(() => {
-    // Check auth status when page loads
-    if (!authUser && !isCheckingAuth) {
-      checkAuth();
-    }
-  }, [authUser, isCheckingAuth, checkAuth]);
-
   useEffect(() => {
     // Redirect if already logged in
-    if (!isCheckingAuth && authUser) {
+    if (authUser) {
       toast.info("Bạn đã đăng nhập. Chuyển hướng về trang chủ...");
       router.push("/user");
       return;
     }
-  }, [authUser, isCheckingAuth, router]);
+  }, [authUser, router]);
 
   useEffect(() => {
     // Validate token format
@@ -44,8 +36,7 @@ export default function ResetPasswordPage() {
     }
   }, [token]);
 
-  // Show loading while checking auth or validating token
-  if (isCheckingAuth || isValidToken === null) {
+  if (isValidToken === null) {
     return (
       <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
         <div className="flex items-center justify-center">
@@ -54,13 +45,6 @@ export default function ResetPasswordPage() {
       </div>
     );
   }
-
-  // Don't show reset password form if already logged in
-  if (authUser) {
-    return null;
-  }
-
-  // Show error if token is invalid
   if (!isValidToken) {
     return (
       <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
