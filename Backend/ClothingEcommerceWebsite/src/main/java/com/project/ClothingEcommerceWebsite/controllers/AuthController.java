@@ -49,10 +49,10 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")
                 .maxAge(24 * 60 * 60)
-                .sameSite("Strict")
+                .sameSite("None")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         HashMap<String, Object> map = new HashMap<>();
