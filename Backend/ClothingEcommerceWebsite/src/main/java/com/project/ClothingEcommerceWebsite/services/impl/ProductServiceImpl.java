@@ -70,4 +70,49 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findAll();
     }
 
+    @Override
+    public Product getProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+    }
+
+    @Override
+    public Product updateProduct(Long id, CreateProductVariantRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setSlug(SlugUtil.toSlug(
+                request.getSlug() != null ? request.getSlug() : request.getName()));
+        product.setBasePrice(request.getBasePrice());
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        product.setCategory(category);
+        product.setIsPublished(request.getIsPublished());
+        productRepository.save(product);
+
+        List<Size> sizes = sizeRepository.findAllById(request.getSizeIds());
+        List<Color> colors = colorRepository.findAllById(request.getColorIds());
+        List<ProductVariant> variants = new ArrayList<>();
+        for (Size size : sizes) {
+            for (Color color : colors) {
+                String variantSku = product.getSku() + "-" + color.getCode() + "-" + size.getCode();
+                ProductVariant variant = ProductVariant.builder()
+                        .product(product)
+                        .sku(variantSku)
+                        .size(size)
+                        .color(color)
+                        .price(product.getBasePrice())
+                        .build();
+                variants.add(variant);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void deleteProduct(Long id) {
+
+    }
+
 }

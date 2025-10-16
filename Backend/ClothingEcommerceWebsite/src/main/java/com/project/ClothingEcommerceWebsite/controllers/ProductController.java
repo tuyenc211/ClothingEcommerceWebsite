@@ -1,5 +1,6 @@
 package com.project.ClothingEcommerceWebsite.controllers;
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateProductVariantRequest;
+import com.project.ClothingEcommerceWebsite.models.Category;
 import com.project.ClothingEcommerceWebsite.models.Product;
 import com.project.ClothingEcommerceWebsite.services.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -19,13 +20,14 @@ public class ProductController {
         Product product = productService.createProductWithVariants(request);
         return ResponseEntity.ok(product);
     }
-    @PostMapping("")
+    @GetMapping("")
     public ResponseEntity<?> getAllProduct() {
         return ResponseEntity.ok(productService.getAllProduct());
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> getProductById(@PathVariable Long id) {
-        return ResponseEntity.ok().body("");
+        Product product = productService.getProductById(id);
+        return ResponseEntity.ok(product);
     }
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCategory() {
