@@ -1,41 +1,32 @@
+// middleware.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("accessToken")?.value;
+  const { pathname, origin } = request.nextUrl;
 
-  const pathname = request.nextUrl.pathname;
+  const isAuthPage = pathname === "/login";
+  const isAdminPath = pathname.startsWith("/admin");
 
-  // Auth pages cho dashboard-admin
-  const isAuthPage = pathname.startsWith("/login");
-
-  // Protected routes cho dashboard-admin
-  const protectedRoutes = [
-    { path: "/admin", requireAuth: true, adminOnly: true },
-  ];
-
-  const matchedRoute = protectedRoutes.find(
-    (route) => pathname.startsWith(route.path) && !isAuthPage
-  );
-
-  // Redirect authenticated users away from auth pages
+  // Nếu đã login mà vào /login -> đẩy về /admin
   if (accessToken && isAuthPage) {
-    return NextResponse.redirect(new URL("/admin", request.url));
+    return NextResponse.redirect(new URL("/admin", origin));
   }
 
-  // Redirect unauthenticated users to login
-  if (!accessToken && matchedRoute?.requireAuth) {
-    const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
+  // Nếu CHƯA login mà vào /admin -> đẩy về /login
+  if (!accessToken && isAdminPath) {
+    const url = new URL("/login", origin);
+    // optional: quay lại trang cũ sau khi login
+    url.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(url);
   }
 
-  // Redirect root page to appropriate location
+  // "/" -> điều hướng theo trạng thái đăng nhập
   if (pathname === "/") {
-    if (accessToken) {
-      return NextResponse.redirect(new URL("/admin", request.url));
-    } else {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
+    return NextResponse.redirect(
+      new URL(accessToken ? "/admin" : "/login", origin)
+    );
   }
 
   return NextResponse.next();
