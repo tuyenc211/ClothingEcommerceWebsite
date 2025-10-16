@@ -1,115 +1,151 @@
 "use client";
 
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
-const API_BASE_URL = "http://wavebear.com.vn/api/location-viet-nam";
-
+// Response wrappers
 export interface Province {
-  province_id: number;
-  code: string;
-  name: string;
-  full_name: string;
-  name_en: string;
-  full_name_en: string;
-  type: string;
-  type_en: string;
+  code: string; // "01", "79", ...
+  name: string; // "Thành phố Hà Nội", ...
+  englishName: string;
+  administrativeLevel: string; // "Tỉnh" | "Thành phố Trung ương" | ...
+  decree: string; // "202/2025/QH15 - 12/06/2025" | ""
 }
 
-export interface Ward {
-  ward_id: number;
-  code: string;
-  name: string;
-  type: string;
-  province_code: string;
-  full_name: string;
-  name_en: string;
-  full_name_en: string;
-  type_en: string;
+export interface Commune {
+  code: string; // "00004", ...
+  name: string; // Có thể chứa xuống dòng "\n" -> cần normalize
+  englishName: string;
+  administrativeLevel: string; // "Xã" | "Phường" | ...
+  provinceCode: string; // "01"
+  provinceName: string; // "Thành phố Hà Nội"
+  decree: string;
 }
 
-export function useAddress() {
+interface ProvinceResponse {
+  requestId: string;
+  provinces: Province[];
+}
+
+interface CommuneResponse {
+  requestId: string;
+  communes: Commune[];
+}
+const API_BASE = "https://production.cas.so/address-kit";
+
+const normalizeName = (s: string) =>
+  (s || "")
+    .replace(/\s*\n\s*/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+export function useAddress(initialEffectiveDate = "2025-07-01") {
+  const [effectiveDate, setEffectiveDate] =
+    useState<string>(initialEffectiveDate);
   const [provinces, setProvinces] = useState<Province[]>([]);
-  const [wards, setWards] = useState<Ward[]>([]);
+  const [communes, setCommunes] = useState<Commune[]>([]);
   const [isLoadingProvinces, setIsLoadingProvinces] = useState(false);
-  const [isLoadingWards, setIsLoadingWards] = useState(false);
+  const [isLoadingCommunes, setIsLoadingCommunes] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch danh sách tỉnh/thành phố
-  useEffect(() => {
-    const fetchProvinces = async () => {
-      setIsLoadingProvinces(true);
-      try {
-        const response = await axios.get(`${API_BASE_URL}/provider`);
-        console.log("Provinces:", response.data);
-        setProvinces(response.data || []);
-      } catch (error) {
-        console.error("Lỗi khi lấy danh sách tỉnh/thành phố:", error);
-        setProvinces([]);
-      } finally {
-        setIsLoadingProvinces(false);
-      }
-    };
-
-    fetchProvinces();
-  }, []);
-
-  // Fetch xã/phường theo mã tỉnh
-  const fetchWards = async (provinceCode: string) => {
-    setIsLoadingWards(true);
+  // Fetch provinces
+  const fetchProvinces = useCallback(async () => {
+    setIsLoadingProvinces(true);
+    setError(null);
     try {
-      const response = await axios.get(`${API_BASE_URL}/ward/${provinceCode}`);
-      console.log("Wards:", response.data);
-      setWards(response.data || []);
-    } catch (error) {
-      console.error("Lỗi khi lấy danh sách xã/phường:", error);
-      setWards([]);
+      const { data } = await axios.get<ProvinceResponse>(
+        `${API_BASE}/${effectiveDate}/provinces`
+      );
+      const cleaned = (data.provinces || []).map((p) => ({
+        ...p,
+        name: normalizeName(p.name),
+      }));
+      setProvinces(cleaned);
+    } catch {
+      setProvinces([]);
+      setError("Không tải được danh sách tỉnh/thành");
     } finally {
-      setIsLoadingWards(false);
+      setIsLoadingProvinces(false);
+    }
+  }, [effectiveDate]);
+
+  useEffect(() => {
+    fetchProvinces();
+  }, [fetchProvinces]);
+
+  // Fetch communes by province
+  const fetchCommunes = async (provinceCode: string) => {
+    if (!provinceCode) return;
+    setIsLoadingCommunes(true);
+    setError(null);
+    try {
+      const { data } = await axios.get<CommuneResponse>(
+        `${API_BASE}/${effectiveDate}/provinces/${provinceCode}/communes`,
+        { timeout: 15000 }
+      );
+      const cleaned = (data.communes || []).map((c) => ({
+        ...c,
+        name: normalizeName(c.name),
+      }));
+      setCommunes(cleaned);
+    } catch {
+      setCommunes([]);
+      setError("Không tải được danh sách xã/phường");
+    } finally {
+      setIsLoadingCommunes(false);
     }
   };
 
-  // Clear wards when province changes
-  const clearWards = () => {
-    setWards([]);
-  };
+  const clearCommunes = () => setCommunes([]);
 
   return {
+    // data
     provinces,
-    wards,
+    communes,
+    // loading & error
     isLoadingProvinces,
-    isLoadingWards,
-    fetchWards,
-    clearWards,
+    isLoadingCommunes,
+    error,
+    // actions
+    fetchCommunes,
+    clearCommunes,
+    effectiveDate,
+    setEffectiveDate,
+
+    // Aliases để backward-compatible với code hiện tại
+    wards: communes,
+    isLoadingWards: isLoadingCommunes,
+    fetchWards: fetchCommunes,
+    clearWards: clearCommunes,
   };
 }
 
-// 4. Chi Tiết Các Endpoint
-// 4.1 Danh sách Tỉnh/Thành phố
-// Endpoint:
-// GET http://wavebear.com.vn/api/location-viet-nam/provider
-// Mục đích: Lấy toàn bộ tỉnh/thành phố.
-
-// Ví dụ JavaScript:
-
-// javascriptCopy
-// fetch("http://wavebear.com.vn/api/location-viet-nam/provider")
-//   .then(res => res.json())
-//   .then(results => console.log(results));
-//   4.3 Xã/Phường theo tỉnh
-// Endpoint:
-// GET : http://wavebear.com.vn/api/location-viet-nam/ward/{provinceCode}
-// Mục đích: Lấy tất cả xã/phường của tỉnh.
-
-// Ví dụ JavaScript:
-
-// javascriptCopy
-// const provinceCode = 37;
-// fetch(`http://wavebear.com.vn/api/location-viet-nam/ward/${provinceCode}`)
-//   .then(res => res.json())
-//   .then(results => console.log(results));
-
-//   Tóm Tắt Endpoint
-//  Lấy toàn bộ tỉnh/thành phố
-// GET / api / location - viet - nam / provider
-// Lấy tất cả xã/phường của tỉnh có mã 'provinceCode'.
-// GET /api/location-viet-nam/ward/{provinceCode}
+/**
+ * API Danh mục hành chính Việt Nam - Cục Thống Kê
+ *
+ * Nguồn: Tổng cục Thống kê Việt Nam
+ * Đặc điểm: Dữ liệu được cập nhật theo nghị quyết Quốc Hội và nghị định Chính Phủ
+ *
+ * Các endpoint:
+ * 1. GET /{effectiveDate}/provinces
+ *    - Lấy danh sách tỉnh/thành phố hiệu lực tại thời điểm cụ thể
+ *    - effectiveDate: "latest" (mới nhất) hoặc ngày cụ thể (VD: "2025-07-01")
+ *
+ * 2. GET /{effectiveDate}/provinces/{provinceCode}/communes
+ *    - Lấy danh sách xã/phường thuộc một tỉnh/thành
+ *    - provinceCode: Mã tỉnh (VD: "01" cho Hà Nội, "79" cho TP.HCM)
+ *
+ * 3. GET /{effectiveDate}/communes
+ *    - Lấy tất cả xã/phường có hiệu lực tại thời điểm cụ thể
+ *
+ * Response format:
+ * {
+ *   "requestId": "string",
+ *   "provinces": [...] // hoặc "communes": [...]
+ * }
+ *
+ * Ví dụ sử dụng:
+ * - Lấy tỉnh hiện tại: GET /latest/provinces
+ * - Lấy xã của Hà Nội: GET /latest/provinces/01/communes
+ * - Lấy tỉnh ngày 1/7/2025: GET /2025-07-01/provinces
+ */
