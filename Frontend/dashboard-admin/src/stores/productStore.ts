@@ -2,7 +2,9 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Category } from "./categoryStore";
 import { Review } from "./reviewStore";
-import { mockProducts } from "@/data/productv2";
+import privateClient from "@/lib/axios";
+import { AxiosError } from "axios";
+import { toast } from "sonner";
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 
 // Product image interface để match với product_images table
@@ -55,19 +57,19 @@ interface ProductState {
   products: Product[];
   isLoading: boolean;
   error: string | null;
-
+  fetchProducts: () => Promise<void>;
   // Product CRUD actions
   addProduct: (
     product: Omit<Product, "id" | "createdAt" | "updatedAt">
   ) => void;
   addProductWithVariants: (
-    productData: Omit<Product, "id" | "variants" | "images">,
+    productData: Omit<Product, "id" | "variants" | "images" | "slug">,
     selectedSizes: number[],
     selectedColors: number[],
     imageFiles: File[]
-  ) => void;
-  updateProduct: (id: number, product: Partial<Product>) => void;
-  deleteProduct: (id: number) => void;
+  ) => Promise<void>;
+  updateProduct: (id: number, product: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: number) => Promise<void>;
   getProduct: (id: number) => Product | undefined;
   getProductBySku: (sku: string) => Product | undefined;
   getProductBySlug: (slug: string) => Product | undefined;
@@ -115,7 +117,7 @@ interface ProductState {
 export const useProductStore = create<ProductState>()(
   persist(
     (set, get) => ({
-      products: mockProducts, // Initialize with empty array, will be loaded from API
+      products: [], // Initialize with empty array, will be loaded from API
       isLoading: false,
       error: null,
 
@@ -135,87 +137,101 @@ export const useProductStore = create<ProductState>()(
           products: [...state.products, newProduct],
         }));
       },
-
-      addProductWithVariants: (
+      fetchProducts: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const res = await privateClient.get("/products");
+          const data = Array.isArray(res.data?.data) ? res.data.data : res.data;
+          set({ products: data, isLoading: false });
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const message =
+            axiosError?.response?.data?.message ||
+            "Lỗi khi tải danh sách sản phẩm";
+          set({ error: message, isLoading: false });
+          toast.error(message);
+          throw error;
+        }
+      },
+      addProductWithVariants: async (
         productData,
         selectedSizes,
         selectedColors,
-        imageFiles
+        _imageFiles // TODO: Backend chưa hỗ trợ upload ảnh
       ) => {
-        const productId = Date.now();
-        const baseSlug =
-          productData.name?.toLowerCase().replace(/\s+/g, "-") || "";
+        set({ isLoading: true, error: null });
+        try {
+          // Build payload theo DTO BE
+          const payload = {
+            sku: productData.sku || `PRD-${Date.now()}`,
+            name: productData.name,
+            description: productData.description || "",
+            basePrice: productData.base_price, // map
+            categoryId: productData.category_id, // map
+            isPublished: productData.is_published ?? true,
+            sizeIds: selectedSizes,
+            colorIds: selectedColors,
+          };
 
-        // Tạo product images từ files
-        const productImages: ProductImage[] = imageFiles.map((file, index) => ({
-          id: Date.now() + index,
-          product_id: productId,
-          imageUrl: URL.createObjectURL(file), // Tạm thời dùng object URL, thực tế sẽ upload lên server
-          position: index + 1,
-        }));
+          const res = await privateClient.post("/products", payload);
+          const created = res.data?.data || res.data;
 
-        // Tạo variants từ combinations của sizes và colors
-        const variants: ProductVariant[] = [];
-        let variantIdCounter = Date.now();
-
-        selectedSizes.forEach((sizeId) => {
-          selectedColors.forEach((colorId) => {
-            const variantSku = `${productData.sku}-${sizeId}-${colorId}`;
-            const variant: ProductVariant = {
-              id: variantIdCounter++,
-              product_id: productId,
-              sku: variantSku,
-              size_id: sizeId,
-              color_id: colorId,
-              price: productData.base_price,
-              inventory: {
-                id: variantIdCounter++,
-                variant_id: variantIdCounter - 1,
-                quantity: 0, // Default quantity = 0
-              },
-            };
-            variants.push(variant);
-          });
-        });
-
-        // Tính tổng quantity từ tất cả variants
-        const totalQuantity = variants.reduce(
-          (sum, v) => sum + (v.inventory?.quantity || 0),
-          0
-        );
-
-        const newProduct: Product = {
-          ...productData,
-          id: productId,
-          slug: baseSlug,
-          images: productImages,
-          variants: variants,
-          totalQuantity: totalQuantity,
-        };
-
-        set((state) => ({
-          products: [...state.products, newProduct],
-        }));
+          set((state) => ({
+            products: [...state.products, created],
+            isLoading: false,
+          }));
+          toast.success("Thêm sản phẩm thành công");
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const message =
+            axiosError?.response?.data?.message || "Lỗi khi thêm sản phẩm";
+          set({ error: message, isLoading: false });
+          toast.error(message);
+          throw error;
+        }
       },
 
-      updateProduct: (id, productData) => {
-        set((state) => ({
-          products: state.products.map((product) =>
-            product.id === id
-              ? {
-                  ...product,
-                  ...productData,
-                  updatedAt: new Date().toISOString(),
-                }
-              : product
-          ),
-        }));
+      updateProduct: async (id, productData) => {
+        set({ isLoading: true, error: null });
+        try {
+          const res = await privateClient.put(`/products/${id}`, productData);
+          const updated = res.data?.data || res.data;
+
+          set((state) => ({
+            products: state.products.map((product) =>
+              product.id === id ? { ...product, ...updated } : product
+            ),
+            isLoading: false,
+          }));
+          toast.success("Cập nhật sản phẩm thành công");
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const message =
+            axiosError?.response?.data?.message || "Lỗi khi cập nhật sản phẩm";
+          set({ error: message, isLoading: false });
+          toast.error(message);
+          throw error;
+        }
       },
 
-      deleteProduct: (id) => {
-        set((state) => ({
-          products: state.products.filter((product) => product.id !== id),
-        }));
+      deleteProduct: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+          await privateClient.delete(`/products/${id}`);
+
+          set((state) => ({
+            products: state.products.filter((product) => product.id !== id),
+            isLoading: false,
+          }));
+          toast.success("Xóa sản phẩm thành công");
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const message =
+            axiosError?.response?.data?.message || "Lỗi khi xóa sản phẩm";
+          set({ error: message, isLoading: false });
+          toast.error(message);
+          throw error;
+        }
       },
 
       getProduct: (id) => {
