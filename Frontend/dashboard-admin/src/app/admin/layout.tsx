@@ -275,9 +275,10 @@ export default function AdminLayout({
   const handleLogout = async () => {
     try {
       await logout();
+      window.location.href = "/login";
     } catch (error) {
       console.error("Logout error:", error);
-      router.push("/login");
+      window.location.href = "/login";
     }
   };
 
@@ -364,7 +365,7 @@ export default function AdminLayout({
                     <div className="flex items-center space-x-2">
                       <div className="hidden md:block text-left">
                         <p className="text-sm font-medium">
-                          {authUser?.fullName || "Admin"}
+                          {authUser?.fullName}
                         </p>
                         <p className="text-xs text-gray-500">
                           {authUser?.email}
