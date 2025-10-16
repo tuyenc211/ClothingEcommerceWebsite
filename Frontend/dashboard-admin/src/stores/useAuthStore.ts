@@ -63,7 +63,6 @@ interface AuthStore {
   isCustomer: () => boolean;
 
   // Auth actions
-  checkAuth: () => Promise<void>;
   login: (data: LoginData) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -78,36 +77,6 @@ const useAuthStore = create<AuthStore>()(
       isCheckingAuth: false,
       isForgettingPassword: false,
       isResettingPassword: false,
-      checkAuth: async () => {
-        if (get().isCheckingAuth) return;
-        set({ isCheckingAuth: true });
-        try {
-          const res = await privateClient.get("/auth/check-auth");
-
-          // Kiểm tra vai trò - chỉ cho phép Admin và Staff truy cập dashboard
-          const user = res.data.user || res.data;
-          const hasValidRole = user?.roles?.some(
-            (role: Role) =>
-              role.name === "Admin" ||
-              role.name === "Staff" ||
-              role.name === "admin" ||
-              role.name === "staff"
-          );
-
-          if (!hasValidRole) {
-            set({ authUser: null });
-            toast.error("Bạn không có quyền truy cập vào trang quản trị");
-            return;
-          }
-
-          set({ authUser: user });
-        } catch (error) {
-          console.log("CheckAuth error:", error);
-          set({ authUser: null });
-        } finally {
-          set({ isCheckingAuth: false });
-        }
-      },
 
       login: async (data: LoginData) => {
         set({ isLoggingIn: true });
