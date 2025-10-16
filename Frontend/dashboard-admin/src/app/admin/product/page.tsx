@@ -54,9 +54,13 @@ export default function AddProductPage() {
 
   const { colors } = useColorStore();
   const { sizes } = useSizeStore();
-  const { categories } = useCategoryStore();
+  const { categories, fetchCategories } = useCategoryStore();
   const { addProductWithVariants, updateProduct, getProduct } =
     useProductStore();
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   const {
     register,
