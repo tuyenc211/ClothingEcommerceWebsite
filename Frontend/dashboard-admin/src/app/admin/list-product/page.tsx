@@ -31,8 +31,9 @@ import Link from "next/link";
 import Image from "next/image";
 
 export default function ProductListPage() {
-  const { products, deleteProduct } = useProductStore();
-  const { categories } = useCategoryStore();
+  const { products, fetchProducts, deleteProduct, isLoading } =
+    useProductStore();
+  const { categories, fetchCategories } = useCategoryStore();
   const [deleteModal, setDeleteModal] = useState({
     open: false,
     productId: 0,
@@ -41,15 +42,22 @@ export default function ProductListPage() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    fetchProducts();
+    fetchCategories();
+  }, [fetchProducts, fetchCategories]);
 
   const handleDeleteProduct = (productId: number) => {
     setDeleteModal({ open: true, productId });
   };
 
-  const confirmDelete = () => {
-    deleteProduct(deleteModal.productId);
-    setDeleteModal({ open: false, productId: 0 });
+  const confirmDelete = async () => {
+    try {
+      await deleteProduct(deleteModal.productId);
+      setDeleteModal({ open: false, productId: 0 });
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      // Error already handled by store with toast
+    }
   };
 
   // Format currency VND
@@ -60,7 +68,7 @@ export default function ProductListPage() {
     }).format(price);
   };
 
-  if (!mounted) {
+  if (!mounted || isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>

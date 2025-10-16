@@ -154,22 +154,32 @@ export default function AddProductPage() {
       return;
     }
 
-    const productData = {
-      name: data.name,
-      sku: data.sku,
-      slug: data.name.toLowerCase().replace(/\s+/g, "-"),
-      description: data.description,
-      base_price: data.base_price,
-      category_id: Number(data.category_id),
-      is_published: data.is_published,
-    };
-    if (isEdit && params?.id) {
-      // TODO: Implement edit functionality
-      updateProduct(Number(params.id), productData);
-    } else {
-      addProductWithVariants(productData, data.sizes, data.colors, data.images);
+    try {
+      const productData = {
+        name: data.name,
+        sku: data.sku,
+        description: data.description,
+        base_price: data.base_price,
+        category_id: Number(data.category_id),
+        is_published: data.is_published,
+      };
+
+      if (isEdit && params?.id) {
+        await updateProduct(Number(params.id), productData);
+      } else {
+        await addProductWithVariants(
+          productData,
+          data.sizes,
+          data.colors,
+          data.images
+        );
+      }
+
+      router.push("/admin/list-product");
+    } catch (error) {
+      console.error("Error saving product:", error);
+      // Error already handled by store with toast
     }
-    router.push("/admin/list-product");
   };
 
   // handle manual image upload
