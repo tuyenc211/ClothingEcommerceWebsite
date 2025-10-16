@@ -61,7 +61,7 @@ export default function AddProductPage() {
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
-
+  const subcategories = categories.filter((c) => c.parentId);
   const {
     register,
     control,
@@ -348,13 +348,11 @@ export default function AddProductPage() {
                         <SelectValue placeholder="Chọn danh mục" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories
-                          .filter((c) => c.parentId)
-                          .map((c) => (
-                            <SelectItem key={c.id} value={String(c.id)}>
-                              {c.name}
-                            </SelectItem>
-                          ))}
+                        {subcategories.map((c) => (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            {c.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   )}
