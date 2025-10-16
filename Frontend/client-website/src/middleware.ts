@@ -17,7 +17,6 @@ export function middleware(request: NextRequest) {
     { path: "/user", requireAuth: true },
     { path: "/cart/checkout", requireAuth: true },
     { path: "/orders", requireAuth: true },
-    { path: "/admin", requireAuth: true, adminOnly: true },
   ];
 
   const matchedRoute = protectedRoutes.find(
