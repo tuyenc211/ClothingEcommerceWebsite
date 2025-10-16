@@ -1,7 +1,6 @@
 import axios, { AxiosError } from "axios";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8088/api/v1";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const privateClient = axios.create({
   baseURL: API_URL,
@@ -33,5 +32,4 @@ privateClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
 export default privateClient;
