@@ -374,7 +374,9 @@ export default function AdminLayout({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Xem hồ sơ</DropdownMenuItem>
+                  <Link href="/admin/users/profile">
+                    <DropdownMenuItem>Xem hồ sơ</DropdownMenuItem>
+                  </Link>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
                     <Button
