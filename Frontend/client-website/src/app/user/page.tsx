@@ -20,8 +20,6 @@ import {
 import { toast } from "sonner";
 import { Save, Lock, Eye, EyeOff } from "lucide-react";
 import { useAddress } from "@/hooks/useAddress";
-// import ProtectedRoute from "@/components/common/ProtectedRoute";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
@@ -135,8 +133,8 @@ export default function UserProfilePage() {
 
       const addressData = {
         ...data,
-        provinceName: selectedProvince?.full_name || "",
-        wardName: selectedWard?.full_name || "",
+        provinceName: selectedProvince?.name || "",
+        wardName: selectedWard?.name || "",
       };
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -182,16 +180,15 @@ export default function UserProfilePage() {
 
   const getProvinceName = () => {
     const province = provinces.find((p) => p.code === selectedProvinceCode);
-    return province?.full_name || "";
+    return province?.name || "";
   };
 
   const getWardName = () => {
     const ward = wards.find((w) => w.code === selectedWardCode);
-    return ward?.full_name || "";
+    return ward?.name || "";
   };
 
   return (
-    // <ProtectedRoute fallback={<LoadingSpinner />}>
     <UserLayout>
       <div className="space-y-6">
         {/* Profile Information Card */}
@@ -286,10 +283,10 @@ export default function UserProfilePage() {
                         <SelectContent className="max-h-70 overflow-y-auto">
                           {provinces.map((province) => (
                             <SelectItem
-                              key={province.province_id}
+                              key={province.code}
                               value={province.code}
                             >
-                              {province.full_name}
+                              {province.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -325,8 +322,8 @@ export default function UserProfilePage() {
                         </SelectTrigger>
                         <SelectContent className="max-h-70 overflow-y-auto">
                           {wards.map((ward) => (
-                            <SelectItem key={ward.ward_id} value={ward.code}>
-                              {ward.full_name}
+                            <SelectItem key={ward.code} value={ward.code}>
+                              {ward.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -485,6 +482,5 @@ export default function UserProfilePage() {
         </Card>
       </div>
     </UserLayout>
-    // </ProtectedRoute>
   );
 }

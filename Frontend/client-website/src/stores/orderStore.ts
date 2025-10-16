@@ -72,14 +72,6 @@ export interface Order {
   items?: OrderItem[];
   shipments?: Shipment[];
   statusHistory?: OrderStatusHistory[];
-
-  // Legacy fields for compatibility
-  // Alias for discount_total
-  shippingAddress?: string; // Simple string version
-  customerId?: string; // Alias for userId
-  customerName?: string;
-  customerEmail?: string;
-  customerPhone?: string;
 }
 
 export interface OrderFilters {
@@ -249,12 +241,8 @@ export const useOrderStore = create<OrderState>((set, get) => ({
 
     // Apply search term
     if (searchTerm) {
-      filtered = filtered.filter(
-        (order) =>
-          order.customerName
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          order.customerEmail?.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter((order) =>
+        order.code?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
