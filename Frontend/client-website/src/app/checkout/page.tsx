@@ -38,6 +38,7 @@ import { useAddress } from "@/hooks/useAddress";
 interface ShippingFormData {
   fullName: string;
   phone: string;
+  email: string;
   address: string;
   ward: string;
   wardCode: string;
@@ -105,12 +106,12 @@ export default function CheckoutPage() {
   const [formData, setFormData] = useState<ShippingFormData>({
     fullName: "",
     phone: "",
+    email: "",
     address: "",
     ward: "",
     wardCode: "",
     province: "",
     provinceCode: "",
-    note: "",
   });
 
   const activeCoupons = getActiveCoupons();
@@ -286,6 +287,7 @@ export default function CheckoutPage() {
         setFormData({
           fullName: authUser.fullName,
           phone: authUser.phone || "",
+          email: authUser.email || "",
           address: defaultAddr.line,
           ward: defaultAddr.ward || "",
           wardCode: "",
@@ -300,6 +302,7 @@ export default function CheckoutPage() {
         setFormData({
           fullName: authUser.fullName,
           phone: authUser.phone || "",
+          email: authUser.email || "",
           address: firstAddr.line,
           ward: firstAddr.ward || "",
           wardCode: "",
@@ -312,6 +315,7 @@ export default function CheckoutPage() {
         setFormData({
           fullName: authUser.fullName,
           phone: authUser.phone || "",
+          email: authUser.email || "",
           address: "",
           ward: "",
           wardCode: "",
@@ -375,6 +379,7 @@ export default function CheckoutPage() {
         setFormData({
           fullName: authUser.fullName,
           phone: authUser.phone || "",
+          email: authUser.email || "",
           address: selectedAddr.line,
           ward: selectedAddr.ward || "",
           wardCode: "",
@@ -392,6 +397,7 @@ export default function CheckoutPage() {
     setFormData({
       fullName: authUser?.fullName || "",
       phone: authUser?.phone || "",
+      email: authUser?.email || "",
       address: "",
       ward: "",
       wardCode: "",
@@ -421,7 +427,12 @@ export default function CheckoutPage() {
   };
 
   const validateForm = () => {
-    if (!formData.fullName || !formData.phone || !formData.address) {
+    if (
+      !formData.fullName ||
+      !formData.phone ||
+      !formData.address ||
+      !formData.email
+    ) {
       toast.error("Vui lòng điền đầy đủ thông tin giao hàng");
       return false;
     }
@@ -458,6 +469,7 @@ export default function CheckoutPage() {
         payment_method: paymentMethod,
         shipping_address_snapshot: formData,
         note: formData.note,
+        email: authUser?.email || "",
       };
 
       console.log("Creating order:", orderData);
@@ -622,7 +634,18 @@ export default function CheckoutPage() {
                           placeholder="Nhập họ và tên"
                         />
                       </div>
-
+                      <div className="space-y-2">
+                        <Label htmlFor="fullName">
+                          Email <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          placeholder="Nhập email"
+                        />
+                      </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone">
                           Số điện thoại <span className="text-red-500">*</span>
