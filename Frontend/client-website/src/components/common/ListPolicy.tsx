@@ -7,6 +7,12 @@ import {
   Smile,
   Handbag,
 } from "lucide-react";
+import {
+  Marquee,
+  MarqueeContent,
+  MarqueeFade,
+  MarqueeItem,
+} from "../ui/shadcn-io/marquee";
 
 interface PolicyItem {
   id: string;
@@ -54,27 +60,29 @@ const policyData: PolicyItem[] = [
 //   );
 // }
 
-import { InfiniteSlider } from "@/components/ui/infinite-slider";
-
-function InfiniteSliderBasic() {
+function ListPolicy() {
   return (
-    <InfiniteSlider gap={24} reverse className="w-full h-full bg-white">
-      {policyData.map((policy) => (
-        <div
-          key={policy.id}
-          className="flex items-start text-start  gap-3 py-2 md:py-4 px-5  space-x-4"
-        >
-          <div className="mb-4">{policy.icon}</div>
-          <div className="flex-1">
-            <h3 className="text-lg font-bold text-gray-800 mb-1">
-              {policy.title}
-            </h3>
-            <h4 className=" text-gray-600">{policy.description}</h4>
-          </div>
-        </div>
-      ))}
-    </InfiniteSlider>
+    <div className="flex size-full items-center justify-center bg-background">
+      <Marquee>
+        <MarqueeFade side="left" />
+        <MarqueeFade side="right" />
+        <MarqueeContent>
+          {policyData.map((policy) => (
+            <MarqueeItem
+              className="flex items-start text-start  gap-3 py-2 md:py-4 px-5  space-x-4"
+              key={policy.id}
+            >
+              {policy.icon}
+              <h3 className="text-lg font-bold text-gray-800 mb-1">
+                {policy.title}
+              </h3>
+              <h4 className=" text-gray-600">{policy.description}</h4>
+            </MarqueeItem>
+          ))}
+        </MarqueeContent>
+      </Marquee>
+    </div>
   );
 }
 
-export default InfiniteSliderBasic;
+export default ListPolicy;

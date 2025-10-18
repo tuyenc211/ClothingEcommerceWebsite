@@ -72,15 +72,7 @@ export function LoginForm({
 
               {/* Password */}
               <div className="grid gap-3">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <a
-                    href="/forgot-password"
-                    className="text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -99,7 +91,7 @@ export function LoginForm({
                 )}
                 Login
               </Button>
-              </div>
+            </div>
           </form>
 
           {/* Ảnh bên phải */}

@@ -39,7 +39,7 @@ interface ProductFormValues {
   colors: number[];
   sizes: number[];
   is_published: boolean;
-  images: File[];
+  images?: File[];
 }
 
 interface ImagePreview {
@@ -171,7 +171,7 @@ export default function AddProductPage() {
           productData,
           data.sizes,
           data.colors,
-          data.images
+          data.images || []
         );
       }
 
