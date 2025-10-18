@@ -28,6 +28,7 @@ import {
   Plus,
   List,
   Warehouse,
+  Ruler,
 } from "lucide-react";
 import Link from "next/link";
 // import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -38,7 +39,6 @@ interface SidebarItem {
   icon: React.ElementType;
   children?: SidebarItem[];
 }
-
 const sidebarItems: SidebarItem[] = [
   {
     title: "Dashboard",
@@ -66,16 +66,6 @@ const sidebarItems: SidebarItem[] = [
     icon: ShoppingCart,
     children: [
       {
-        title: "Thêm sản phẩm",
-        href: "/admin/product",
-        icon: Plus,
-      },
-      {
-        title: "Danh sách sản phẩm",
-        href: "/admin/list-product",
-        icon: List,
-      },
-      {
         title: "Thêm danh mục chính",
         href: "/admin/categories/add",
         icon: FolderOpen,
@@ -96,18 +86,49 @@ const sidebarItems: SidebarItem[] = [
         href: "/admin/subcategories",
         icon: List,
       },
+    ],
+  },
+  {
+    title: "Quản lý sản phẩm",
+    icon: ShoppingCart,
+    children: [
       {
-        title: "Thêm màu",
-        href: "/admin/colors/add",
-        icon: Palette,
+        title: "Thêm sản phẩm",
+        href: "/admin/product",
+        icon: Plus,
       },
+
       {
-        title: "Danh sách màu",
+        title: "Danh sách sản phẩm",
+        href: "/admin/list-product",
+        icon: List,
+      },
+    ],
+  },
+  {
+    title: "Quản lý màu sắc",
+    icon: Palette,
+    children: [
+      {
+        title: "Thêm màu sắc",
+        href: "/admin/colors/add",
+        icon: Plus,
+      },
+
+      {
+        title: "Danh sách màu sắc",
         href: "/admin/colors",
         icon: List,
       },
+    ],
+  },
+  ,
+  {
+    title: "Quản lý kích thước",
+    icon: Ruler,
+    children: [
       {
-        title: "Thêm kích thước",
+        title: "Thên kích thước",
         href: "/admin/sizes/add",
         icon: Plus,
       },
