@@ -1364,12 +1364,6 @@ export const mockOrders: Order[] = [
     ],
     shipments: [],
     statusHistory: [],
-    shippingAddress:
-      "123 Đường Lạc Long Quân, Phường Nghĩa Đô, Quận Cầu Giấy, Hà Nội, VN",
-    customerId: "3",
-    customerName: "Phạm Văn Khách",
-    customerEmail: "khach1@gmail.com",
-    customerPhone: "0923456789",
   },
   {
     id: 2,
@@ -1429,12 +1423,6 @@ export const mockOrders: Order[] = [
         note: "Xác nhận đơn hàng",
       },
     ],
-    shippingAddress:
-      "789 Đường Lạch Tray, Phường Đông Khê, Quận Ngô Quyền, Hải Phòng, VN",
-    customerId: "4",
-    customerName: "Lê Thị Hương",
-    customerEmail: "khach2@gmail.com",
-    customerPhone: "0934567890",
   },
   {
     id: 3,
@@ -1517,12 +1505,6 @@ export const mockOrders: Order[] = [
         note: "Đã giao cho shipper",
       },
     ],
-    shippingAddress:
-      "101 Đường Trần Phú, Phường Lạc Đạo, Quận Ngũ Hành Sơn, Đà Nẵng, VN",
-    customerId: "5",
-    customerName: "Hoàng Minh Tuấn",
-    customerEmail: "khach3@gmail.com",
-    customerPhone: "0945678901",
   },
   {
     id: 4,
@@ -1583,12 +1565,6 @@ export const mockOrders: Order[] = [
         note: "Đã giao hàng thành công",
       },
     ],
-    shippingAddress:
-      "123 Đường Lạc Long Quân, Phường Nghĩa Đô, Quận Cầu Giấy, Hà Nội, VN",
-    customerId: "3",
-    customerName: "Phạm Văn Khách",
-    customerEmail: "khach1@gmail.com",
-    customerPhone: "0923456789",
   },
   {
     id: 5,
@@ -1651,11 +1627,5 @@ export const mockOrders: Order[] = [
         note: "Hủy do hết hàng",
       },
     ],
-    shippingAddress:
-      "789 Đường Lạch Tray, Phường Đông Khê, Quận Ngô Quyền, Hải Phòng, VN",
-    customerId: "4",
-    customerName: "Lê Thị Hương",
-    customerEmail: "khach2@gmail.com",
-    customerPhone: "0934567890",
   },
 ];

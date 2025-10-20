@@ -320,15 +320,11 @@ const useAuthStore = create<AuthStore>()(
       },
 
       isAdmin: () => {
-        return (
-          get().hasRole("Admin") ||
-          get().hasRole("admin") ||
-          get().hasRole("super_admin")
-        );
+        return get().hasRole("ADMIN");
       },
 
       isStaff: () => {
-        return get().hasRole("Staff") || get().hasRole("staff");
+        return get().hasRole("STAFF");
       },
 
       isAdminOrStaff: () => {

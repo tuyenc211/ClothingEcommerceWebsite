@@ -13,12 +13,12 @@ export interface Province {
 }
 
 export interface Commune {
-  code: string; // "00004", ...
-  name: string; // Có thể chứa xuống dòng "\n" -> cần normalize
+  code: string;
+  name: string;
   englishName: string;
-  administrativeLevel: string; // "Xã" | "Phường" | ...
-  provinceCode: string; // "01"
-  provinceName: string; // "Thành phố Hà Nội"
+  administrativeLevel: string;
+  provinceCode: string;
+  provinceName: string;
   decree: string;
 }
 

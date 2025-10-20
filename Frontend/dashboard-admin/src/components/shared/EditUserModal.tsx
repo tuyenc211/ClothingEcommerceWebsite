@@ -33,7 +33,6 @@ import { toast } from "sonner";
 interface EditUserFormData {
   fullName: string;
   phone: string;
-  address: string;
 }
 
 interface EditUserModalProps {
@@ -52,7 +51,6 @@ export default function EditUserModal({
   const [formData, setFormData] = useState<EditUserFormData>({
     fullName: "",
     phone: "",
-    address: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -62,7 +60,6 @@ export default function EditUserModal({
       setFormData({
         fullName: user.fullName || "",
         phone: user.phone || "",
-        address: user.addresses?.[0]?.line || "",
       });
       setErrors({});
     }
@@ -99,20 +96,6 @@ export default function EditUserModal({
       const updatedData: Partial<User> = {
         fullName: formData.fullName,
         phone: formData.phone,
-        addresses: formData.address
-          ? [
-              {
-                id: user.addresses?.[0]?.id || Date.now(),
-                user_id: user.id,
-                line: formData.address,
-                ward: user.addresses?.[0]?.ward,
-                district: user.addresses?.[0]?.district,
-                province: user.addresses?.[0]?.province,
-                country: user.addresses?.[0]?.country || "VN",
-                isDefault: true,
-              },
-            ]
-          : user.addresses,
       };
 
       await onSubmit(user.id, updatedData);
@@ -283,24 +266,6 @@ export default function EditUserModal({
               </div>
 
               {/* Địa chỉ */}
-              <div className="space-y-2">
-                <Label htmlFor="address">Địa chỉ</Label>
-                <div className="flex items-start gap-3">
-                  <Textarea
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        address: e.target.value,
-                      }))
-                    }
-                    disabled={isLoading}
-                    placeholder="Nhập địa chỉ"
-                    rows={3}
-                  />
-                </div>
-              </div>
             </CardContent>
           </Card>
 

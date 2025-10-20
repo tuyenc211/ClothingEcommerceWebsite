@@ -6,10 +6,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import useAuthStore from "@/stores/useAuthStore";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Package, LogOut, ChevronRight, Home } from "lucide-react";
-// import ProtectedRoute from "@/components/common/ProtectedRoute";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
+import {
+  User,
+  Package,
+  LogOut,
+  ChevronRight,
+  Home,
+  MapPin,
+} from "lucide-react";
 interface UserLayoutProps {
   children: ReactNode;
 }
@@ -25,6 +29,11 @@ const sidebarItems = [
     label: "Đơn Hàng",
     icon: Package,
   },
+  {
+    href: "/user/address",
+    label: "Quản Lý Địa Chỉ",
+    icon: MapPin,
+  },
 ];
 
 export default function UserLayout({ children }: UserLayoutProps) {
@@ -37,7 +46,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
       await logout();
       // Redirect về trang chủ sau khi logout thành công
       router.push("/");
-    } catch (error) {
+    } catch {
       // Vẫn redirect về home dù logout API fail
       router.push("/");
     }

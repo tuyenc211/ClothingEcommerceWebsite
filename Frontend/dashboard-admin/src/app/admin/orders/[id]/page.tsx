@@ -1,27 +1,65 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useOrderStore } from "@/stores/orderStore";
+import { useOrderStore, OrderStatus } from "@/stores/orderStore";
 import { InvoiceTemplate } from "@/components/orders/InvoiceTemplate";
+import { CancelOrderDialog } from "@/components/orders/CancelOrderDialog";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, XCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 export default function OrderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const orderId = parseInt(params.id as string, 10);
 
-  const { currentOrder, isLoading, fetchOrderById } = useOrderStore();
+  const {
+    currentOrder,
+    isLoading,
+    isUpdating,
+    fetchOrderById,
+    cancelOrder,
+    updateOrderStatus,
+  } = useOrderStore();
+
+  // Local state
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
   useEffect(() => {
     if (orderId && !isNaN(orderId)) {
       fetchOrderById(orderId);
     }
   }, [orderId, fetchOrderById]);
+
   const handleGoBack = () => {
     router.push("/admin/orders");
+  };
+
+  // Check if order can be cancelled (only NEW or CONFIRMED)
+  const canCancelOrder = (status: OrderStatus): boolean => {
+    return status === "NEW" || status === "CONFIRMED";
+  };
+  // Handle cancel order
+  const handleCancelOrder = async (reason?: string) => {
+    try {
+      await cancelOrder(orderId, reason);
+      setIsCancelDialogOpen(false);
+      toast.success("Đơn hàng đã được hủy thành công!");
+
+      // Show refund info if payment was made
+      if (
+        currentOrder?.payment_method === "WALLET" &&
+        currentOrder?.payment_status === "PAID"
+      ) {
+        toast.info("Quy trình hoàn tiền đã được khởi tạo.");
+      }
+    } catch (error) {
+      toast.error("Không thể hủy đơn hàng. Vui lòng thử lại!");
+      console.error("Error cancelling order:", error);
+    }
   };
 
   if (isLoading) {
@@ -61,7 +99,7 @@ export default function OrderDetailPage() {
     <div className="p-2 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={handleGoBack} className="p-2">
               <ArrowLeft className="h-4 w-4" />
@@ -71,11 +109,46 @@ export default function OrderDetailPage() {
               <p className="text-gray-600">Order #{currentOrder.code}</p>
             </div>
           </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-2">
+            {/* Cancel Button - Only for NEW or CONFIRMED orders */}
+            {canCancelOrder(currentOrder.status) && (
+              <Button
+                variant="destructive"
+                onClick={() => setIsCancelDialogOpen(true)}
+                disabled={isUpdating}
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Hủy đơn hàng
+              </Button>
+            )}
+
+            {/* Info if order cannot be cancelled */}
+            {!canCancelOrder(currentOrder.status) &&
+              currentOrder.status !== "CANCELLED" && (
+                <p className="text-sm text-gray-500 italic flex items-center">
+                  <span className="mr-2">🚫</span>
+                  Đơn hàng không thể hủy ở trạng thái này
+                </p>
+              )}
+          </div>
         </div>
       </div>
 
       {/* Invoice Content */}
       <InvoiceTemplate order={currentOrder} />
+
+      {/* Cancel Order Dialog */}
+      <CancelOrderDialog
+        open={isCancelDialogOpen}
+        onOpenChange={setIsCancelDialogOpen}
+        onConfirm={handleCancelOrder}
+        isLoading={isUpdating}
+        orderCode={currentOrder.code}
+        paymentMethod={currentOrder.payment_method}
+        paymentStatus={currentOrder.payment_status}
+      />
     </div>
   );
 }

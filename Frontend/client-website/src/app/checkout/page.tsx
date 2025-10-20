@@ -24,8 +24,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, CreditCard, Ticket, ChevronRight, Check } from "lucide-react";
+import {
+  MapPin,
+  CreditCard,
+  Ticket,
+  ChevronRight,
+  Check,
+  Settings,
+} from "lucide-react";
 import { useCartStore, CartItem } from "@/stores/cartStore";
+import Link from "next/link";
 import { useProductStore } from "@/stores/productStore";
 import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
@@ -67,9 +75,53 @@ interface EnrichedCartItem extends CartItem {
   };
 }
 
+// Mock user with addresses for demo (outside component to prevent recreation)
+const mockAuthUser = {
+  id: 1,
+  email: "demo@aristino.com",
+  fullName: "Nguyễn Văn A",
+  phone: "0912345678",
+  isActive: true,
+  addresses: [
+    {
+      id: 1,
+      user_id: 1,
+      line: "Số 123, Ngõ 45, Đường Láng",
+      ward: "Phường Láng Thượng",
+      district: "Quận Đống Đa",
+      province: "Thành phố Hà Nội",
+      country: "Việt Nam",
+      isDefault: true,
+    },
+    {
+      id: 2,
+      user_id: 1,
+      line: "Số 456, Đường Giải Phóng",
+      ward: "Phường Đồng Tâm",
+      district: "Quận Hai Bà Trưng",
+      province: "Thành phố Hà Nội",
+      country: "Việt Nam",
+      isDefault: false,
+    },
+    {
+      id: 3,
+      user_id: 1,
+      line: "Công ty ABC, Tòa nhà XYZ, 789 Cầu Giấy",
+      ward: "Phường Trung Hòa",
+      district: "Quận Cầu Giấy",
+      province: "Thành phố Hà Nội",
+      country: "Việt Nam",
+      isDefault: false,
+    },
+  ],
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
-  const { authUser, getDefaultAddress } = useAuthStore();
+  const { authUser: realAuthUser } = useAuthStore();
+
+  // Use mock user for demo, or real user if logged in
+  const authUser = realAuthUser || mockAuthUser;
   const {
     items,
     getCartSummary,
@@ -94,7 +146,7 @@ export default function CheckoutPage() {
   } = useAddress();
 
   // States
-  const [paymentMethod, setPaymentMethod] = useState<"COD" | "VNPAY">("COD");
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "WALLET">("COD");
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
     null
   );
@@ -278,10 +330,14 @@ export default function CheckoutPage() {
       .filter((item): item is EnrichedCartItem => item !== null);
   }, [displayItems, items.length, getProduct, colors, sizes]);
 
-  // Load default address on mount
+  // Load default address on mount (only run once)
   useEffect(() => {
     if (authUser) {
-      const defaultAddr = getDefaultAddress();
+      // Find default address or use first one
+      const defaultAddr =
+        authUser.addresses?.find((addr) => addr.isDefault) ||
+        authUser.addresses?.[0];
+
       if (defaultAddr) {
         setSelectedAddressId(defaultAddr.id);
         setFormData({
@@ -292,21 +348,6 @@ export default function CheckoutPage() {
           ward: defaultAddr.ward || "",
           wardCode: "",
           province: defaultAddr.province || "",
-          provinceCode: "",
-          note: "",
-        });
-      } else if (authUser.addresses && authUser.addresses.length > 0) {
-        // Use first address if no default
-        const firstAddr = authUser.addresses[0];
-        setSelectedAddressId(firstAddr.id);
-        setFormData({
-          fullName: authUser.fullName,
-          phone: authUser.phone || "",
-          email: authUser.email || "",
-          address: firstAddr.line,
-          ward: firstAddr.ward || "",
-          wardCode: "",
-          province: firstAddr.province || "",
           provinceCode: "",
           note: "",
         });
@@ -327,7 +368,8 @@ export default function CheckoutPage() {
     } else {
       setIsNewAddress(true);
     }
-  }, [authUser, getDefaultAddress]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
 
   // Redirect if cart is empty (commented out để test với mock data)
   // useEffect(() => {
@@ -426,6 +468,17 @@ export default function CheckoutPage() {
     toast.info("Đã hủy mã giảm giá");
   };
 
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Vietnamese phone number format: 10 digits, starts with 0 or +84
+    const phoneRegex = /^(\+84|0)[0-9]{9}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ""));
+  };
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const validateForm = () => {
     if (
       !formData.fullName ||
@@ -434,6 +487,18 @@ export default function CheckoutPage() {
       !formData.email
     ) {
       toast.error("Vui lòng điền đầy đủ thông tin giao hàng");
+      return false;
+    }
+
+    if (!validatePhoneNumber(formData.phone)) {
+      toast.error(
+        "Số điện thoại không hợp lệ. Vui lòng nhập đúng định dạng (VD: 0912345678)"
+      );
+      return false;
+    }
+
+    if (!validateEmail(formData.email)) {
+      toast.error("Email không hợp lệ");
       return false;
     }
 
@@ -532,18 +597,77 @@ export default function CheckoutPage() {
             {/* Shipping Address */}
             <Card>
               <CardHeader>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-primary" />
-                  <CardTitle>Thông tin giao hàng</CardTitle>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    <CardTitle>Thông tin giao hàng</CardTitle>
+                  </div>
+                  {authUser && (
+                    <Link href="/user/address">
+                      <Button variant="outline" size="sm">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Quản lý địa chỉ
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Saved Addresses */}
+                {/* Customer Information (Read-only) */}
+                {authUser && (
+                  <div className="space-y-4 pb-4 border-b">
+                    <h3 className="font-medium text-gray-900">
+                      Thông tin khách hàng
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="customer-name">
+                          Họ và tên <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="customer-name"
+                          value={authUser.fullName}
+                          disabled
+                          className="bg-gray-50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="customer-email">
+                          Email <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="customer-email"
+                          value={authUser.email}
+                          disabled
+                          className="bg-gray-50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="customer-phone">
+                          Số điện thoại <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="customer-phone"
+                          value={authUser.phone || ""}
+                          disabled
+                          className="bg-gray-50"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Shipping Address Selection */}
                 {authUser &&
                   authUser.addresses &&
                   authUser.addresses.length > 0 && (
                     <div className="space-y-3">
-                      <Label>Địa chỉ đã lưu</Label>
+                      <div className="flex items-center justify-between">
+                        <Label>Chọn địa chỉ giao hàng</Label>
+                        <span className="text-xs text-gray-500">
+                          {authUser.addresses.length} địa chỉ
+                        </span>
+                      </div>
                       <RadioGroup
                         value={selectedAddressId?.toString() || "new"}
                         onValueChange={(value: string) => {
@@ -615,19 +739,19 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                {/* Address Form */}
-                {(isNewAddress ||
-                  !authUser ||
-                  !authUser.addresses ||
-                  authUser.addresses.length === 0) && (
-                  <div className="space-y-4 pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Guest Checkout Form (when not logged in) */}
+                {!authUser && (
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-gray-900">
+                      Thông tin khách hàng
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="fullName">
+                        <Label htmlFor="guest-name">
                           Họ và tên <span className="text-red-500">*</span>
                         </Label>
                         <Input
-                          id="fullName"
+                          id="guest-name"
                           name="fullName"
                           value={formData.fullName}
                           onChange={handleInputChange}
@@ -635,11 +759,11 @@ export default function CheckoutPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="fullName">
+                        <Label htmlFor="guest-email">
                           Email <span className="text-red-500">*</span>
                         </Label>
                         <Input
-                          id="email"
+                          id="guest-email"
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
@@ -647,11 +771,11 @@ export default function CheckoutPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">
+                        <Label htmlFor="guest-phone">
                           Số điện thoại <span className="text-red-500">*</span>
                         </Label>
                         <Input
-                          id="phone"
+                          id="guest-phone"
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
@@ -659,7 +783,15 @@ export default function CheckoutPage() {
                         />
                       </div>
                     </div>
+                  </div>
+                )}
 
+                {/* New Address Form (Only address fields for logged in users) */}
+                {isNewAddress && authUser && (
+                  <div className="space-y-4 pt-4 border-t">
+                    <h3 className="font-medium text-gray-900">
+                      Nhập địa chỉ giao hàng mới
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="province">
@@ -752,7 +884,7 @@ export default function CheckoutPage() {
                 <RadioGroup
                   value={paymentMethod}
                   onValueChange={(value: string) =>
-                    setPaymentMethod(value as "COD" | "VNPAY")
+                    setPaymentMethod(value as "COD" | "WALLET")
                   }
                 >
                   {/* COD Payment */}
@@ -781,15 +913,15 @@ export default function CheckoutPage() {
                   {/* VNPay Payment */}
                   <div
                     className={`flex items-center space-x-3 rounded-lg border p-4 cursor-pointer transition-colors ${
-                      paymentMethod === "VNPAY"
+                      paymentMethod === "WALLET"
                         ? "border-primary bg-primary/5"
                         : "border-gray-200 hover:border-gray-300"
                     }`}
-                    onClick={() => setPaymentMethod("VNPAY")}
+                    onClick={() => setPaymentMethod("WALLET")}
                   >
-                    <RadioGroupItem value="VNPAY" id="payment-vnpay" />
+                    <RadioGroupItem value="WALLET" id="payment-wallet" />
                     <Label
-                      htmlFor="payment-vnpay"
+                      htmlFor="payment-wallet"
                       className="flex-1 cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
