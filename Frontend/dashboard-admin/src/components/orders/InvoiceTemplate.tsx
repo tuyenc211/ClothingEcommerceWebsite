@@ -38,40 +38,38 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
       <div className="flex flex-col md:flex-row justify-between items-start mb-8">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <h1 className="text-3xl font-bold text-gray-900">INVOICE</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Hóa đơn</h1>
             <OrderStatusBadge status={order.status} />
           </div>
-          <p className="text-gray-600">STATUS</p>
+          <p className="text-gray-600">Trạng thái</p>
         </div>
         <div className="text-right">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <h2 className="text-xl font-bold text-gray-900">Zorvex</h2>
+            <h2 className="text-xl font-bold text-gray-900">Aristino</h2>
           </div>
           <div className="text-sm text-gray-600 space-y-1">
-            <p>2 Lawson Avenue, California, United States</p>
-            <p>+1 (212) 456-7890</p>
-            <p>ecommerceadmin@gmail.com</p>
-            <p>ecommerce-admin-board.vercel.app</p>
+            <p>123 Đường ABC, Quận XYZ, Thành phố ABC, Việt Nam</p>
+            <p>+84 909 090 909</p>
+            <p>info@aristino.com</p>
+            <p>https://aristino.com</p>
           </div>
         </div>
       </div>
-
       {/* Invoice Details */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">DATE</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-2">Ngày</h3>
           <p className="text-gray-900">{formatDate(order.created_at)}</p>
         </div>
         <div>
           <h3 className="text-sm font-semibold text-gray-700 mb-2">
-            INVOICE NO
+            Mã hóa đơn
           </h3>
           <p className="text-gray-900">#{order.code}</p>
         </div>
         <div>
           <h3 className="text-sm font-semibold text-gray-700 mb-2">
-            INVOICE TO
+            Khách hàng
           </h3>
           <div className="text-gray-900 space-y-1">
             <p className="font-medium">{order.customerName || "N/A"}</p>
@@ -96,16 +94,16 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                   SR.
                 </th>
                 <th className="text-left py-3 px-2 text-sm font-semibold text-gray-700">
-                  PRODUCT TITLE
+                  Tên sản phẩm
                 </th>
                 <th className="text-center py-3 px-2 text-sm font-semibold text-gray-700">
-                  QUANTITY
+                  Số lượng
                 </th>
                 <th className="text-right py-3 px-2 text-sm font-semibold text-gray-700">
-                  ITEM PRICE
+                  Giá sản phẩm
                 </th>
                 <th className="text-right py-3 px-2 text-sm font-semibold text-gray-700">
-                  AMOUNT
+                  Thành tiền
                 </th>
               </tr>
             </thead>
@@ -129,7 +127,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                   <td className="py-4 px-2 text-sm text-gray-900 text-right">
                     {formatCurrency(item.unit_price)}
                   </td>
-                  <td className="py-4 px-2 text-sm font-semibold text-green-600 text-right">
+                  <td className="py-4 px-2 text-sm font-semibold text-gray-800 text-right">
                     {formatCurrency(item.line_total)}
                   </td>
                 </tr>
@@ -144,7 +142,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-2">
-              PAYMENT METHOD
+              Phương thức thanh toán
             </h3>
             <p className="text-gray-900 capitalize">
               {order.payment_method === "COD" ? "Tiền mặt" : "Ví điện tử"}
@@ -152,7 +150,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-2">
-              SHIPPING COST
+              Phí vận chuyển
             </h3>
             <p className="text-gray-900">
               {formatCurrency(order.shipping_fee)}
@@ -160,7 +158,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-2">
-              DISCOUNT
+              Giảm giá
             </h3>
             <p className="text-gray-900">
               {formatCurrency(order.discount_total)}
@@ -172,20 +170,20 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
           <div className="flex justify-between">
             <div>
               <p className="text-sm text-gray-600">
-                Subtotal: {formatCurrency(order.subtotal)}
+                Tổng tiền sản phẩm: {formatCurrency(order.subtotal)}
               </p>
               <p className="text-sm text-gray-600">
-                Total Items: {order.total_items}
+                Tổng số lượng sản phẩm: {order.total_items}
               </p>
               <p className="text-sm text-gray-600">
-                Payment Status: {order.payment_status}
+                Trạng thái thanh toán: {order.payment_status}
               </p>
             </div>
             <div className="text-right">
               <p className="text-sm md:text-lg text-gray-700 mb-2">
-                <span className="font-semibold">TOTAL AMOUNT</span>
+                <span className="font-semibold">Tổng tiền</span>
               </p>
-              <p className="text-3xl font-bold text-green-600">
+              <p className="text-3xl font-bold text-gray-800">
                 {formatCurrency(order.grand_total)}
               </p>
             </div>

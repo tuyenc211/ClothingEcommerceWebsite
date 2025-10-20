@@ -113,13 +113,12 @@ export default function ProfilePage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Thông tin cá nhân</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-2xl font-bold">
+                Thông tin cá nhân
+              </CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-2  ">
                 Cập nhật thông tin cá nhân của bạn
               </CardDescription>
-            </div>
-            <div className="flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white text-2xl font-bold shadow-lg">
-              {authUser?.fullName?.charAt(0).toUpperCase() || "A"}
             </div>
           </div>
         </CardHeader>

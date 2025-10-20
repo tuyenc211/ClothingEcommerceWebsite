@@ -10,24 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import { Save, Lock, Eye, EyeOff } from "lucide-react";
-import { useAddress } from "@/hooks/useAddress";
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
   email: z.string().email("Email không hợp lệ"),
   phoneNumber: z.string().min(10, "Số điện thoại phải có ít nhất 10 số"),
-  province: z.string().optional(),
-  ward: z.string().optional(),
-  address: z.string().optional(),
 });
 
 const passwordSchema = z
@@ -55,22 +44,11 @@ export default function UserProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [selectedProvinceCode, setSelectedProvinceCode] = useState<string>("");
-  const [selectedWardCode, setSelectedWardCode] = useState<string>("");
 
   // Password visibility states
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const {
-    provinces,
-    wards,
-    isLoadingProvinces,
-    isLoadingWards,
-    fetchWards,
-    clearWards,
-  } = useAddress();
 
   // Profile form
   const {
@@ -78,16 +56,12 @@ export default function UserProfilePage() {
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
   } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       fullName: authUser?.fullName || "",
       email: authUser?.email || "",
       phoneNumber: authUser?.phone || "",
-      province: "",
-      ward: "",
-      address: "",
     },
   });
 
@@ -106,40 +80,12 @@ export default function UserProfilePage() {
     },
   });
 
-  // Handle province change
-  const handleProvinceChange = (provinceCode: string) => {
-    setSelectedProvinceCode(provinceCode);
-    setSelectedWardCode("");
-    setValue("province", provinceCode);
-    setValue("ward", "");
-    clearWards();
-
-    if (provinceCode) {
-      fetchWards(provinceCode);
-    }
-  };
-
-  // Handle ward change
-  const handleWardChange = (wardCode: string) => {
-    setSelectedWardCode(wardCode);
-    setValue("ward", wardCode);
-  };
-
   const onSubmit = async (data: ProfileForm) => {
     setIsSaving(true);
     try {
-      const selectedProvince = provinces.find((p) => p.code === data.province);
-      const selectedWard = wards.find((w) => w.code === data.ward);
-
-      const addressData = {
-        ...data,
-        provinceName: selectedProvince?.name || "",
-        wardName: selectedWard?.name || "",
-      };
-
+      // TODO: Call API to update profile
+      console.log("Updating profile with:", data);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      console.log("Updating profile:", addressData);
 
       setIsEditing(false);
       toast.success("Cập nhật thông tin thành công!");
@@ -173,21 +119,7 @@ export default function UserProfilePage() {
   const handleCancel = () => {
     reset();
     setIsEditing(false);
-    setSelectedProvinceCode("");
-    setSelectedWardCode("");
-    clearWards();
   };
-
-  const getProvinceName = () => {
-    const province = provinces.find((p) => p.code === selectedProvinceCode);
-    return province?.name || "";
-  };
-
-  const getWardName = () => {
-    const ward = wards.find((w) => w.code === selectedWardCode);
-    return ward?.name || "";
-  };
-
   return (
     <UserLayout>
       <div className="space-y-6">
@@ -255,104 +187,6 @@ export default function UserProfilePage() {
                       {errors.phoneNumber.message}
                     </p>
                   )}
-                </div>
-              </div>
-
-              {/* Address Section */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
-                  Địa chỉ
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="province">Tỉnh/Thành phố</Label>
-                    {isEditing ? (
-                      <Select
-                        value={selectedProvinceCode}
-                        onValueChange={handleProvinceChange}
-                      >
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={
-                              isLoadingProvinces
-                                ? "Đang tải..."
-                                : "Chọn tỉnh/thành phố"
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-70 overflow-y-auto">
-                          {provinces.map((province) => (
-                            <SelectItem
-                              key={province.code}
-                              value={province.code}
-                            >
-                              {province.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input
-                        value={getProvinceName()}
-                        disabled
-                        className="bg-gray-50"
-                        placeholder="Chưa chọn"
-                      />
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="ward">Xã/Phường</Label>
-                    {isEditing ? (
-                      <Select
-                        value={selectedWardCode}
-                        onValueChange={handleWardChange}
-                        disabled={!selectedProvinceCode}
-                      >
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={
-                              !selectedProvinceCode
-                                ? "Chọn tỉnh/thành phố trước"
-                                : isLoadingWards
-                                ? "Đang tải..."
-                                : "Chọn xã/phường"
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-70 overflow-y-auto">
-                          {wards.map((ward) => (
-                            <SelectItem key={ward.code} value={ward.code}>
-                              {ward.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input
-                        value={getWardName()}
-                        disabled
-                        className="bg-gray-50"
-                        placeholder="Chưa chọn"
-                      />
-                    )}
-                  </div>
-
-                  <div className="md:col-span-2 space-y-2">
-                    <Label htmlFor="address">Địa chỉ cụ thể</Label>
-                    <Input
-                      id="address"
-                      {...register("address")}
-                      disabled={!isEditing}
-                      className={!isEditing ? "bg-gray-50" : ""}
-                      placeholder="Số nhà, tên đường..."
-                    />
-                    {errors.address && (
-                      <p className="text-sm text-red-600 mt-1">
-                        {errors.address.message}
-                      </p>
-                    )}
-                  </div>
                 </div>
               </div>
 
@@ -456,10 +290,39 @@ export default function UserProfilePage() {
                       {passwordErrors.newPassword.message}
                     </p>
                   )}
-                  <p className="text-xs text-gray-500">
-                    Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ
-                    thường và số
-                  </p>
+                </div>
+
+                {/* Confirm Password */}
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Xác nhận mật khẩu mới</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      {...registerPassword("confirmPassword")}
+                      placeholder="Xác nhận mật khẩu mới"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-500" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-500" />
+                      )}
+                    </Button>
+                  </div>
+                  {passwordErrors.confirmPassword && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {passwordErrors.confirmPassword.message}
+                    </p>
+                  )}
                 </div>
               </div>
 

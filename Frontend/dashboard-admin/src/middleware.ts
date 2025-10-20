@@ -20,7 +20,6 @@ export function middleware(request: NextRequest) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
-
   return NextResponse.next();
 }
 export const config = {

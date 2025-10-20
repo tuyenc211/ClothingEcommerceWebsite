@@ -1,4 +1,4 @@
-import { mockCoupons } from "@/data/product";
+import { mockCoupons } from "@/data/productv2";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
