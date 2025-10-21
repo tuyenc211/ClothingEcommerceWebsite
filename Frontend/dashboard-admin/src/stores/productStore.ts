@@ -49,6 +49,8 @@ export interface Product {
   images?: ProductImage[];
   variants?: ProductVariant[];
   reviews?: Review[];
+  colors?: Array<{ id: number; name: string; code: string }>;
+  sizes?: Array<{ id: number; name: string; code: string; sortOrder: number }>;
   // Computed fields
   totalQuantity?: number;
   // Legacy fields for compatibility
@@ -68,7 +70,12 @@ interface ProductState {
     selectedColors: number[],
     imageFiles: File[]
   ) => Promise<void>;
-  updateProduct: (id: number, product: Partial<Product>) => Promise<void>;
+  updateProduct: (
+    id: number,
+    productData: Partial<Product>,
+    selectedSizes: number[],
+    selectedColors: number[]
+  ) => Promise<void>;
   deleteProduct: (id: number) => Promise<void>;
   getProduct: (id: number) => Product | undefined;
   getProductBySku: (sku: string) => Product | undefined;
@@ -158,7 +165,8 @@ export const useProductStore = create<ProductState>()(
         productData,
         selectedSizes,
         selectedColors,
-        _imageFiles // TODO: Backend chưa hỗ trợ upload ảnh
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        imageFiles // TODO: Backend chưa hỗ trợ upload ảnh
       ) => {
         set({ isLoading: true, error: null });
         try {
@@ -167,8 +175,8 @@ export const useProductStore = create<ProductState>()(
             sku: productData.sku || `PRD-${Date.now()}`,
             name: productData.name,
             description: productData.description || "",
-            basePrice: productData.basePrice, 
-            category: productData.category, 
+            basePrice: productData.basePrice,
+            categoryId: productData.category?.id || productData.category,
             isPublished: productData.isPublished ?? true,
             sizeIds: selectedSizes,
             colorIds: selectedColors,
@@ -192,19 +200,27 @@ export const useProductStore = create<ProductState>()(
         }
       },
 
-      updateProduct: async (id, productData) => {
+      updateProduct: async (id, productData, selectedSizes, selectedColors) => {
         set({ isLoading: true, error: null });
         try {
-          const res = await privateClient.put(`/products/${id}`, productData);
-          const updated = res.data?.data || res.data;
+          const payload = {
+            sku: productData.sku,
+            name: productData.name,
+            description: productData.description || "",
+            basePrice: productData.basePrice,
+            categoryId: productData.category?.id || productData.category,
+            isPublished: productData.isPublished ?? true,
+            sizeIds: selectedSizes,
+            colorIds: selectedColors,
+          };
 
-          set((state) => ({
-            products: state.products.map((product) =>
-              product.id === id ? { ...product, ...updated } : product
-            ),
-            isLoading: false,
-          }));
+          await privateClient.put(`/products/${id}`, payload);
+
+          // Fetch lại danh sách để có data mới nhất
+          await get().fetchProducts();
+
           toast.success("Cập nhật sản phẩm thành công");
+          set({ isLoading: false });
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
           const message =

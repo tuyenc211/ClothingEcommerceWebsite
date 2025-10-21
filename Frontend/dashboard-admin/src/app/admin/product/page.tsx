@@ -35,7 +35,7 @@ interface ProductFormValues {
   sku: string;
   description: string;
   basePrice: number;
-  category:Category;
+  category: Category;
   colors: number[];
   sizes: number[];
   isPublished: boolean;
@@ -76,7 +76,7 @@ export default function AddProductPage() {
       sku: "",
       description: "",
       basePrice: 0,
-      category:{},
+      category: {},
       colors: [],
       sizes: [],
       isPublished: true,
@@ -100,25 +100,13 @@ export default function AddProductPage() {
       console.log("Loading product for edit:", existingProduct);
 
       if (existingProduct) {
-        // Extract unique color IDs và size IDs từ variants
-        const productColors = Array.from(
-          new Set(
-            existingProduct.variants
-              ?.map((v) => v.color_id)
-              .filter((id): id is number => id !== undefined) || []
-          )
-        );
-
-        const productSizes = Array.from(
-          new Set(
-            existingProduct.variants
-              ?.map((v) => v.size_id)
-              .filter((id): id is number => id !== undefined) || []
-          )
-        );
+        // Extract color IDs và size IDs từ colors và sizes array mới
+        const productColors = existingProduct.colors?.map((c) => c.id) || [];
+        const productSizes = existingProduct.sizes?.map((s) => s.id) || [];
 
         console.log("Extracted colors:", productColors);
         console.log("Extracted sizes:", productSizes);
+        console.log("Category:", existingProduct.category);
 
         // Add timeout to ensure Select components are fully rendered
         setTimeout(() => {
@@ -145,11 +133,7 @@ export default function AddProductPage() {
     console.log("Form data:", data);
 
     // Validate required fields
-    if (
-      !data.category ||
-      data.colors.length === 0 ||
-      data.sizes.length === 0
-    ) {
+    if (!data.category || data.colors.length === 0 || data.sizes.length === 0) {
       console.error("Missing required fields");
       return;
     }
@@ -165,7 +149,12 @@ export default function AddProductPage() {
       };
 
       if (isEdit && params?.id) {
-        await updateProduct(Number(params.id), productData);
+        await updateProduct(
+          Number(params.id),
+          productData,
+          data.sizes,
+          data.colors
+        );
       } else {
         await addProductWithVariants(
           productData,
@@ -347,13 +336,16 @@ export default function AddProductPage() {
                   rules={{ required: "Danh mục sản phẩm là bắt buộc" }}
                   render={({ field }) => (
                     <Select
-                      value={String(field.value)}
-                      onValueChange={(value) => field.onChange(Number(value))}
+                      value={field.value?.id ? String(field.value.id) : ""}
+                      onValueChange={(value) => {
+                        const selectedCategory = subcategories.find(
+                          (c) => c.id === Number(value)
+                        );
+                        field.onChange(selectedCategory);
+                      }}
                     >
                       <SelectTrigger
-                        className={
-                          errors.category ? "border-destructive" : ""
-                        }
+                        className={errors.category ? "border-destructive" : ""}
                       >
                         <SelectValue placeholder="Chọn danh mục" />
                       </SelectTrigger>
