@@ -116,7 +116,7 @@ export default function ProductListPage() {
             <TableBody>
               {products.map((product, index) => {
                 const category = categories.find(
-                  (c) => c.id === product.category_id
+                  (c) => c.id === product.category.id
                 );
                 const firstImage = product.images?.[0];
 
@@ -151,7 +151,7 @@ export default function ProductListPage() {
                     </TableCell>
                     <TableCell>
                       <span className="font-medium">
-                        {formatPrice(product.base_price)}
+                        {formatPrice(product.basePrice)}
                       </span>
                     </TableCell>
                     <TableCell>

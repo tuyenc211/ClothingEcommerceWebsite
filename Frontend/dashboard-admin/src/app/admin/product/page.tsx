@@ -29,16 +29,16 @@ import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useForm, Controller } from "react-hook-form";
-
+import { Category } from "@/stores/categoryStore";
 interface ProductFormValues {
   name: string;
   sku: string;
   description: string;
-  base_price: number;
-  category_id: number | "";
+  basePrice: number;
+  category:Category;
   colors: number[];
   sizes: number[];
-  is_published: boolean;
+  isPublished: boolean;
   images?: File[];
 }
 
@@ -75,11 +75,11 @@ export default function AddProductPage() {
       name: "",
       sku: "",
       description: "",
-      base_price: 0,
-      category_id: "",
+      basePrice: 0,
+      category:{},
       colors: [],
       sizes: [],
-      is_published: true,
+      isPublished: true,
       images: [],
     },
   });
@@ -126,11 +126,11 @@ export default function AddProductPage() {
             name: existingProduct.name,
             sku: existingProduct.sku,
             description: existingProduct.description || "",
-            base_price: existingProduct.base_price,
-            category_id: existingProduct.category_id || ("" as number | ""),
+            basePrice: existingProduct.basePrice,
+            category: existingProduct.category,
             colors: productColors,
             sizes: productSizes,
-            is_published: existingProduct.is_published,
+            isPublished: existingProduct.isPublished,
             images: [] as File[],
           };
           reset(formValues);
@@ -146,7 +146,7 @@ export default function AddProductPage() {
 
     // Validate required fields
     if (
-      !data.category_id ||
+      !data.category ||
       data.colors.length === 0 ||
       data.sizes.length === 0
     ) {
@@ -159,9 +159,9 @@ export default function AddProductPage() {
         name: data.name,
         sku: data.sku,
         description: data.description,
-        base_price: data.base_price,
-        category_id: Number(data.category_id),
-        is_published: data.is_published,
+        basePrice: data.basePrice,
+        category: data.category,
+        isPublished: data.isPublished,
       };
 
       if (isEdit && params?.id) {
@@ -299,16 +299,16 @@ export default function AddProductPage() {
                 <Label>Giá Gốc *</Label>
                 <Input
                   type="number"
-                  {...register("base_price", {
+                  {...register("basePrice", {
                     required: "Giá gốc sản phẩm là bắt buộc",
                     valueAsNumber: true,
                   })}
                   placeholder="Điền giá gốc sản phẩm"
-                  className={errors.base_price ? "border-destructive" : ""}
+                  className={errors.basePrice ? "border-destructive" : ""}
                 />
-                {errors.base_price && (
+                {errors.basePrice && (
                   <p className="text-sm text-destructive">
-                    {errors.base_price.message}
+                    {errors.basePrice.message}
                   </p>
                 )}
               </div>
@@ -316,7 +316,7 @@ export default function AddProductPage() {
                 <Label className="flex items-center space-x-2">
                   <Controller
                     control={control}
-                    name="is_published"
+                    name="isPublished"
                     render={({ field }) => (
                       <Checkbox
                         checked={field.value}
@@ -343,7 +343,7 @@ export default function AddProductPage() {
                 <Label>Danh Mục *</Label>
                 <Controller
                   control={control}
-                  name="category_id"
+                  name="category"
                   rules={{ required: "Danh mục sản phẩm là bắt buộc" }}
                   render={({ field }) => (
                     <Select
@@ -352,7 +352,7 @@ export default function AddProductPage() {
                     >
                       <SelectTrigger
                         className={
-                          errors.category_id ? "border-destructive" : ""
+                          errors.category ? "border-destructive" : ""
                         }
                       >
                         <SelectValue placeholder="Chọn danh mục" />
@@ -367,9 +367,9 @@ export default function AddProductPage() {
                     </Select>
                   )}
                 />
-                {errors.category_id && (
+                {errors.category && (
                   <p className="text-sm text-destructive">
-                    {errors.category_id.message}
+                    {errors.category.message}
                   </p>
                 )}
               </div>

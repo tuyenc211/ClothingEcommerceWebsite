@@ -1,6 +1,9 @@
 package com.project.ClothingEcommerceWebsite.services.impl;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateProductVariantRequest;
+import com.project.ClothingEcommerceWebsite.dtos.respond.ColorResponse;
+import com.project.ClothingEcommerceWebsite.dtos.respond.ProductResponse;
+import com.project.ClothingEcommerceWebsite.dtos.respond.SizeResponse;
 import com.project.ClothingEcommerceWebsite.models.*;
 import com.project.ClothingEcommerceWebsite.repositories.*;
 import com.project.ClothingEcommerceWebsite.services.CategoryService;
@@ -13,6 +16,9 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -66,8 +72,42 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getAllProduct() {
-        return productRepository.findAll();
+    public List<ProductResponse> getAllProduct() {
+        List<Product> products = productRepository.findAll();
+        return products.stream().map(product -> {
+            List<ProductVariant> variants = productVariantRepository.findAllByProductId(product.getId());
+            Set<SizeResponse> sizeDTOs = variants.stream()
+                    .map(v -> v.getSize())
+                    .filter(Objects::nonNull)
+                    .map(size -> SizeResponse.builder()
+                            .id(size.getId())
+                            .name(size.getName())
+                            .code(size.getCode())
+                            .sortOrder(size.getSortOrder())
+                            .build())
+                    .collect(Collectors.toSet());
+            Set<ColorResponse> colorDTOs = variants.stream()
+                    .map(v -> v.getColor())
+                    .filter(Objects::nonNull)
+                    .map(color -> ColorResponse.builder()
+                            .id(color.getId())
+                            .name(color.getName())
+                            .code(color.getCode())
+                            .build())
+                    .collect(Collectors.toSet());
+            return ProductResponse.builder()
+                    .id(product.getId())
+                    .sku(product.getSku())
+                    .name(product.getName())
+                    .slug(product.getSlug())
+                    .description(product.getDescription())
+                    .basePrice(product.getBasePrice())
+                    .category(product.getCategory())
+                    .isPublished(product.getIsPublished())
+                    .sizes(sizeDTOs)
+                    .colors(colorDTOs)
+                    .build();
+        }).collect(Collectors.toList());
     }
 
     @Override
