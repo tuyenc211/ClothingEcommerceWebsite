@@ -41,8 +41,9 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct() {
-        return ResponseEntity.ok().body("");
+    public ResponseEntity<?> updateProduct(Long id, ) {
+        Product product = productService.createProductWithVariants(request);
+        return ResponseEntity.ok(product);
     }
     @DeleteMapping("")
     public ResponseEntity<?> deleteProduct() {
