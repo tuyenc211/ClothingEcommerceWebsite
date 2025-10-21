@@ -60,35 +60,22 @@ export default function UsersManagementPage() {
   const {
     users,
     isLoading,
-    error,
     fetchUsers,
     updateUser,
     deleteUser,
     toggleUserStatus,
-    clearError,
   } = useUserStore();
 
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | "all">("all");
-  const [mounted, setMounted] = useState(false);
   const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingUserName, setDeletingUserName] = useState("");
 
   useEffect(() => {
-    setMounted(true);
     fetchUsers();
   }, [fetchUsers]);
 
-  // Clear error when component mounts
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      clearError();
-    }
-  }, [error, clearError]);
-
-  // Initialize filtered users
   useEffect(() => {
     setFilteredUsers(users);
   }, [users]);
@@ -217,17 +204,7 @@ export default function UsersManagementPage() {
         return "Tất cả tài khoản";
     }
   }
-
-  if (!mounted) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
   const stats = getStatsData();
-
   return (
     <RoleGuard requireAdmin>
       <div className="space-y-6">
