@@ -61,6 +61,7 @@ export default function UsersManagementPage() {
     users,
     isLoading,
     error,
+    fetchUsers,
     updateUser,
     deleteUser,
     toggleUserStatus,
@@ -76,7 +77,8 @@ export default function UsersManagementPage() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    fetchUsers();
+  }, [fetchUsers]);
 
   // Clear error when component mounts
   useEffect(() => {
@@ -101,12 +103,10 @@ export default function UsersManagementPage() {
         user.roles?.some((role) => {
           const roleName = role.name.toLowerCase();
           switch (selectedRole.name) {
-            case "customer":
+            case "CUSTOMER":
               return roleName === "customer";
-            case "staff":
+            case "STAFF":
               return roleName === "staff";
-            case "admin":
-              return roleName === "admin";
             default:
               return false;
           }

@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Role, User } from "@/stores/useAuthStore";
-import { mockUsers } from "@/data/productv2";
+import privateClient from "@/lib/axios";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 // Interface for creating staff accounts
 export interface CreateStaffData {
@@ -9,7 +11,7 @@ export interface CreateStaffData {
   email: string;
   phone?: string;
   password: string;
-  role: "ADMIN" | "STAFF";
+  role: "STAFF";
   isActive?: boolean;
 }
 
@@ -25,9 +27,12 @@ export interface UserFormData {
 interface UserState {
   users: User[];
   isLoading: boolean;
+  isFetching: boolean;
   error: string | null;
 
   // Actions
+  fetchUsers: () => Promise<void>;
+  fetchUserById: (id: number) => Promise<User | null>;
   addUser: (userData: Omit<User, "id">) => Promise<boolean>;
   createStaff: (staffData: CreateStaffData) => Promise<boolean>;
   updateUser: (id: number, userData: Partial<User>) => Promise<boolean>;
@@ -48,53 +53,85 @@ interface UserState {
 export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({
-      users: mockUsers,
+      users: [],
       isLoading: false,
+      isFetching: false,
       error: null,
+
+      // Fetch all users from backend
+      fetchUsers: async () => {
+        if (get().isFetching) return;
+
+        set({ isFetching: true, error: null });
+        try {
+          const response = await privateClient.get("/users");
+          const users = response.data?.data || response.data || [];
+
+          set({ users, isFetching: false });
+          console.log("✅ Users fetched:", users);
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message ||
+            "Lỗi khi tải danh sách người dùng";
+
+          set({ error: errorMessage, isFetching: false });
+          console.error("❌ Fetch users error:", errorMessage);
+          toast.error(errorMessage);
+        }
+      },
+
+      // Fetch single user by ID
+      fetchUserById: async (id: number) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await privateClient.get(`/users/${id}`);
+          const user = response.data?.data || response.data;
+
+          // Update user in store
+          set((state) => ({
+            users: state.users.map((u) => (u.id === id ? user : u)),
+            isLoading: false,
+          }));
+
+          console.log("✅ User fetched:", user);
+          return user;
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message ||
+            "Lỗi khi tải thông tin người dùng";
+
+          set({ error: errorMessage, isLoading: false });
+          console.error("❌ Fetch user error:", errorMessage);
+          toast.error(errorMessage);
+          return null;
+        }
+      },
 
       addUser: async (userData: Omit<User, "id">) => {
         set({ isLoading: true, error: null });
 
         try {
-          // Simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          // Check if email already exists
-          const existingUser = get().users.find(
-            (u) => u.email === userData.email
-          );
-          if (existingUser) {
-            set({ error: "Email đã được sử dụng", isLoading: false });
-            return false;
-          }
-
-          // Check if phone already exists (if provided)
-          if (userData.phone) {
-            const existingPhone = get().users.find(
-              (u) => u.phone === userData.phone
-            );
-            if (existingPhone) {
-              set({ error: "Số điện thoại đã được sử dụng", isLoading: false });
-              return false;
-            }
-          }
-
-          const newUser: User = {
-            ...userData,
-            id: Date.now(),
-            isActive: userData.isActive ?? true,
-            roles: userData.roles || [{ id: 3, name: "Customer" }],
-            addresses: userData.addresses || [],
-          };
+          const response = await privateClient.post("/users", userData);
+          const newUser = response.data?.data || response.data;
 
           set((state) => ({
-            users: [...state.users, newUser],
+            users: [newUser, ...state.users],
             isLoading: false,
           }));
 
+          toast.success("Tạo tài khoản thành công!");
+          console.log("✅ User created:", newUser);
           return true;
-        } catch {
-          set({ error: "Đã xảy ra lỗi khi tạo tài khoản", isLoading: false });
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message || "Lỗi khi tạo tài khoản";
+
+          set({ error: errorMessage, isLoading: false });
+          console.error("❌ Create user error:", errorMessage);
+          toast.error(errorMessage);
           return false;
         }
       },
@@ -103,65 +140,26 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true, error: null });
 
         try {
-          // Simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          // Check if email already exists
-          const existingUser = get().users.find(
-            (u) => u.email === staffData.email
-          );
-          if (existingUser) {
-            set({ error: "Email đã được sử dụng", isLoading: false });
-            return false;
-          }
-
-          // Check if phone already exists (if provided)
-          if (staffData.phone) {
-            const existingPhone = get().users.find(
-              (u) => u.phone === staffData.phone
-            );
-            if (existingPhone) {
-              set({ error: "Số điện thoại đã được sử dụng", isLoading: false });
-              return false;
-            }
-          }
-
-          // Validate password
-          if (staffData.password.length < 6) {
-            set({
-              error: "Mật khẩu phải có ít nhất 6 ký tự",
-              isLoading: false,
-            });
-            return false;
-          }
-
-          // Get role object
-          const roleMap = {
-            Admin: { id: 1, name: "Admin" },
-            Staff: { id: 2, name: "Staff" },
-          };
-
-          const newUser: User = {
-            id: Date.now(),
-            fullName: staffData.fullName,
-            email: staffData.email,
-            phone: staffData.phone,
-            isActive: staffData.isActive ?? true,
-            roles: [roleMap[staffData.role]],
-            addresses: [],
-          };
+          const response = await privateClient.post("/users/staff", staffData);
+          const newUser = response.data?.data || response.data;
 
           set((state) => ({
-            users: [...state.users, newUser],
+            users: [newUser, ...state.users],
             isLoading: false,
           }));
 
+          toast.success("Tạo tài khoản nhân viên thành công!");
+          console.log("✅ Staff created:", newUser);
           return true;
-        } catch {
-          set({
-            error: "Đã xảy ra lỗi khi tạo tài khoản nhân viên",
-            isLoading: false,
-          });
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message ||
+            "Lỗi khi tạo tài khoản nhân viên";
+
+          set({ error: errorMessage, isLoading: false });
+          console.error("❌ Create staff error:", errorMessage);
+          toast.error(errorMessage);
           return false;
         }
       },
@@ -170,58 +168,27 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true, error: null });
 
         try {
-          // Simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 800));
-
-          const userToUpdate = get().users.find((u) => u.id === id);
-          if (!userToUpdate) {
-            set({ error: "Không tìm thấy người dùng", isLoading: false });
-            return false;
-          }
-
-          // Check email uniqueness if email is being updated
-          if (userData.email && userData.email !== userToUpdate.email) {
-            const existingUser = get().users.find(
-              (u) => u.email === userData.email && u.id !== id
-            );
-            if (existingUser) {
-              set({ error: "Email đã được sử dụng", isLoading: false });
-              return false;
-            }
-          }
-
-          // Check phone uniqueness if phone is being updated
-          if (userData.phone && userData.phone !== userToUpdate.phone) {
-            const existingPhone = get().users.find(
-              (u) => u.phone === userData.phone && u.id !== id
-            );
-            if (existingPhone) {
-              set({ error: "Số điện thoại đã được sử dụng", isLoading: false });
-              return false;
-            }
-          }
+          const response = await privateClient.put(`/users/${id}`, userData);
+          const updatedUser = response.data?.data || response.data;
 
           set((state) => ({
             users: state.users.map((user) =>
-              user.id === id
-                ? {
-                    ...user,
-                    ...userData,
-                    // Preserve existing data if not provided
-                    roles: userData.roles || user.roles,
-                    addresses: userData.addresses || user.addresses,
-                  }
-                : user
+              user.id === id ? updatedUser : user
             ),
             isLoading: false,
           }));
 
+          toast.success("Cập nhật tài khoản thành công!");
+          console.log("✅ User updated:", updatedUser);
           return true;
-        } catch {
-          set({
-            error: "Đã xảy ra lỗi khi cập nhật tài khoản",
-            isLoading: false,
-          });
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message || "Lỗi khi cập nhật tài khoản";
+
+          set({ error: errorMessage, isLoading: false });
+          console.error("❌ Update user error:", errorMessage);
+          toast.error(errorMessage);
           return false;
         }
       },
@@ -230,35 +197,24 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true, error: null });
 
         try {
-          // Simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          const user = get().users.find((u) => u.id === id);
-          if (!user) {
-            set({ error: "Không tìm thấy người dùng", isLoading: false });
-            return false;
-          }
-
-          // Prevent deleting admin users
-          const isAdmin = user.roles?.some(
-            (role) => role.name === "Admin" || role.name === "Super Admin"
-          );
-          if (isAdmin) {
-            set({
-              error: "Không thể xóa tài khoản quản trị viên",
-              isLoading: false,
-            });
-            return false;
-          }
+          await privateClient.delete(`/users/${id}`);
 
           set((state) => ({
             users: state.users.filter((user) => user.id !== id),
             isLoading: false,
           }));
 
+          toast.success("Xóa tài khoản thành công!");
+          console.log("✅ User deleted:", id);
           return true;
-        } catch {
-          set({ error: "Đã xảy ra lỗi khi xóa tài khoản", isLoading: false });
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message || "Lỗi khi xóa tài khoản";
+
+          set({ error: errorMessage, isLoading: false });
+          console.error("❌ Delete user error:", errorMessage);
+          toast.error(errorMessage);
           return false;
         }
       },
@@ -267,45 +223,30 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true, error: null });
 
         try {
-          // Simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 300));
-
-          const user = get().users.find((u) => u.id === id);
-          if (!user) {
-            set({ error: "Không tìm thấy người dùng", isLoading: false });
-            return false;
-          }
-
-          // Prevent deactivating admin users
-          const isAdmin = user.roles?.some(
-            (role) => role.name === "Admin" || role.name === "Super Admin"
+          const response = await privateClient.patch(
+            `/users/${id}/toggle-status`
           );
-          if (isAdmin && user.isActive) {
-            set({
-              error: "Không thể vô hiệu hóa tài khoản quản trị viên",
-              isLoading: false,
-            });
-            return false;
-          }
+          const updatedUser = response.data?.data || response.data;
 
           set((state) => ({
             users: state.users.map((user) =>
-              user.id === id
-                ? {
-                    ...user,
-                    isActive: !user.isActive,
-                  }
-                : user
+              user.id === id ? updatedUser : user
             ),
             isLoading: false,
           }));
 
+          toast.success("Thay đổi trạng thái thành công!");
+          console.log("✅ User status toggled:", updatedUser);
           return true;
-        } catch {
-          set({
-            error: "Đã xảy ra lỗi khi thay đổi trạng thái",
-            isLoading: false,
-          });
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message ||
+            "Lỗi khi thay đổi trạng thái";
+
+          set({ error: errorMessage, isLoading: false });
+          console.error("❌ Toggle status error:", errorMessage);
+          toast.error(errorMessage);
           return false;
         }
       },
@@ -314,42 +255,43 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true, error: null });
 
         try {
-          // Simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          const user = get().users.find((u) => u.id === id);
-          if (!user) {
-            set({ error: "Không tìm thấy người dùng", isLoading: false });
-            return false;
-          }
-
           // Validate roles
           if (!roles || roles.length === 0) {
             set({
               error: "Người dùng phải có ít nhất một vai trò",
               isLoading: false,
             });
+            toast.error("Người dùng phải có ít nhất một vai trò");
             return false;
           }
+
+          const response = await privateClient.put(`/users/${id}/roles`, {
+            roles: roles,
+          });
 
           set((state) => ({
             users: state.users.map((user) =>
               user.id === id
                 ? {
                     ...user,
-                    roles: roles,
+                    roles: response.data?.roles || roles,
                   }
                 : user
             ),
             isLoading: false,
           }));
 
+          toast.success("Cập nhật vai trò thành công!");
           return true;
-        } catch {
-          set({
-            error: "Đã xảy ra lỗi khi thay đổi vai trò",
-            isLoading: false,
-          });
+        } catch (error) {
+          let errorMessage = "Đã xảy ra lỗi khi thay đổi vai trò";
+          if (error instanceof AxiosError && error.response?.data?.message) {
+            errorMessage = error.response.data.message;
+          }
+
+          set({ error: errorMessage, isLoading: false });
+          console.error("❌ Assign roles error:", errorMessage);
+          toast.error(errorMessage);
           return false;
         }
       },

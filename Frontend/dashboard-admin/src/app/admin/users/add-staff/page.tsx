@@ -11,16 +11,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import CustomInput from "@/components/shared/CustomInput";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -32,7 +24,6 @@ interface StaffFormData {
   phone: string;
   password: string;
   confirmPassword: string;
-  role: "Admin" | "Staff";
   isActive: boolean;
 }
 
@@ -46,7 +37,6 @@ export default function AddStaffPage() {
     phone: "",
     password: "",
     confirmPassword: "",
-    role: "Staff",
     isActive: true,
   });
 
@@ -112,7 +102,7 @@ export default function AddStaffPage() {
         email: formData.email.trim(),
         phone: formData.phone.trim() || undefined,
         password: formData.password,
-        role: formData.role,
+        role: "STAFF",
         isActive: formData.isActive,
       };
 
@@ -230,24 +220,14 @@ export default function AddStaffPage() {
               />
 
               <div className="space-y-2">
-                <Label htmlFor="role">Vai trò *</Label>
-                <Select
-                  value={formData.role}
-                  onValueChange={(value: "Admin" | "Staff") =>
-                    handleInputChange("role", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn vai trò" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Staff">Nhân viên (Staff)</SelectItem>
-                    <SelectItem value="Admin">Quản trị viên (Admin)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Admin có toàn quyền, Staff có quyền hạn hạn chế
-                </p>
+                <Label>Vai trò</Label>
+                <div className="rounded-md border border-input bg-muted px-3 py-2">
+                  <p className="text-sm font-medium">Nhân viên (Staff)</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Tài khoản sẽ được tạo với vai trò nhân viên, có quyền hạn
+                    hạn chế
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-center space-x-2">
