@@ -60,8 +60,6 @@ export const useUserStore = create<UserState>()(
 
       // Fetch all users from backend
       fetchUsers: async () => {
-        if (get().isFetching) return;
-
         set({ isFetching: true, error: null });
         try {
           const response = await privateClient.get("/users");

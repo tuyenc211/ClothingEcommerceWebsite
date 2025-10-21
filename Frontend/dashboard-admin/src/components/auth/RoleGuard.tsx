@@ -17,7 +17,7 @@ import {
 interface RoleGuardProps {
   children: React.ReactNode;
   allowedRoles?: string[]; // ["Admin", "Staff"]
-  requireAdmin?: boolean; // Shortcut cho allowedRoles: ["Admin"]
+  requireAdmin?: boolean;
   requireStaff?: boolean; // Cho phép cả Admin và Staff
   fallback?: React.ReactNode;
 }
