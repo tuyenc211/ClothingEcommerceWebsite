@@ -1,4 +1,3 @@
-import { mockCoupons } from "@/data/productv2";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -43,13 +42,13 @@ interface CouponStore {
   error: string | null;
 
   // Actions
-  fetchCoupons: () => void;
+  fetchCoupons: () => Promise<void>;
   getCouponById: (id: number) => Promise<Coupon>;
   addCoupon: (
     couponData: Omit<Coupon, "id" | "createdAt" | "updatedAt">
-  ) => void;
-  updateCoupon: (id: number, couponData: Partial<Coupon>) => void;
-  deleteCoupon: (id: number) => void;
+  ) => Promise<void>;
+  updateCoupon: (id: number, couponData: Partial<Coupon>) => Promise<void>;
+  deleteCoupon: (id: number) => Promise<void>;
 
   // Filters & Search
   searchCoupons: (query: string) => Coupon[];
@@ -69,7 +68,7 @@ interface CouponStore {
 export const useCouponStore = create<CouponStore>()(
   persist(
     (set, get) => ({
-      coupons: mockCoupons,
+      coupons: [],
       isLoading: false,
       error: null,
 
@@ -77,10 +76,10 @@ export const useCouponStore = create<CouponStore>()(
         set({ isLoading: true, error: null });
         try {
           const response = await privateClient.get("/coupons");
-          const coupons = response.data.data || response.data;
+          const data = response.data.data || response.data;
 
           set({
-            coupons: coupons.sort((a: Coupon, b: Coupon) => {
+            coupons: data.sort((a: Coupon, b: Coupon) => {
               if (!a.startsAt || !b.startsAt) return 0;
               return (
                 new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
@@ -89,7 +88,7 @@ export const useCouponStore = create<CouponStore>()(
             error: null,
           });
 
-          console.log("✅ Coupons fetched:", coupons);
+          console.log("✅ Coupons fetched:", data);
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
           const errorMessage =
@@ -112,8 +111,9 @@ export const useCouponStore = create<CouponStore>()(
           console.log("✅ Coupon fetched:", coupon);
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
-          const errorMessage = axiosError?.response?.data?.message;
-          ("Không thể tải thông tin mã giảm giá");
+          const errorMessage =
+            axiosError?.response?.data?.message ||
+            "Không thể tải thông tin mã giảm giá";
           set({ error: errorMessage });
           console.error("❌ Fetch coupon error:", error);
           toast.error(errorMessage);

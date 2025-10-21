@@ -91,9 +91,9 @@ export default function UsersManagementPage() {
           const roleName = role.name.toLowerCase();
           switch (selectedRole.name) {
             case "CUSTOMER":
-              return roleName === "customer";
+              return roleName === "CUSTOMER";
             case "STAFF":
-              return roleName === "staff";
+              return roleName === "STAFF";
             default:
               return false;
           }
@@ -143,19 +143,13 @@ export default function UsersManagementPage() {
   // Hiển thị badge cho vai trò
   const getRoleBadge = (role: Role) => {
     switch (role.name) {
-      case "admin":
-        return (
-          <Badge className="bg-purple-500 hover:bg-purple-600 text-white">
-            Admin
-          </Badge>
-        );
-      case "staff":
+      case "STAFF":
         return (
           <Badge className="bg-blue-500 hover:bg-blue-600 text-white">
             Nhân viên
           </Badge>
         );
-      case "customer":
+      case "CUSTOMER":
         return (
           <Badge className="bg-green-500 hover:bg-green-600 text-white">
             Khách hàng
@@ -169,20 +163,16 @@ export default function UsersManagementPage() {
   // Tính stats theo role
   const getStatsData = () => {
     const customers = users.filter((u) =>
-      u.roles?.some((role) => role.name === "Customer")
+      u.roles?.some((role) => role.name === "CUSTOMER")
     );
     const staff = users.filter((u) =>
-      u.roles?.some((role) => role.name === "Staff")
-    );
-    const admins = users.filter((u) =>
-      u.roles?.some((role) => role.name === "Admin")
+      u.roles?.some((role) => role.name === "STAFF")
     );
 
     return {
       totalUsers: users.length,
       totalCustomers: customers.length,
       totalStaff: staff.length,
-      totalAdmins: admins.length,
     };
   };
 
@@ -192,14 +182,10 @@ export default function UsersManagementPage() {
       return "Tất cả tài khoản";
     }
     switch (role.name) {
-      case "customer":
+      case "CUSTOMER":
         return "Khách hàng";
-      case "staff":
+      case "STAFF":
         return "Nhân viên";
-      case "admin":
-        return "Admin";
-      case "super_admin":
-        return "Super Admin";
       default:
         return "Tất cả tài khoản";
     }
@@ -273,12 +259,6 @@ export default function UsersManagementPage() {
               </CardTitle>
               <Shield className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalAdmins}</div>
-              <p className="text-xs text-muted-foreground">
-                Admin & Super Admin
-              </p>
-            </CardContent>
           </Card>
         </div>
 
@@ -297,9 +277,9 @@ export default function UsersManagementPage() {
                   Tất cả ({users.length})
                 </Button>
                 <Button
-                  onClick={() => setSelectedRole({ id: 3, name: "customer" })}
+                  onClick={() => setSelectedRole({ id: 3, name: "CUSTOMER" })}
                   variant={
-                    selectedRole !== "all" && selectedRole.name === "customer"
+                    selectedRole !== "all" && selectedRole.name === "CUSTOMER"
                       ? "default"
                       : "outline"
                   }
@@ -310,9 +290,9 @@ export default function UsersManagementPage() {
                   Khách hàng ({stats.totalCustomers})
                 </Button>
                 <Button
-                  onClick={() => setSelectedRole({ id: 2, name: "staff" })}
+                  onClick={() => setSelectedRole({ id: 2, name: "STAFF" })}
                   variant={
-                    selectedRole !== "all" && selectedRole.name === "staff"
+                    selectedRole !== "all" && selectedRole.name === "STAFF"
                       ? "default"
                       : "outline"
                   }
@@ -321,19 +301,6 @@ export default function UsersManagementPage() {
                 >
                   <UserCheck className="h-4 w-4" />
                   Nhân viên ({stats.totalStaff})
-                </Button>
-                <Button
-                  onClick={() => setSelectedRole({ id: 1, name: "admin" })}
-                  variant={
-                    selectedRole !== "all" && selectedRole.name === "admin"
-                      ? "default"
-                      : "outline"
-                  }
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Shield className="h-4 w-4" />
-                  Admin ({stats.totalAdmins})
                 </Button>
               </div>
             </div>

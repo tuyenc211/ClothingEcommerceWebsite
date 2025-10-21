@@ -63,10 +63,10 @@ export const useUserStore = create<UserState>()(
         set({ isFetching: true, error: null });
         try {
           const response = await privateClient.get("/users");
-          const users = response.data?.data || response.data || [];
+          const data = response.data?.data || response.data || [];
 
-          set({ users, isFetching: false });
-          console.log("✅ Users fetched:", users);
+          set({ users: data, isFetching: false });
+          console.log("✅ Users fetched:", data);
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
           const errorMessage =
@@ -84,16 +84,16 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true, error: null });
         try {
           const response = await privateClient.get(`/users/${id}`);
-          const user = response.data?.data || response.data;
+          const data = response.data?.data || response.data;
 
           // Update user in store
           set((state) => ({
-            users: state.users.map((u) => (u.id === id ? user : u)),
+            users: state.users.map((u) => (u.id === id ? data : u)),
             isLoading: false,
           }));
 
-          console.log("✅ User fetched:", user);
-          return user;
+          console.log("✅ User fetched:", data);
+          return data;
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
           const errorMessage =
