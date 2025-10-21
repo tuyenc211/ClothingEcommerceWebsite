@@ -1,6 +1,9 @@
 import axios, { AxiosError } from "axios";
 
-const API_URL =process.env.NODE_ENV === "development" ? "http://localhost:8088/api/v1" : "https://clothingecommercewebsite.onrender.com/api/v1";
+const API_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:8088/api/v1"
+    : "/api/v1";
 // const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 const privateClient = axios.create({
   baseURL: API_URL,
