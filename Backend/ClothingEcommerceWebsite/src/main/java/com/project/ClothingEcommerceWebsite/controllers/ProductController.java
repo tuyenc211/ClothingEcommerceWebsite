@@ -41,12 +41,13 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(Long id, ) {
-        Product product = productService.createProductWithVariants(request);
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody CreateProductVariantRequest request) {
+        Product product = productService.updateProduct(id, request);
         return ResponseEntity.ok(product);
     }
     @DeleteMapping("")
-    public ResponseEntity<?> deleteProduct() {
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
         return ResponseEntity.ok().body("");
     }
 }
