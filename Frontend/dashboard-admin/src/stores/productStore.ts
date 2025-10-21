@@ -41,12 +41,11 @@ export interface Product {
   name: string; // VARCHAR(255) NOT NULL
   slug: string; // VARCHAR(280) NOT NULL UNIQUE
   description?: string; // MEDIUMTEXT
-  base_price: number; // DECIMAL(12,2) NOT NULL DEFAULT 0
-  category_id?: number; // BIGINT references categories(id)
+  basePrice: number; // DECIMAL(12,2) NOT NULL DEFAULT 0
+  category?: number; // BIGINT references categories(id)
   is_published: boolean; // TINYINT(1) NOT NULL DEFAULT 1
 
   // Relationships (populated from joins)
-  category?: Category;
   images?: ProductImage[];
   variants?: ProductVariant[];
   reviews?: Review[];
@@ -167,8 +166,8 @@ export const useProductStore = create<ProductState>()(
             sku: productData.sku || `PRD-${Date.now()}`,
             name: productData.name,
             description: productData.description || "",
-            basePrice: productData.base_price, // map
-            categoryId: productData.category_id, // map
+            basePrice: productData.basePrice, // map
+            categoryId: productData.category, // map
             isPublished: productData.is_published ?? true,
             sizeIds: selectedSizes,
             colorIds: selectedColors,
@@ -259,7 +258,6 @@ export const useProductStore = create<ProductState>()(
             product.name?.toLowerCase().includes(lowercaseQuery) ||
             product.description?.toLowerCase().includes(lowercaseQuery) ||
             product.sku?.toLowerCase().includes(lowercaseQuery) ||
-            product.category?.name?.toLowerCase().includes(lowercaseQuery) ||
             product.variants?.some(
               (variant) => variant.color_id || variant.size_id
             )
@@ -268,7 +266,7 @@ export const useProductStore = create<ProductState>()(
 
       filterProductsByCategory: (categoryId) => {
         const { products } = get();
-        return products.filter((product) => product.category_id === categoryId);
+        return products.filter((product) => product.category === categoryId);
       },
 
       getPublishedProducts: () => {
