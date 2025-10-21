@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,8 +28,11 @@ import { useCouponStore } from "@/stores/couponStore";
 import { toast } from "sonner";
 
 export default function CouponListPage() {
-  const { coupons, deleteCoupon, getCouponStatus } = useCouponStore();
-
+  const { coupons, deleteCoupon, getCouponStatus, fetchCoupons } =
+    useCouponStore();
+  useEffect(() => {
+    fetchCoupons();
+  }, [fetchCoupons]);
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     couponId: number | null;
@@ -128,19 +131,19 @@ export default function CouponListPage() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      {coupon.min_order_total
-                        ? coupon.min_order_total.toLocaleString("vi-VN")
+                      {coupon.minOrderTotal
+                        ? coupon.minOrderTotal.toLocaleString("vi-VN")
                         : "-"}
                     </TableCell>
-                    <TableCell>{formatDate(coupon.starts_at)}</TableCell>
-                    <TableCell>{formatDate(coupon.ends_at)}</TableCell>
-                    <TableCell>{coupon.max_uses || "-"}</TableCell>
-                    <TableCell>{coupon.max_uses_per_user || "-"}</TableCell>
+                    <TableCell>{formatDate(coupon.startsAt)}</TableCell>
+                    <TableCell>{formatDate(coupon.endsAt)}</TableCell>
+                    <TableCell>{coupon.maxUses || "-"}</TableCell>
+                    <TableCell>{coupon.maxUsesPerUser || "-"}</TableCell>
                     <TableCell>
                       <Badge
-                        variant={coupon.is_active ? "default" : "secondary"}
+                        variant={coupon.isActive ? "default" : "secondary"}
                       >
-                        {coupon.is_active ? "Hoạt động" : "Không hoạt động"}
+                        {coupon.isActive ? "Hoạt động" : "Không hoạt động"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
