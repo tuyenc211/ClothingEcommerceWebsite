@@ -107,12 +107,16 @@ public class ProductServiceImpl implements ProductService {
                 variants.add(variant);
             }
         }
-        return null;
+        productVariantRepository.saveAll(variants);
+        return product;
     }
 
     @Override
     public void deleteProduct(Long id) {
-
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        productVariantRepository.deleteAllByProductId(product.getId());
+        productRepository.delete(product);
     }
 
 }

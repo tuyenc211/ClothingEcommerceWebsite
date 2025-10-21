@@ -3,10 +3,13 @@ import com.project.ClothingEcommerceWebsite.dtos.request.CreateProductVariantReq
 import com.project.ClothingEcommerceWebsite.models.Category;
 import com.project.ClothingEcommerceWebsite.models.Product;
 import com.project.ClothingEcommerceWebsite.services.ProductService;
+import com.project.ClothingEcommerceWebsite.services.impl.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("${api.prefix}/products")
@@ -14,11 +17,17 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProductController {
 
     private final ProductService productService;
+    private final CloudinaryService cloudinaryService;
 
     @PostMapping("")
     public ResponseEntity<?> createProduct(@RequestBody CreateProductVariantRequest request) {
         Product product = productService.createProductWithVariants(request);
         return ResponseEntity.ok(product);
+    }
+    @PostMapping("/upload-image")
+    public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
+        String imageUrl = cloudinaryService.uploadImage(file);
+        return ResponseEntity.ok(Map.of("url", imageUrl));
     }
     @GetMapping("")
     public ResponseEntity<?> getAllProduct() {

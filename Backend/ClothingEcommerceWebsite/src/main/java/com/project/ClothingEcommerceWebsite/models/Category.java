@@ -1,5 +1,6 @@
 package com.project.ClothingEcommerceWebsite.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.persistence.*;
@@ -16,6 +17,7 @@ import javax.persistence.*;
                 @UniqueConstraint(columnNames = {"slug"})
         }
 )
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
