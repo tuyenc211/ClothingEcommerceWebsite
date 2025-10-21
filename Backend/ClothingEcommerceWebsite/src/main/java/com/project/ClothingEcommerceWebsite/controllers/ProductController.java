@@ -1,5 +1,6 @@
 package com.project.ClothingEcommerceWebsite.controllers;
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateProductVariantRequest;
+import com.project.ClothingEcommerceWebsite.dtos.respond.ProductResponse;
 import com.project.ClothingEcommerceWebsite.models.Category;
 import com.project.ClothingEcommerceWebsite.models.Product;
 import com.project.ClothingEcommerceWebsite.services.ProductService;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -30,7 +32,7 @@ public class ProductController {
         return ResponseEntity.ok(Map.of("url", imageUrl));
     }
     @GetMapping("")
-    public ResponseEntity<?> getAllProduct() {
+    public ResponseEntity<List<ProductResponse>> getAllProduct() {
         return ResponseEntity.ok(productService.getAllProduct());
     }
     @GetMapping("/{id}")
@@ -39,7 +41,7 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateCategory() {
+    public ResponseEntity<?> updateProduct() {
         return ResponseEntity.ok().body("");
     }
     @DeleteMapping("")

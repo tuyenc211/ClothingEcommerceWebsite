@@ -42,8 +42,8 @@ export interface Product {
   slug: string; // VARCHAR(280) NOT NULL UNIQUE
   description?: string; // MEDIUMTEXT
   basePrice: number; // DECIMAL(12,2) NOT NULL DEFAULT 0
-  category?: number; // BIGINT references categories(id)
-  is_published: boolean; // TINYINT(1) NOT NULL DEFAULT 1
+  category: Category; // BIGINT references categories(id)
+  isPublished: boolean; // TINYINT(1) NOT NULL DEFAULT 1
 
   // Relationships (populated from joins)
   images?: ProductImage[];
@@ -142,6 +142,7 @@ export const useProductStore = create<ProductState>()(
         try {
           const res = await privateClient.get("/products");
           const data = Array.isArray(res.data?.data) ? res.data.data : res.data;
+          console.log(data);
           set({ products: data, isLoading: false });
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
@@ -166,9 +167,9 @@ export const useProductStore = create<ProductState>()(
             sku: productData.sku || `PRD-${Date.now()}`,
             name: productData.name,
             description: productData.description || "",
-            basePrice: productData.basePrice, // map
-            categoryId: productData.category, // map
-            isPublished: productData.is_published ?? true,
+            basePrice: productData.basePrice, 
+            category: productData.category, 
+            isPublished: productData.isPublished ?? true,
             sizeIds: selectedSizes,
             colorIds: selectedColors,
           };
@@ -266,12 +267,12 @@ export const useProductStore = create<ProductState>()(
 
       filterProductsByCategory: (categoryId) => {
         const { products } = get();
-        return products.filter((product) => product.category === categoryId);
+        return products.filter((product) => product.category.id === categoryId);
       },
 
       getPublishedProducts: () => {
         const { products } = get();
-        return products.filter((product) => product.is_published);
+        return products.filter((product) => product.isPublished);
       },
 
       // Variant management
