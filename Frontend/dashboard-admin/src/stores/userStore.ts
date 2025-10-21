@@ -9,7 +9,7 @@ export interface CreateStaffData {
   email: string;
   phone?: string;
   password: string;
-  role: "Admin" | "Staff";
+  role: "ADMIN" | "STAFF";
   isActive?: boolean;
 }
 

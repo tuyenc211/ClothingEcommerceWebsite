@@ -18,12 +18,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  rewrites: async () => [
-    {
-      source: "/api/:path*",
-      destination: "http://localhost:3000/api/:path*",
-    },
-  ],
+  // rewrites: async () => [
+  //   {
+  //     source: "/api/:path*",
+  //     destination: "http://localhost:3000/api/:path*",
+  //   },
+  // ],
 };
 
 export default nextConfig;
