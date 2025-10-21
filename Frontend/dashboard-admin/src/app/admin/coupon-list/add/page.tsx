@@ -14,16 +14,16 @@ import { toast } from "sonner";
 import { useCouponStore, Coupon } from "@/stores/couponStore";
 
 type FormValues = {
-  code: string;
-  name: string;
-  description?: string;
-  value: number;
-  min_order_total?: number;
-  max_uses?: number;
-  max_uses_per_user?: number;
-  starts_at?: string;
-  ends_at?: string;
-  is_active: boolean;
+  code: string; // VARCHAR(50) NOT NULL UNIQUE
+  name: string; // VARCHAR(255) NOT NULL
+  description?: string; // TEXT
+  value: number; // DECIMAL(12,2) NOT NULL
+  maxUses?: number;
+  maxUsesPerUser?: number;
+  minOrderTotal?: number;
+  startsAt?: string;
+  endsAt?: string;
+  isActive: boolean;
 };
 
 export default function AddCouponPage() {
@@ -42,16 +42,16 @@ export default function AddCouponPage() {
       name: "",
       description: "",
       value: 0,
-      min_order_total: undefined,
-      max_uses: undefined,
-      max_uses_per_user: undefined,
-      starts_at: "",
-      ends_at: "",
-      is_active: true,
+      minOrderTotal: undefined,
+      maxUses: undefined,
+      maxUsesPerUser: undefined,
+      startsAt: "",
+      endsAt: "",
+      isActive: true,
     },
   });
 
-  const isActive = watch("is_active");
+  const isActive = watch("isActive");
 
   const onSubmit = async (data: FormValues) => {
     // Validate coupon code uniqueness
@@ -61,8 +61,8 @@ export default function AddCouponPage() {
     }
 
     // Validate dates if provided
-    if (data.starts_at && data.ends_at) {
-      if (new Date(data.ends_at) <= new Date(data.starts_at)) {
+    if (data.startsAt && data.endsAt) {
+      if (new Date(data.endsAt) <= new Date(data.startsAt)) {
         toast.error("Ngày kết thúc phải sau ngày bắt đầu");
         return;
       }
@@ -75,12 +75,12 @@ export default function AddCouponPage() {
         name: data.name,
         description: data.description || undefined,
         value: data.value,
-        min_order_total: data.min_order_total || undefined,
-        max_uses: data.max_uses || undefined,
-        max_uses_per_user: data.max_uses_per_user || undefined,
-        starts_at: data.starts_at || undefined,
-        ends_at: data.ends_at || undefined,
-        is_active: data.is_active,
+        minOrderTotal: data.minOrderTotal || undefined,
+        maxUses: data.maxUses || undefined,
+        maxUsesPerUser: data.maxUsesPerUser || undefined,
+        startsAt: data.startsAt || undefined,
+        endsAt: data.endsAt || undefined,
+        isActive: data.isActive,
       };
 
       addCoupon(couponData);
@@ -181,30 +181,30 @@ export default function AddCouponPage() {
                 <Input
                   id="min_order_total"
                   type="number"
-                  {...register("min_order_total", {
+                  {...register("minOrderTotal", {
                     min: {
                       value: 0,
                       message: "Giá trị phải lớn hơn hoặc bằng 0",
                     },
                   })}
                   placeholder="VD: 200000"
-                  className={errors.min_order_total ? "border-red-500" : ""}
+                  className={errors.minOrderTotal ? "border-red-500" : ""}
                   disabled={isSubmitting}
                 />
-                {errors.min_order_total && (
+                {errors.minOrderTotal && (
                   <p className="text-sm text-red-500">
-                    {errors.min_order_total.message}
+                    {errors.minOrderTotal.message}
                   </p>
                 )}
               </div>
 
               {/* Max Uses */}
               <div className="space-y-2">
-                <Label htmlFor="max_uses">Số lần sử dụng tối đa</Label>
+                <Label htmlFor="maxUses">Số lần sử dụng tối đa</Label>
                 <Input
-                  id="max_uses"
+                  id="maxUses"
                   type="number"
-                  {...register("max_uses", {
+                  {...register("maxUses", {
                     min: { value: 1, message: "Số lần sử dụng phải lớn hơn 0" },
                   })}
                   placeholder="VD: 1000"
@@ -214,11 +214,11 @@ export default function AddCouponPage() {
 
               {/* Max Uses Per User */}
               <div className="space-y-2">
-                <Label htmlFor="max_uses_per_user">Số lần sử dụng/người</Label>
+                <Label htmlFor="maxUsesPerUser">Số lần sử dụng/người</Label>
                 <Input
-                  id="max_uses_per_user"
+                  id="maxUsesPerUser"
                   type="number"
-                  {...register("max_uses_per_user", {
+                  {...register("maxUsesPerUser", {
                     min: { value: 1, message: "Số lần sử dụng phải lớn hơn 0" },
                   })}
                   placeholder="VD: 1"
@@ -228,22 +228,22 @@ export default function AddCouponPage() {
 
               {/* Start Date */}
               <div className="space-y-2">
-                <Label htmlFor="starts_at">Ngày bắt đầu</Label>
+                <Label htmlFor="startsAt">Ngày bắt đầu</Label>
                 <Input
                   id="starts_at"
                   type="datetime-local"
-                  {...register("starts_at")}
+                  {...register("startsAt")}
                   disabled={isSubmitting}
                 />
               </div>
 
               {/* End Date */}
               <div className="space-y-2">
-                <Label htmlFor="ends_at">Ngày kết thúc</Label>
+                <Label htmlFor="endsAt">Ngày kết thúc</Label>
                 <Input
                   id="ends_at"
                   type="datetime-local"
-                  {...register("ends_at")}
+                  {...register("endsAt")}
                   disabled={isSubmitting}
                 />
               </div>
@@ -266,7 +266,7 @@ export default function AddCouponPage() {
               <Switch
                 id="is_active"
                 checked={isActive}
-                onCheckedChange={(checked) => setValue("is_active", checked)}
+                onCheckedChange={(checked) => setValue("isActive", checked)}
                 disabled={isSubmitting}
               />
               <Label htmlFor="is_active">Kích hoạt mã giảm giá</Label>

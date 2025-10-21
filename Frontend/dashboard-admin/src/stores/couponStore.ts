@@ -1,4 +1,7 @@
 import { mockCoupons } from "@/data/productv2";
+import privateClient from "@/lib/axios";
+import { AxiosError } from "axios";
+import { toast } from "sonner";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -9,12 +12,12 @@ export interface Coupon {
   name: string; // VARCHAR(255) NOT NULL
   description?: string; // TEXT
   value: number; // DECIMAL(12,2) NOT NULL
-  max_uses?: number;
-  max_uses_per_user?: number;
-  min_order_total?: number;
-  starts_at?: string;
-  ends_at?: string;
-  is_active: boolean; // TINYINT(1) NOT NULL DEFAULT 1
+  maxUses?: number;
+  maxUsesPerUser?: number;
+  minOrderTotal?: number;
+  startsAt?: string;
+  endsAt?: string;
+  isActive: boolean; // TINYINT(1) NOT NULL DEFAULT 1
 }
 
 // Coupon redemption interface matching database schema
@@ -40,8 +43,8 @@ interface CouponStore {
   error: string | null;
 
   // Actions
-  getCoupons: () => Coupon[];
-  getCouponById: (id: number) => Coupon | undefined;
+  fetchCoupons: () => void;
+  getCouponById: (id: number) => Promise<Coupon>;
   addCoupon: (
     couponData: Omit<Coupon, "id" | "createdAt" | "updatedAt">
   ) => void;
@@ -70,42 +73,145 @@ export const useCouponStore = create<CouponStore>()(
       isLoading: false,
       error: null,
 
-      getCoupons: () => {
-        return get().getCouponsSortedByDate();
+      fetchCoupons: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await privateClient.get("/coupons");
+          const coupons = response.data.data || response.data;
+
+          set({
+            coupons: coupons.sort((a: Coupon, b: Coupon) => {
+              if (!a.startsAt || !b.startsAt) return 0;
+              return (
+                new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
+              );
+            }),
+            error: null,
+          });
+
+          console.log("✅ Coupons fetched:", coupons);
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message ||
+            "Không thể tải danh sách mã giảm giá";
+          set({ error: errorMessage });
+          console.error("❌ Fetch coupons error:", error);
+          toast.error(errorMessage);
+        } finally {
+          set({ isLoading: false });
+        }
       },
 
-      getCouponById: (id: number) => {
-        return get().coupons.find((coupon) => coupon.id === id);
+      getCouponById: async (id: number) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await privateClient.get(`/coupons/${id}`);
+          const coupon = response.data.data || response.data;
+          return coupon;
+          console.log("✅ Coupon fetched:", coupon);
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage = axiosError?.response?.data?.message;
+          ("Không thể tải thông tin mã giảm giá");
+          set({ error: errorMessage });
+          console.error("❌ Fetch coupon error:", error);
+          toast.error(errorMessage);
+          return null;
+        } finally {
+          set({ isLoading: false });
+        }
       },
 
-      addCoupon: (couponData) => {
-        const newCoupon: Coupon = {
-          ...couponData,
-          id: Date.now(),
-        };
+      addCoupon: async (couponData) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await privateClient.post("/coupons", couponData);
+          const newCoupon = response.data.data || response.data;
 
-        set((state) => ({
-          coupons: [...state.coupons, newCoupon],
-        }));
+          set((state) => ({
+            coupons: [newCoupon, ...state.coupons].sort((a, b) => {
+              if (!a.startsAt || !b.startsAt) return 0;
+              return (
+                new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
+              );
+            }),
+            error: null,
+          }));
+
+          toast.success("Thêm mã giảm giá thành công");
+          console.log("✅ Coupon added:", newCoupon);
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError.response?.data?.message || "Không thể thêm mã giảm giá";
+          set({ error: errorMessage });
+          toast.error(errorMessage);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
       },
 
-      updateCoupon: (id: number, couponData) => {
-        set((state) => ({
-          coupons: state.coupons.map((coupon) =>
-            coupon.id === id
-              ? {
-                  ...coupon,
-                  ...couponData,
-                }
-              : coupon
-          ),
-        }));
+      updateCoupon: async (id: number, couponData) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await privateClient.put(
+            `/coupons/${id}`,
+            couponData
+          );
+          const updatedCoupon = response.data.data || response.data;
+
+          set((state) => ({
+            coupons: state.coupons
+              .map((coupon) => (coupon.id === id ? updatedCoupon : coupon))
+              .sort((a, b) => {
+                if (!a.startsAt || !b.startsAt) return 0;
+                return (
+                  new Date(b.startsAt).getTime() -
+                  new Date(a.startsAt).getTime()
+                );
+              }),
+            error: null,
+          }));
+
+          toast.success("Cập nhật mã giảm giá thành công");
+          console.log("✅ Coupon updated:", updatedCoupon);
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError.response?.data?.message ||
+            "Không thể cập nhật mã giảm giá";
+          set({ error: errorMessage });
+          toast.error(errorMessage);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
       },
 
-      deleteCoupon: (id: number) => {
-        set((state) => ({
-          coupons: state.coupons.filter((coupon) => coupon.id !== id),
-        }));
+      deleteCoupon: async (id: number) => {
+        set({ isLoading: true, error: null });
+        try {
+          await privateClient.delete(`/coupons/${id}`);
+
+          set((state) => ({
+            coupons: state.coupons.filter((coupon) => coupon.id !== id),
+            error: null,
+          }));
+
+          toast.success("Xóa mã giảm giá thành công");
+          console.log("✅ Coupon deleted:", id);
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError.response?.data?.message || "Không thể xóa mã giảm giá";
+          set({ error: errorMessage });
+          toast.error(errorMessage);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
       },
       searchCoupons: (query: string) => {
         const lowerQuery = query.toLowerCase();
@@ -118,10 +224,10 @@ export const useCouponStore = create<CouponStore>()(
       },
       getCouponStatus: (coupon: Coupon): "active" | "expired" | "upcoming" => {
         const now = new Date();
-        if (!coupon.starts_at || !coupon.ends_at) return "active";
+        if (!coupon.startsAt || !coupon.endsAt) return "active";
 
-        const startDate = new Date(coupon.starts_at);
-        const endDate = new Date(coupon.ends_at);
+        const startDate = new Date(coupon.startsAt);
+        const endDate = new Date(coupon.endsAt);
 
         if (now < startDate) return "upcoming";
         if (now > endDate) return "expired";
@@ -137,9 +243,9 @@ export const useCouponStore = create<CouponStore>()(
 
       getCouponsSortedByDate: () => {
         return get().coupons.sort((a, b) => {
-          if (!a.starts_at || !b.starts_at) return 0;
+          if (!a.startsAt || !b.startsAt) return 0;
           return (
-            new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime()
+            new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
           );
         });
       },
