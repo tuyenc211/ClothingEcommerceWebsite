@@ -117,11 +117,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public Product updateProduct(Long id, CreateProductVariantRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
         product.setName(request.getName());
         product.setDescription(request.getDescription());
+        product.setSku(request.getSku());
         product.setSlug(SlugUtil.toSlug(
                 request.getSlug() != null ? request.getSlug() : request.getName()));
         product.setBasePrice(request.getBasePrice());
@@ -130,6 +132,8 @@ public class ProductServiceImpl implements ProductService {
         product.setCategory(category);
         product.setIsPublished(request.getIsPublished());
         productRepository.save(product);
+        productVariantRepository.deleteAllByProductId(product.getId());
+        productVariantRepository.flush();
 
         List<Size> sizes = sizeRepository.findAllById(request.getSizeIds());
         List<Color> colors = colorRepository.findAllById(request.getColorIds());
