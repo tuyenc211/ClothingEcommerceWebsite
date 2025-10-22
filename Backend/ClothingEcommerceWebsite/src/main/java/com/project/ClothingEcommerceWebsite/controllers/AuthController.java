@@ -57,7 +57,7 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         HashMap<String, Object> map = new HashMap<>();
         map.put("user", user);
-        map.put("acesstoken", accessToken);
+        map.put("accesstoken", accessToken);
         return ResponseEntity.ok().body(map);
     }
 

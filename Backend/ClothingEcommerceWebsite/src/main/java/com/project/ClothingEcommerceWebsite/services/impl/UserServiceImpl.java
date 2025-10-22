@@ -59,22 +59,38 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUserRoles(Long userId, Set<String> roleNames) {
+    public void updateUserRoles(Long userId, Role role) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Set<Role> newRoles = new HashSet<>();
-        for (String roleName : roleNames) {
-            Role role = roleRepository.findByName(roleName)
-                    .orElseThrow(() -> new RuntimeException("Role " + roleName + " not found"));
-            newRoles.add(role);
-        }
-        user.setRoles(newRoles);
+        Role newRole = roleRepository.findByName(role.getName())
+                .orElseThrow(() -> new RuntimeException("Role " + role.getName() + " not found"));
+        Set<Role> roles = new HashSet<>();
+        roles.add(newRole);
+        user.setRoles(roles);
         userRepository.save(user);
     }
 
     @Override
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public void lockUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        user.setIsActive(false);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void unlockUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        user.setIsActive(true);
+        userRepository.save(user);
     }
 }

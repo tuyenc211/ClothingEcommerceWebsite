@@ -1,11 +1,11 @@
 package com.project.ClothingEcommerceWebsite.services;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateUserRequest;
+import com.project.ClothingEcommerceWebsite.models.Role;
 import com.project.ClothingEcommerceWebsite.models.User;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface UserService {
 
@@ -17,7 +17,11 @@ public interface UserService {
 
     Optional<User> getUserByEmail(String email);
 
-    void updateUserRoles(Long userId, Set<String> roleNames);
+    void updateUserRoles(Long id, Role role);
 
     void deleteUser(Long id);
+
+    void lockUser(Long userId);
+
+    void unlockUser(Long userId);
 }

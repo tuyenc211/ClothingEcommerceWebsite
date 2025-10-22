@@ -1,6 +1,7 @@
 package com.project.ClothingEcommerceWebsite.controllers;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateUserRequest;
+import com.project.ClothingEcommerceWebsite.models.Role;
 import com.project.ClothingEcommerceWebsite.models.User;
 import com.project.ClothingEcommerceWebsite.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -39,9 +40,21 @@ public class UserController {
     @PutMapping("/{id}/roles")
     public ResponseEntity<?> updateUserRoles(
             @PathVariable Long id,
-            @RequestBody Set<String> roles
+            @RequestBody Role role
     ) {
-        userService.updateUserRoles(id, roles);
+        userService.updateUserRoles(id, role);
         return ResponseEntity.ok("User roles updated successfully");
+    }
+
+    @PutMapping("/{id}/lock")
+    public ResponseEntity<?> lockUser(@PathVariable Long id) {
+        userService.lockUser(id);
+        return ResponseEntity.ok("User account locked successfully");
+    }
+
+    @PutMapping("/{id}/unlock")
+    public ResponseEntity<?> unlockUser(@PathVariable Long id) {
+        userService.unlockUser(id);
+        return ResponseEntity.ok("User account unlocked successfully");
     }
 }
