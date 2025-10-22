@@ -92,8 +92,12 @@ export default function AssignRolePage() {
         return;
       }
 
-      // Send only the role name in uppercase
-      const success = await assignRoles(currentUser.id, selectedRole.name.toUpperCase());
+      // Send role object with uppercase name
+      const roleToAssign: Role = {
+        id: selectedRole.id,
+        name: selectedRole.name.toUpperCase(),
+      };
+      const success = await assignRoles(currentUser.id, roleToAssign);
 
       if (success) {
         toast.success(
