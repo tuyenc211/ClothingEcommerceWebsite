@@ -66,13 +66,13 @@ public class ProductServiceImpl implements ProductService {
                         .price(product.getBasePrice())
                         .build();
                 variants.add(variant);
+                productVariantRepository.save(variant);
                 inventoryRepository.save(Inventory.builder()
                         .productVariant(variant)
                         .quantity(0)
                         .build());
             }
         }
-        productVariantRepository.saveAll(variants);
         return product;
     }
 

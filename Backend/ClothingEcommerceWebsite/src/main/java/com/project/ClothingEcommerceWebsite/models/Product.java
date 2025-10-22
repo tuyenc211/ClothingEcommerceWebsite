@@ -33,7 +33,7 @@ public class Product {
     @Column(name = "base_price", nullable = false)
     private Double basePrice;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category;
 

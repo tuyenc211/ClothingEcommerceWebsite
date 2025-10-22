@@ -9,14 +9,17 @@ import com.project.ClothingEcommerceWebsite.services.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class InventoryServiceImpl implements InventoryService {
-    private final InventoryRepository inventoryRepository;
 
+    private final InventoryRepository inventoryRepository;
     private final ProductVariantRepository productVariantRepository;
+
     @Override
     public List<Inventory> getAllInventories() {
         return inventoryRepository.findAll();
@@ -24,31 +27,26 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public Inventory getByVariantId(Long variantId) {
-        return inventoryRepository.findByVariantId(variantId)
+        ProductVariant variant = productVariantRepository.findById(variantId)
+                .orElseThrow(() -> new RuntimeException("Variant not found with id: " + variantId));
+
+        return inventoryRepository.findByProductVariant(variant)
                 .orElseThrow(() -> new RuntimeException("No inventory found for variant id: " + variantId));
     }
 
     @Override
     public List<Inventory> getByProductId(Long productId) {
-        List<ProductVariant> variants = productVariantRepository.findAllByProductId(productId);
-        if (variants.isEmpty()) {
-            throw new RuntimeException("No variants found for product id: " + productId);
-        }
-
-        List<Long> variantIds = variants.stream()
-                .map(ProductVariant::getId)
-                .toList();
-
-        // Lọc inventory theo variantId
-        return inventoryRepository.findAll()
-                .stream()
-                .filter(inv -> variantIds.contains(inv.getId()))
-                .toList();
+        return inventoryRepository.findAllByProductVariant_Product_Id(productId);
     }
 
     @Override
     public Inventory updateInventory(UpdateInventoryRequest request) {
-        Inventory inventory = inventoryRepository.findByVariantId(request.getVariantId()).get();
+        ProductVariant variant = productVariantRepository.findById(request.getVariantId())
+                .orElseThrow(() -> new RuntimeException("Variant not found with id: " + request.getVariantId()));
+
+        Inventory inventory = inventoryRepository.findByProductVariant(variant)
+                .orElseThrow(() -> new RuntimeException("No inventory found for variant id: " + request.getVariantId()));
+
         inventory.setQuantity(request.getQuantity());
         return inventoryRepository.save(inventory);
     }

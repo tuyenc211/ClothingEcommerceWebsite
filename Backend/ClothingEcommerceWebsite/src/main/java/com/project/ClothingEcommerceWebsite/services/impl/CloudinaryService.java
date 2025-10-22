@@ -16,11 +16,16 @@ public class CloudinaryService {
 
     public String uploadImage(MultipartFile file) {
         try {
-            Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
-                    ObjectUtils.asMap("folder", "products"));
-            return uploadResult.get("secure_url").toString(); // đường dẫn ảnh
+            Map uploadResult = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", "clothing_ecommerce/uploads",
+                            "resource_type", "image"
+                    )
+            );
+            return uploadResult.get("secure_url").toString();
         } catch (IOException e) {
-            throw new RuntimeException("Upload image failed: " + e.getMessage());
+            throw new RuntimeException("Failed to upload image: " + e.getMessage(), e);
         }
     }
 
