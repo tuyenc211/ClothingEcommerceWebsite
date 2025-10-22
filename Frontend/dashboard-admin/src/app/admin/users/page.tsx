@@ -71,6 +71,7 @@ export default function UsersManagementPage() {
   const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingUserName, setDeletingUserName] = useState("");
+  const [togglingUserId, setTogglingUserId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -125,7 +126,9 @@ export default function UsersManagementPage() {
   };
 
   const handleToggleStatus = async (userId: number) => {
+    setTogglingUserId(userId);
     const success = await toggleUserStatus(userId);
+    setTogglingUserId(null);
     if (success) {
       const user = users.find((u) => u.id === userId);
       const newStatus =
@@ -374,9 +377,9 @@ export default function UsersManagementPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            disabled={isLoading}
+                            disabled={togglingUserId === user.id}
                           >
-                            {isLoading ? (
+                            {togglingUserId === user.id ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                               <MoreHorizontal className="h-4 w-4" />

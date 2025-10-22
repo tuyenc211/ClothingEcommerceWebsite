@@ -221,36 +221,27 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true, error: null });
 
         try {
-          // Get current user to check their status
           const currentUser = get().users.find((user) => user.id === id);
           if (!currentUser) {
             set({ error: "Không tìm thấy người dùng", isLoading: false });
             toast.error("Không tìm thấy người dùng");
             return false;
           }
-
-          // Call appropriate API based on current status
-          // If user is active (isActive = true), call lock API
-          // If user is locked (isActive = false), call unlock API
           const endpoint = currentUser.isActive
             ? `/users/${id}/lock`
             : `/users/${id}/unlock`;
 
-          const response = await privateClient.put(endpoint);
-          const updatedUser = response.data?.data || response.data;
-
-          set((state) => ({
-            users: state.users.map((user) =>
-              user.id === id ? updatedUser : user
-            ),
-            isLoading: false,
-          }));
+          await privateClient.put(endpoint);
 
           const successMessage = currentUser.isActive
             ? "Đã khóa tài khoản thành công!"
             : "Đã mở khóa tài khoản thành công!";
           toast.success(successMessage);
-          console.log("✅ User status toggled:", updatedUser);
+
+          // Fetch lại toàn bộ users để đồng bộ với backend
+          await get().fetchUsers();
+          
+          console.log("✅ User status toggled and users refreshed");
           return true;
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
@@ -269,7 +260,6 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true, error: null });
 
         try {
-          // Validate role
           if (!role || !role.name) {
             set({
               error: "Người dùng phải có ít nhất một vai trò",
@@ -279,13 +269,10 @@ export const useUserStore = create<UserState>()(
             return false;
           }
 
-          // Send role object with uppercase name
           const response = await privateClient.put(`/users/${id}/roles`, {
             id: role.id,
             name: role.name.toUpperCase(),
           });
-
-          // Update user in store with response data
           const updatedUser = response.data?.data || response.data;
           set((state) => ({
             users: state.users.map((user) =>
