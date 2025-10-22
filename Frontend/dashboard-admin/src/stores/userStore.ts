@@ -38,7 +38,7 @@ interface UserState {
   updateUser: (id: number, userData: Partial<User>) => Promise<boolean>;
   deleteUser: (id: number) => Promise<boolean>;
   toggleUserStatus: (id: number) => Promise<boolean>;
-  assignRoles: (id: number, roles: Role[]) => Promise<boolean>;
+  assignRoles: (id: number, roleName: string) => Promise<boolean>;
 
   // Utils
   clearError: () => void;
@@ -249,12 +249,12 @@ export const useUserStore = create<UserState>()(
         }
       },
 
-      assignRoles: async (id: number, roles: Role[]) => {
+      assignRoles: async (id: number, roleName: string) => {
         set({ isLoading: true, error: null });
 
         try {
-          // Validate roles
-          if (!roles || roles.length === 0) {
+          // Validate role name
+          if (!roleName) {
             set({
               error: "Người dùng phải có ít nhất một vai trò",
               isLoading: false,
@@ -263,18 +263,16 @@ export const useUserStore = create<UserState>()(
             return false;
           }
 
+          // Send only the role name in uppercase
           const response = await privateClient.put(`/users/${id}/roles`, {
-            roles: roles,
+            name: roleName.toUpperCase(),
           });
 
+          // Update user in store with response data
+          const updatedUser = response.data?.data || response.data;
           set((state) => ({
             users: state.users.map((user) =>
-              user.id === id
-                ? {
-                    ...user,
-                    roles: response.data?.roles || roles,
-                  }
-                : user
+              user.id === id ? updatedUser : user
             ),
             isLoading: false,
           }));
