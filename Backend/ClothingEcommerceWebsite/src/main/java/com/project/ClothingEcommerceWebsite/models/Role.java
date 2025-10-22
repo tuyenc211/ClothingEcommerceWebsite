@@ -22,9 +22,4 @@ public class Role {
 
     @Column(nullable = false, length = 100)
     private String name;
-
-    // Liên kết ngược với User (nếu cần)
-    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Set<User> users = new HashSet<>();
 }
