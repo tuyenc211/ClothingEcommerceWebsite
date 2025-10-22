@@ -40,16 +40,9 @@ interface RoleOption {
 
 const availableRoles: RoleOption[] = [
   {
-    id: 1,
-    name: "Admin",
-    description: "Quản trị viên - có toàn quyền trong hệ thống",
-    icon: Shield,
-    color: "bg-red-500",
-  },
-  {
     id: 2,
     name: "Staff",
-    description: "Nhân viên - có quyền hạn hạn chế",
+    description: "Nhân viên - có quyền quản lý sản phẩm và đơn hàng",
     icon: Users,
     color: "bg-blue-500",
   },
@@ -99,10 +92,8 @@ export default function AssignRolePage() {
         return;
       }
 
-      const newRoles: Role[] = [
-        { id: selectedRole.id, name: selectedRole.name },
-      ];
-      const success = await assignRoles(currentUser.id, newRoles);
+      // Send only the role name in uppercase
+      const success = await assignRoles(currentUser.id, selectedRole.name.toUpperCase());
 
       if (success) {
         toast.success(
@@ -234,18 +225,15 @@ export default function AssignRolePage() {
             </div>
           )}
 
-          {/* Warning for Admin role */}
-          {selectedRoleId === 1 && (
-            <div className="p-3 border border-orange-200 bg-orange-50 rounded-lg">
+          {/* Info for Staff role */}
+          {selectedRoleId === 2 && (
+            <div className="p-3 border border-blue-200 bg-blue-50 rounded-lg">
               <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-orange-600" />
-                <span className="text-sm font-medium text-orange-800">
-                  Cảnh báo: Vai trò Admin có toàn quyền trong hệ thống
+                <Users className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">
+                  Vai trò nhân viên có quyền quản lý sản phẩm và đơn hàng
                 </span>
               </div>
-              <p className="text-xs text-orange-700 mt-1">
-                Chỉ gán vai trò Admin cho những người thực sự cần thiết
-              </p>
             </div>
           )}
         </CardContent>
