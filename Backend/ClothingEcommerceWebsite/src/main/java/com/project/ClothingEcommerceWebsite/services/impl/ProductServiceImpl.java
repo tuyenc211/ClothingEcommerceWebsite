@@ -29,6 +29,7 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final SizeRepository sizeRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final InventoryRepository inventoryRepository;
 
     @Override
     @Transactional
@@ -65,6 +66,10 @@ public class ProductServiceImpl implements ProductService {
                         .price(product.getBasePrice())
                         .build();
                 variants.add(variant);
+                inventoryRepository.save(Inventory.builder()
+                        .productVariant(variant)
+                        .quantity(0)
+                        .build());
             }
         }
         productVariantRepository.saveAll(variants);
