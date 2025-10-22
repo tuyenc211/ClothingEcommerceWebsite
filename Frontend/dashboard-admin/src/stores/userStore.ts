@@ -221,9 +221,22 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true, error: null });
 
         try {
-          const response = await privateClient.patch(
-            `/users/${id}/toggle-status`
-          );
+          // Get current user to check their status
+          const currentUser = get().users.find((user) => user.id === id);
+          if (!currentUser) {
+            set({ error: "Không tìm thấy người dùng", isLoading: false });
+            toast.error("Không tìm thấy người dùng");
+            return false;
+          }
+
+          // Call appropriate API based on current status
+          // If user is active (isActive = true), call lock API
+          // If user is locked (isActive = false), call unlock API
+          const endpoint = currentUser.isActive
+            ? `/users/${id}/lock`
+            : `/users/${id}/unlock`;
+
+          const response = await privateClient.put(endpoint);
           const updatedUser = response.data?.data || response.data;
 
           set((state) => ({
@@ -233,7 +246,10 @@ export const useUserStore = create<UserState>()(
             isLoading: false,
           }));
 
-          toast.success("Thay đổi trạng thái thành công!");
+          const successMessage = currentUser.isActive
+            ? "Đã khóa tài khoản thành công!"
+            : "Đã mở khóa tài khoản thành công!";
+          toast.success(successMessage);
           console.log("✅ User status toggled:", updatedUser);
           return true;
         } catch (error) {
