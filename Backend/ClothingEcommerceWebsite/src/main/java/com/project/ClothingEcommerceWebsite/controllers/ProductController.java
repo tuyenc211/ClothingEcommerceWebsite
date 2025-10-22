@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -27,9 +28,16 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
     @PostMapping("/upload-image")
-    public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
-        String imageUrl = cloudinaryService.uploadImage(file);
-        return ResponseEntity.ok(Map.of("url", imageUrl));
+    public ResponseEntity<?> uploadImage(@RequestParam("files") List<MultipartFile> files) {
+        if (files == null || files.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "No files provided"));
+        }
+        List<String> imageUrls = new ArrayList<>();
+        for (MultipartFile file : files) {
+            String url = cloudinaryService.uploadImage(file);
+            imageUrls.add(url);
+        }
+        return ResponseEntity.ok(Map.of("urls", imageUrls));
     }
     @GetMapping("")
     public ResponseEntity<List<ProductResponse>> getAllProduct() {
