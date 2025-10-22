@@ -33,13 +33,21 @@ import { useCategoryStore } from "@/stores/categoryStore";
 import { formatCurrency } from "@/lib/utils";
 
 export default function InventoryOverviewPage() {
-  const { products, recalculateAllTotalQuantities } = useProductStore();
-  const { categories } = useCategoryStore();
+  const { products, fetchProducts, recalculateAllTotalQuantities } = useProductStore();
+  const { categories, fetchCategories } = useCategoryStore();
 
-  // Tính lại tổng quantity khi component mount
+  // Fetch data khi component mount
   useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, [fetchProducts, fetchCategories]);
+
+  // Tính lại tổng quantity sau khi fetch xong
+  useEffect(() => {
+    if (products.length > 0) {
     recalculateAllTotalQuantities();
-  }, [recalculateAllTotalQuantities]);
+    }
+  }, [products.length, recalculateAllTotalQuantities]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StockStatus | "all">("all");
@@ -59,10 +67,10 @@ export default function InventoryOverviewPage() {
         name: product.name,
         sku: product.sku,
         categoryName: product.category?.name || "N/A",
-        categoryId: product.category_id,
+        categoryId: product.category?.id,
         totalStock,
         status,
-        basePrice: product.base_price,
+        basePrice: product.basePrice,
       };
     });
   }, [products]);
