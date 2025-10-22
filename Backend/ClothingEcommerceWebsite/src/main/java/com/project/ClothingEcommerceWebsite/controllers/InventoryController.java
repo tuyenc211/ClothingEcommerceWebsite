@@ -15,7 +15,7 @@ import java.util.List;
 public class InventoryController {
     private final InventoryService inventoryService;
 
-    @GetMapping
+    @GetMapping("")
     public ResponseEntity<List<Inventory>> getAll() {
         return ResponseEntity.ok(inventoryService.getAllInventories());
     }
@@ -23,6 +23,11 @@ public class InventoryController {
     @GetMapping("/{variantId}")
     public ResponseEntity<Inventory> getByVariantId(@PathVariable Long variantId) {
         return ResponseEntity.ok(inventoryService.getByVariantId(variantId));
+    }
+
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<List<Inventory>> getByProductId(@PathVariable Long productId) {
+        return ResponseEntity.ok(inventoryService.getByProductId(productId));
     }
 
     @PutMapping("/update")
