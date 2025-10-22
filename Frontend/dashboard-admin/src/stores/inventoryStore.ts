@@ -13,6 +13,21 @@ export interface Inventory {
     sizeId?: number;
     colorId?: number;
     price: number;
+    product?: {
+      id: number;
+      name: string;
+      sku: string;
+    };
+    size?: {
+      id: number;
+      name: string;
+      code: string;
+    };
+    color?: {
+      id: number;
+      name: string;
+      code: string;
+    };
   };
   quantity: number;
 }
