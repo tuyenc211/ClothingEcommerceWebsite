@@ -23,11 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Save, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import { useProductStore } from "@/stores/productStore";
-import { useSizeStore } from "@/stores/sizeStore";
-import { useColorStore } from "@/stores/colorStore";
 import { useInventoryStore } from "@/stores/inventoryStore";
-import { RoleGuard } from "@/components/auth/RoleGuard";
 
 interface VariantInventory {
   variantId: number;
@@ -44,58 +40,49 @@ export default function ProductInventoryPage() {
   const router = useRouter();
   const productId = Number(params?.id);
 
-  const { getProduct, fetchProducts } = useProductStore();
-  const { sizes, fetchSizes } = useSizeStore();
-  const { colors, fetchColors } = useColorStore();
   const { updateInventory, fetchInventoriesByProduct } = useInventoryStore();
 
-  const [product, setProduct] = useState(getProduct(productId));
+  const [productName, setProductName] = useState("");
+  const [productSku, setProductSku] = useState("");
   const [variants, setVariants] = useState<VariantInventory[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-  const [inventories, setInventories] = useState<any[]>([]);
 
   // Fetch data khi component mount
   useEffect(() => {
     const loadData = async () => {
-      await fetchProducts();
-      await fetchSizes();
-      await fetchColors();
-      
-    const loadedProduct = getProduct(productId);
-    if (!loadedProduct) {
-      toast.error("Không tìm thấy sản phẩm");
-      router.push("/admin/list-product");
-      return;
-    }
-
-    setProduct(loadedProduct);
-
-      // Fetch inventories cho product này
+      // Chỉ cần gọi 1 API duy nhất - backend đã trả về đầy đủ thông tin
       const productInventories = await fetchInventoriesByProduct(productId);
-      setInventories(productInventories);
+      
+      if (!productInventories || productInventories.length === 0) {
+        toast.error("Không tìm thấy sản phẩm hoặc sản phẩm chưa có biến thể");
+        router.push("/admin/stock");
+        return;
+      }
 
-    // Map variants với thông tin size và color
-    const variantInventories: VariantInventory[] =
-      loadedProduct.variants?.map((variant) => {
-        const size = sizes.find((s) => s.id === variant.size_id);
-        const color = colors.find((c) => c.id === variant.color_id);
+      // Lấy thông tin product từ inventory đầu tiên
+      const firstInventory = productInventories[0];
+      setProductName(firstInventory.productVariant?.product?.name || "Sản phẩm");
+      setProductSku(firstInventory.productVariant?.product?.sku || "");
 
+      // Map inventories thành variants với thông tin từ backend
+      const variantInventories: VariantInventory[] = productInventories.map((inv) => {
+        const variant = inv.productVariant;
         return {
           variantId: variant.id,
           sku: variant.sku,
-          sizeName: size?.name || "N/A",
-          colorName: color?.name || "N/A",
-          colorCode: color?.code || "#000000",
-          currentQuantity: variant.inventory?.quantity || 0,
-          newQuantity: variant.inventory?.quantity || 0,
+          sizeName: variant.size?.name || "N/A",
+          colorName: variant.color?.name || "N/A",
+          colorCode: variant.color?.code || "#000000",
+          currentQuantity: inv.quantity || 0,
+          newQuantity: inv.quantity || 0,
         };
-      }) || [];
+      });
 
-    setVariants(variantInventories);
+      setVariants(variantInventories);
     };
     
     loadData();
-  }, [productId, getProduct, fetchProducts, fetchSizes, fetchColors, fetchInventoriesByProduct, sizes, colors, router]);
+  }, [productId, fetchInventoriesByProduct, router]);
 
   // Update quantity trong state
   const handleQuantityChange = (variantId: number, value: string) => {
@@ -129,28 +116,20 @@ export default function ProductInventoryPage() {
       toast.success("Cập nhật tồn kho thành công!");
 
       // Reload data từ backend
-      await fetchProducts();
       const productInventories = await fetchInventoriesByProduct(productId);
-      setInventories(productInventories);
       
-      const updatedProduct = getProduct(productId);
-      setProduct(updatedProduct);
-
-      const updatedVariants: VariantInventory[] =
-        updatedProduct?.variants?.map((variant) => {
-          const size = sizes.find((s) => s.id === variant.size_id);
-          const color = colors.find((c) => c.id === variant.color_id);
-
-          return {
-            variantId: variant.id,
-            sku: variant.sku,
-            sizeName: size?.name || "N/A",
-            colorName: color?.name || "N/A",
-            colorCode: color?.code || "#000000",
-            currentQuantity: variant.inventory?.quantity || 0,
-            newQuantity: variant.inventory?.quantity || 0,
-          };
-        }) || [];
+      const updatedVariants: VariantInventory[] = productInventories.map((inv) => {
+        const variant = inv.productVariant;
+        return {
+          variantId: variant.id,
+          sku: variant.sku,
+          sizeName: variant.size?.name || "N/A",
+          colorName: variant.color?.name || "N/A",
+          colorCode: variant.color?.code || "#000000",
+          currentQuantity: inv.quantity || 0,
+          newQuantity: inv.quantity || 0,
+        };
+      });
 
       setVariants(updatedVariants);
     } catch {
@@ -191,7 +170,7 @@ export default function ProductInventoryPage() {
     );
   };
 
-  if (!product) {
+  if (variants.length === 0 && !productName) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -212,7 +191,7 @@ export default function ProductInventoryPage() {
           <div>
             <h1 className="text-3xl font-bold">Quản lý tồn kho</h1>
             <p className="text-muted-foreground">
-              {product.name} - {product.sku}
+              {productName} {productSku && `- ${productSku}`}
             </p>
           </div>
         </div>
