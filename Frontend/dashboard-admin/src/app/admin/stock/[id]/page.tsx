@@ -26,6 +26,8 @@ import Link from "next/link";
 import { useProductStore } from "@/stores/productStore";
 import { useSizeStore } from "@/stores/sizeStore";
 import { useColorStore } from "@/stores/colorStore";
+import { useInventoryStore } from "@/stores/inventoryStore";
+import { RoleGuard } from "@/components/auth/RoleGuard";
 
 interface VariantInventory {
   variantId: number;
@@ -42,16 +44,23 @@ export default function ProductInventoryPage() {
   const router = useRouter();
   const productId = Number(params?.id);
 
-  const { getProduct, updateInventory } = useProductStore();
-  const { sizes } = useSizeStore();
-  const { colors } = useColorStore();
+  const { getProduct, fetchProducts } = useProductStore();
+  const { sizes, fetchSizes } = useSizeStore();
+  const { colors, fetchColors } = useColorStore();
+  const { updateInventory, fetchInventoriesByProduct } = useInventoryStore();
 
   const [product, setProduct] = useState(getProduct(productId));
   const [variants, setVariants] = useState<VariantInventory[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [inventories, setInventories] = useState<any[]>([]);
 
-  // Load product và variants
+  // Fetch data khi component mount
   useEffect(() => {
+    const loadData = async () => {
+      await fetchProducts();
+      await fetchSizes();
+      await fetchColors();
+      
     const loadedProduct = getProduct(productId);
     if (!loadedProduct) {
       toast.error("Không tìm thấy sản phẩm");
@@ -60,6 +69,10 @@ export default function ProductInventoryPage() {
     }
 
     setProduct(loadedProduct);
+
+      // Fetch inventories cho product này
+      const productInventories = await fetchInventoriesByProduct(productId);
+      setInventories(productInventories);
 
     // Map variants với thông tin size và color
     const variantInventories: VariantInventory[] =
@@ -79,7 +92,10 @@ export default function ProductInventoryPage() {
       }) || [];
 
     setVariants(variantInventories);
-  }, [productId, getProduct, sizes, colors, router]);
+    };
+    
+    loadData();
+  }, [productId, getProduct, fetchProducts, fetchSizes, fetchColors, fetchInventoriesByProduct, sizes, colors, router]);
 
   // Update quantity trong state
   const handleQuantityChange = (variantId: number, value: string) => {
@@ -98,16 +114,25 @@ export default function ProductInventoryPage() {
     setIsSaving(true);
 
     try {
-      // Update từng variant
-      for (const variant of variants) {
-        if (variant.newQuantity !== variant.currentQuantity) {
-          updateInventory(variant.variantId, variant.newQuantity);
-        }
-      }
+      // Update từng variant thông qua API backend
+      const updatePromises = variants
+        .filter(v => v.newQuantity !== v.currentQuantity)
+        .map(variant => 
+          updateInventory({
+            variantId: variant.variantId,
+            quantity: variant.newQuantity
+          })
+        );
+      
+      await Promise.all(updatePromises);
 
       toast.success("Cập nhật tồn kho thành công!");
 
-      // Reload data
+      // Reload data từ backend
+      await fetchProducts();
+      const productInventories = await fetchInventoriesByProduct(productId);
+      setInventories(productInventories);
+      
       const updatedProduct = getProduct(productId);
       setProduct(updatedProduct);
 
