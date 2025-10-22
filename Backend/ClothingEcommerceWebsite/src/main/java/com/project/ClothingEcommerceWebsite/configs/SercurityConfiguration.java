@@ -75,6 +75,8 @@ public class SercurityConfiguration {
                                 .antMatchers("/api/v1/auth/logout").permitAll()
                                 .antMatchers("/api/v1/colors/**").permitAll()
                                 .antMatchers("/api/v1/sizes/**").permitAll()
+                                .antMatchers("/api/v1/coupons/**").permitAll()
+                                .antMatchers("/api/v1/users/**").permitAll()
                                 .antMatchers("/api/v1/categories/**").permitAll()
                                 .antMatchers("/api/v1/products/**").permitAll()
                                 .antMatchers("/api/v1/subcategories/**").permitAll()
