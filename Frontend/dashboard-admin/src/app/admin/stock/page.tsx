@@ -30,33 +30,38 @@ import { Package, AlertTriangle, Search, Filter, Edit } from "lucide-react";
 import Link from "next/link";
 import { useProductStore, StockStatus } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
+import { useInventoryStore } from "@/stores/inventoryStore";
 import { formatCurrency } from "@/lib/utils";
+import { RoleGuard } from "@/components/auth/RoleGuard";
 
 export default function InventoryOverviewPage() {
-  const { products, fetchProducts, recalculateAllTotalQuantities } = useProductStore();
+  const { products, fetchProducts } = useProductStore();
   const { categories, fetchCategories } = useCategoryStore();
+  const { fetchAllInventories, inventories } = useInventoryStore();
 
   // Fetch data khi component mount
   useEffect(() => {
     fetchProducts();
     fetchCategories();
-  }, [fetchProducts, fetchCategories]);
-
-  // Tính lại tổng quantity sau khi fetch xong
-  useEffect(() => {
-    if (products.length > 0) {
-    recalculateAllTotalQuantities();
-    }
-  }, [products.length, recalculateAllTotalQuantities]);
+    fetchAllInventories();
+  }, [fetchProducts, fetchCategories, fetchAllInventories]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StockStatus | "all">("all");
   const [categoryFilter, setCategoryFilter] = useState<number | "all">("all");
 
-  // Tính toán dữ liệu tồn kho
+  // Tính toán dữ liệu tồn kho từ inventories
   const inventoryData = useMemo(() => {
     return products.map((product) => {
-      const totalStock = product.totalQuantity || 0;
+      // Tính tổng tồn kho từ inventories của product
+      const productInventories = inventories.filter(
+        (inv) => inv.productVariant?.product?.id === product.id
+      );
+      
+      const totalStock = productInventories.reduce(
+        (sum, inv) => sum + (inv.quantity || 0),
+        0
+      );
 
       let status: StockStatus = "in_stock";
       if (totalStock === 0) status = "out_of_stock";
@@ -73,7 +78,7 @@ export default function InventoryOverviewPage() {
         basePrice: product.basePrice,
       };
     });
-  }, [products]);
+  }, [products, inventories]);
 
   // Lọc dữ liệu
   const filteredData = useMemo(() => {
@@ -144,15 +149,25 @@ export default function InventoryOverviewPage() {
     );
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Quản lý tồn kho</h1>
-        <p className="text-muted-foreground">
-          Theo dõi và quản lý tồn kho của tất cả sản phẩm
-        </p>
+  // Loading state
+  if (products.length === 0 || inventories.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
+    );
+  }
+
+  return (
+    <RoleGuard requireStaff>
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold">Quản lý tồn kho</h1>
+          <p className="text-muted-foreground">
+            Theo dõi và quản lý tồn kho của tất cả sản phẩm
+          </p>
+        </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -353,5 +368,6 @@ export default function InventoryOverviewPage() {
         </CardContent>
       </Card>
     </div>
+    </RoleGuard>
   );
 }
