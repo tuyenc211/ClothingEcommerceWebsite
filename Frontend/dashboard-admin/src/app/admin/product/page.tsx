@@ -153,7 +153,8 @@ export default function AddProductPage() {
           Number(params.id),
           productData,
           data.sizes,
-          data.colors
+          data.colors,
+          data.images || []
         );
       } else {
         await addProductWithVariants(
