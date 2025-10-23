@@ -12,7 +12,7 @@ export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 export interface ProductImage {
   id: number;
   product_id: number;
-  imageUrl: string; // VARCHAR(500) NOT NULL
+  image_url: string; // VARCHAR(500) NOT NULL
   position: number; // INT NOT NULL DEFAULT 0
 }
 
@@ -183,7 +183,6 @@ export const useProductStore = create<ProductState>()(
           };
 
           const res = await privateClient.post("/products", payload);
-          console.log(res);
           const created = res.data?.data || res.data;
           const productId = created.id;
 
@@ -245,7 +244,7 @@ export const useProductStore = create<ProductState>()(
             colorIds: selectedColors,
           };
 
-          await privateClient.put(`/products/${id}`, payload);
+          await privateClient.put(`/products/${26}`, payload);
 
           // Step 2: Upload new images with productId in URL if provided
           if (imageFiles && imageFiles.length > 0) {

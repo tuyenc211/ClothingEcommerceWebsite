@@ -9,6 +9,7 @@ import com.project.ClothingEcommerceWebsite.models.*;
 import com.project.ClothingEcommerceWebsite.repositories.*;
 import com.project.ClothingEcommerceWebsite.services.CategoryService;
 import com.project.ClothingEcommerceWebsite.services.ProductService;
+import com.project.ClothingEcommerceWebsite.utils.CloudinaryUtil;
 import com.project.ClothingEcommerceWebsite.utils.SlugUtil;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class ProductServiceImpl implements ProductService {
     private final SizeRepository sizeRepository;
     private final ProductVariantRepository productVariantRepository;
     private final InventoryRepository inventoryRepository;
+    private final CloudinaryService cloudinaryService;
 
     @Override
     @Transactional
@@ -45,7 +47,8 @@ public class ProductServiceImpl implements ProductService {
         Product product = Product.builder()
                 .sku(request.getSku())
                 .name(request.getName())
-                .slug(SlugUtil.toSlug(
+                .slug(SlugUtil
+                        .toSlug(
                         request.getSlug() != null ? request.getSlug() : request.getName()))
                 .description(request.getDescription())
                 .basePrice(request.getBasePrice())
@@ -148,9 +151,15 @@ public class ProductServiceImpl implements ProductService {
         product.setCategory(category);
         product.setIsPublished(request.getIsPublished());
         productRepository.save(product);
+        inventoryRepository.deleteAllByProductVariant_Product_Id(product.getId());
+        inventoryRepository.flush();
         productVariantRepository.deleteAllByProductId(product.getId());
         productVariantRepository.flush();
-
+        List<ProductImage> productImages = productImageRepository.findAllByProductId(product.getId());
+        for (ProductImage image : productImages) {
+            cloudinaryService.deleteImage(CloudinaryUtil.extractPublicIdFromUrl(image.getImageUrl()));
+            productImageRepository.delete(image);
+        }
         List<Size> sizes = sizeRepository.findAllById(request.getSizeIds());
         List<Color> colors = colorRepository.findAllById(request.getColorIds());
         List<ProductVariant> variants = new ArrayList<>();
