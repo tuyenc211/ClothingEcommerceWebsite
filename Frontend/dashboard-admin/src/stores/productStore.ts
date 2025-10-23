@@ -74,7 +74,8 @@ interface ProductState {
     id: number,
     productData: Partial<Product>,
     selectedSizes: number[],
-    selectedColors: number[]
+    selectedColors: number[],
+    imageFiles?: File[]
   ) => Promise<void>;
   deleteProduct: (id: number) => Promise<void>;
   getProduct: (id: number) => Product | undefined;
@@ -165,11 +166,31 @@ export const useProductStore = create<ProductState>()(
         productData,
         selectedSizes,
         selectedColors,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        imageFiles // TODO: Backend chưa hỗ trợ upload ảnh
+        imageFiles
       ) => {
         set({ isLoading: true, error: null });
         try {
+          let imageUrls: string[] = [];
+
+          // Upload images if provided
+          if (imageFiles && imageFiles.length > 0) {
+            const formData = new FormData();
+            imageFiles.forEach((file) => {
+              formData.append("files", file);
+            });
+
+            const uploadRes = await privateClient.post(
+              "/products/upload-image",
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            );
+            imageUrls = uploadRes.data?.urls || [];
+          }
+
           // Build payload theo DTO BE
           const payload = {
             sku: productData.sku || `PRD-${Date.now()}`,
@@ -180,6 +201,7 @@ export const useProductStore = create<ProductState>()(
             isPublished: productData.isPublished ?? true,
             sizeIds: selectedSizes,
             colorIds: selectedColors,
+            imageUrls: imageUrls, // Add image URLs to payload
           };
 
           const res = await privateClient.post("/products", payload);
@@ -200,9 +222,30 @@ export const useProductStore = create<ProductState>()(
         }
       },
 
-      updateProduct: async (id, productData, selectedSizes, selectedColors) => {
+      updateProduct: async (id, productData, selectedSizes, selectedColors, imageFiles) => {
         set({ isLoading: true, error: null });
         try {
+          let imageUrls: string[] | undefined;
+
+          // Upload images if provided
+          if (imageFiles && imageFiles.length > 0) {
+            const formData = new FormData();
+            imageFiles.forEach((file) => {
+              formData.append("files", file);
+            });
+
+            const uploadRes = await privateClient.post(
+              "/products/upload-image",
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            );
+            imageUrls = uploadRes.data?.urls || [];
+          }
+
           const payload = {
             sku: productData.sku,
             name: productData.name,
@@ -212,6 +255,7 @@ export const useProductStore = create<ProductState>()(
             isPublished: productData.isPublished ?? true,
             sizeIds: selectedSizes,
             colorIds: selectedColors,
+            ...(imageUrls && { imageUrls }), // Only add imageUrls if images were uploaded
           };
 
           await privateClient.put(`/products/${id}`, payload);
