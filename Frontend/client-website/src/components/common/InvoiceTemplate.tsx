@@ -4,11 +4,13 @@ import { Order } from "@/stores/orderStore";
 import { OrderStatusBadge } from "./StatusBadges";
 import { format } from "date-fns";
 import { formatPrice } from "@/lib/utils";
+import useAuthStore from "@/stores/useAuthStore";
 interface InvoiceTemplateProps {
   order: Order;
 }
 
 export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
+  const { authUser } = useAuthStore();
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "dd/MM/yyyy");
@@ -27,7 +29,6 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
         addr.province || ""
       }, ${addr.country || ""}`;
     }
-    return order.shippingAddress || "N/A";
   };
 
   return (
@@ -72,12 +73,10 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
             Khách hàng
           </h3>
           <div className="text-gray-900 space-y-1">
-            <p className="font-medium">{order.customerName || "N/A"}</p>
-            <p className="text-sm text-gray-600">
-              {order.customerEmail || "N/A"}
-            </p>
-            {order.customerPhone && (
-              <p className="text-sm text-gray-600">{order.customerPhone}</p>
+            <p className="font-medium">{authUser?.fullName || "N/A"}</p>
+            <p className="text-sm text-gray-600">{authUser?.email || "N/A"}</p>
+            {authUser?.phone && (
+              <p className="text-sm text-gray-600">{authUser.phone}</p>
             )}
             <p className="text-sm text-gray-600">{formatAddress()}</p>
           </div>
