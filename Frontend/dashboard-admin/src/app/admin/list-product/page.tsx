@@ -138,7 +138,7 @@ export default function ProductListPage() {
                       <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center overflow-hidden">
                         {firstImage ? (
                           <Image
-                            src={firstImage.image_Url}
+                            src={firstImage.image_url}
                             alt={product.name}
                             width={48}
                             height={48}
