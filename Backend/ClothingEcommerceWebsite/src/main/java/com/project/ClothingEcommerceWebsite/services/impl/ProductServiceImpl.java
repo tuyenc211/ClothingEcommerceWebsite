@@ -196,7 +196,13 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        inventoryRepository.deleteAllByProductVariant_Product_Id(product.getId());
         productVariantRepository.deleteAllByProductId(product.getId());
+        List<ProductImage> productImages = productImageRepository.findAllByProductId(product.getId());
+        for (ProductImage image : productImages) {
+            cloudinaryService.deleteImage(CloudinaryUtil.extractPublicIdFromUrl(image.getImageUrl()));
+            productImageRepository.delete(image);
+        }
         productRepository.delete(product);
     }
 
