@@ -6,6 +6,7 @@ import com.project.ClothingEcommerceWebsite.models.User;
 import com.project.ClothingEcommerceWebsite.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,15 @@ import java.util.Set;
 public class UserController {
 
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
+
+    @PostMapping("/create")
+    public ResponseEntity<?> register(@RequestBody CreateUserRequest request) {
+        String hashPassword = this.passwordEncoder.encode(request.getPassword());
+        request.setPassword(hashPassword);
+        User newUser = userService.createUser(request);
+        return ResponseEntity.ok(newUser);
+    }
 
     @GetMapping("")
     public ResponseEntity<List<User>> getAllUsers() {
