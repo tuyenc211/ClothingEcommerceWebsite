@@ -46,8 +46,7 @@ interface ProductFormValues {
 interface ImagePreview {
   file?: File;
   image_url: string;
-  isExisting?: boolean;
-  imageId?: number;
+  id?: number;
 }
 
 export default function AddProductPage() {
@@ -109,8 +108,7 @@ export default function AddProductPage() {
         // Load existing images
         const existingImages: ImagePreview[] =
           existingProduct.images?.map((img) => ({
-            image_url: img.image_Url,
-            isExisting: true,
+            image_url: img.image_url,
             imageId: img.id,
           })) || [];
 
@@ -185,20 +183,15 @@ export default function AddProductPage() {
   };
 
   const removeImage = (index: number) => {
-    const imageToRemove = imagePreviews[index];
-
-    if (!imageToRemove.isExisting) {
-      const currentImages = watch("images") || [];
-      const newImageIndex = imagePreviews
-        .slice(0, index)
-        .filter((p) => !p.isExisting).length;
-      const newImages = currentImages.filter((_, i) => i !== newImageIndex);
-      setValue("images", newImages);
-    }
-
+    // Xóa đơn giản theo index
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-  };
 
+    const currentImages = watch("images") || [];
+    setValue(
+      "images",
+      currentImages.filter((_, i) => i !== index)
+    );
+  };
   return (
     <div className="space-y-6">
       {/* Header */}
