@@ -24,5 +24,6 @@ public class ProductResponse {
     private Category category;
     private Set<SizeResponse> sizes;
     private Set<ColorResponse> colors;
+    private List<ProductImageResponse> images;
 }
 

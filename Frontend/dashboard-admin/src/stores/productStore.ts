@@ -183,6 +183,7 @@ export const useProductStore = create<ProductState>()(
           };
 
           const res = await privateClient.post("/products", payload);
+          console.log(res);
           const created = res.data?.data || res.data;
           const productId = created.id;
 
