@@ -2,6 +2,7 @@ package com.project.ClothingEcommerceWebsite.services.impl;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateProductVariantRequest;
 import com.project.ClothingEcommerceWebsite.dtos.respond.ColorResponse;
+import com.project.ClothingEcommerceWebsite.dtos.respond.ProductImageResponse;
 import com.project.ClothingEcommerceWebsite.dtos.respond.ProductResponse;
 import com.project.ClothingEcommerceWebsite.dtos.respond.SizeResponse;
 import com.project.ClothingEcommerceWebsite.models.*;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductImageRepository productImageRepository;
     private final ColorRepository colorRepository;
     private final CategoryRepository categoryRepository;
     private final SizeRepository sizeRepository;
@@ -80,6 +82,14 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponse> getAllProduct() {
         List<Product> products = productRepository.findAll();
         return products.stream().map(product -> {
+            List<ProductImage> images = productImageRepository.findAllByProductId(product.getId());
+            List<ProductImageResponse> imageDTOs = images.stream()
+                    .map(image -> ProductImageResponse.builder()
+                            .id(image.getId())
+                            .image_url(image.getImageUrl())
+                            .position(image.getPosition())
+                            .build())
+                    .collect(Collectors.toList());
             List<ProductVariant> variants = productVariantRepository.findAllByProductId(product.getId());
             Set<SizeResponse> sizeDTOs = variants.stream()
                     .map(v -> v.getSize())
@@ -111,6 +121,7 @@ public class ProductServiceImpl implements ProductService {
                     .isPublished(product.getIsPublished())
                     .sizes(sizeDTOs)
                     .colors(colorDTOs)
+                    .images(imageDTOs)
                     .build();
         }).collect(Collectors.toList());
     }

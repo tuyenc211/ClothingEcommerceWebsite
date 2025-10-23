@@ -44,7 +44,7 @@ interface ProductFormValues {
 
 interface ImagePreview {
   file: File;
-  url: string;
+  image_url: string;
 }
 
 export default function AddProductPage() {
@@ -179,7 +179,7 @@ export default function AddProductPage() {
     // Tạo preview URLs cho các ảnh mới
     const newPreviews: ImagePreview[] = files.map((file) => ({
       file,
-      url: URL.createObjectURL(file),
+      image_url: URL.createObjectURL(file),
     }));
 
     // Cập nhật state previews và form
@@ -193,7 +193,7 @@ export default function AddProductPage() {
     const newImages = currentImages.filter((_, i) => i !== index);
 
     // Cleanup URL để tránh memory leak
-    URL.revokeObjectURL(imagePreviews[index].url);
+    URL.revokeObjectURL(imagePreviews[index].image_url);
 
     // Cập nhật state và form
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
@@ -204,7 +204,7 @@ export default function AddProductPage() {
   useEffect(() => {
     return () => {
       imagePreviews.forEach((preview) => {
-        URL.revokeObjectURL(preview.url);
+        URL.revokeObjectURL(preview.image_url);
       });
     };
   }, [imagePreviews]);
@@ -506,7 +506,7 @@ export default function AddProductPage() {
                       <div key={index} className="relative group">
                         <div className="aspect-square overflow-hidden rounded-lg border border-gray-200">
                           <Image
-                            src={preview.url}
+                            src={preview.image_url}
                             alt={`Preview ${index + 1}`}
                             width={200}
                             height={200}

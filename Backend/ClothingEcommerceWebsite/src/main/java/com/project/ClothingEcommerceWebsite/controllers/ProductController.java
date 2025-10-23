@@ -29,7 +29,19 @@ public class ProductController {
     @PostMapping("")
     public ResponseEntity<?> createProduct(@RequestBody CreateProductVariantRequest request) {
         Product product = productService.createProductWithVariants(request);
-        return ResponseEntity.ok(product);
+        ProductResponse productResponse = ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .sku(product.getSku())
+                .isPublished(product.getIsPublished())
+                .slug(product.getSlug())
+                .description(product.getDescription())
+                .basePrice(product.getBasePrice())
+                .category(null)
+                .sizes(null)
+                .colors(null)
+                .build();
+        return ResponseEntity.ok(productResponse);
     }
     @PostMapping("/{productId}/upload-image")
     public ResponseEntity<?> uploadImages(
@@ -40,10 +52,10 @@ public class ProductController {
             return ResponseEntity.badRequest().body(Map.of("error", "No files provided"));
         }
 
-        List<Image> savedImages = productImageService.uploadAndSaveImages(files, productId);
+        List<ProductImage> savedImages = productImageService.uploadAndSaveImages(files, productId);
 
         List<String> urls = savedImages.stream()
-                .map(Image::getUrl)
+                .map(ProductImage::getImageUrl)
                 .toList();
 
         return ResponseEntity.ok(Map.of(
