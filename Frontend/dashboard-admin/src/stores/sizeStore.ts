@@ -6,9 +6,9 @@ import { AxiosError } from "axios";
 
 export interface Size {
   id: number;
-  code: string; // VARCHAR(50) NOT NULL UNIQUE
-  name: string; // VARCHAR(100) NOT NULL
-  sortOrder: number; // INT NOT NULL DEFAULT 0
+  code: string;
+  name: string;
+  sortOrder: number;
 }
 
 interface SizeState {
@@ -16,8 +16,6 @@ interface SizeState {
   isLoading: boolean;
   isFetching: boolean;
   error: string | null;
-
-  // Actions
   fetchSizes: () => Promise<void>;
   addSize: (size: Omit<Size, "id">) => Promise<void>;
   updateSize: (id: number, size: Partial<Size>) => Promise<void>;

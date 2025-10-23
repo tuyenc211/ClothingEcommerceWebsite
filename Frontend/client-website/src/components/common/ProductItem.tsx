@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/stores/productStore";
-
+import {formatPrice} from "@/lib/utils";
 // Interface cho props của ProductItem
 export interface ProductItemProps {
   id: number;
   name: string;
   slug: string;
-  base_price: number;
-  images?: { imageUrl: string; position: number }[];
+  basePrice: number;
+  images?: {image_url: string; position: number }[];
   rating?: number;
   reviewCount?: number;
   onAddToCart?: (productId: number) => void;
@@ -23,7 +23,7 @@ export const convertProductToItemProps = (
     id: product.id,
     name: product.name,
     slug: product.slug,
-    base_price: product.base_price,
+    basePrice: product.basePrice,
     images: product.images?.sort((a, b) => a.position - b.position) || [],
     rating:
       product?.reviews && product.reviews.length > 0
@@ -37,7 +37,7 @@ export const convertProductToItemProps = (
 const ProductItem: React.FC<ProductItemProps> = ({
   id,
   name,
-  base_price,
+  basePrice,
   images = [],
   rating = 0,
   reviewCount = 0,
@@ -45,16 +45,8 @@ const ProductItem: React.FC<ProductItemProps> = ({
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
-
   // Get image URLs from images array
-  const imageUrls = images.map((img) => img.imageUrl);
+  const imageUrls = images.map((img) => img.image_url);
   const currentImage =
     imageUrls[currentImageIndex] || "/images/placeholder.jpg";
 
@@ -187,7 +179,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
         {/* Price */}
         <div className="mb-2">
           <span className="text-lg font-bold text-gray-900">
-            {formatPrice(base_price)}
+            {formatPrice(basePrice)}
           </span>
         </div>
 

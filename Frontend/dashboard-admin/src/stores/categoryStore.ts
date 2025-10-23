@@ -6,16 +6,14 @@ import { AxiosError } from "axios";
 // Category interface matching database schema
 export interface Category {
   id: number;
-  parentId?: number; // BIGINT references categories(id)
-  name: string; // VARCHAR(150) NOT NULL
-  slug: string; // VARCHAR(180) NOT NULL UNIQUE
-  isActive: boolean; // TINYINT(1) NOT NULL DEFAULT 1
+  parentId?: number;
+  name: string;
+  slug: string;
+  isActive: boolean;
 
   // Optional populated fields
-  parent?: Category; // Parent category if parentId exists
-  children?: Category[]; // Child categories
-
-  // Legacy fields for compatibility
+  parent?: Category;
+  children?: Category[];
 }
 
 interface CategoryState {
