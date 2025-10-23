@@ -30,6 +30,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useForm, Controller } from "react-hook-form";
 import { Category } from "@/stores/categoryStore";
+
 interface ProductFormValues {
   name: string;
   sku: string;
@@ -43,8 +44,10 @@ interface ProductFormValues {
 }
 
 interface ImagePreview {
-  file: File;
+  file?: File; // Optional vì có thể là ảnh từ server
   image_url: string;
+  isExisting?: boolean; // Flag để phân biệt ảnh cũ vs ảnh mới
+  imageId?: number; // ID của ảnh từ server
 }
 
 export default function AddProductPage() {
@@ -61,7 +64,9 @@ export default function AddProductPage() {
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
+
   const subcategories = categories.filter((c) => c.parentId);
+
   const {
     register,
     control,
@@ -108,6 +113,16 @@ export default function AddProductPage() {
         console.log("Extracted sizes:", productSizes);
         console.log("Category:", existingProduct.category);
 
+        // Load existing images vào preview
+        const existingImages: ImagePreview[] =
+          existingProduct.images?.map((img) => ({
+            image_url: img.imageUrl,
+            isExisting: true,
+            imageId: img.id,
+          })) || [];
+
+        setImagePreviews(existingImages);
+
         // Add timeout to ensure Select components are fully rendered
         setTimeout(() => {
           const formValues = {
@@ -122,13 +137,11 @@ export default function AddProductPage() {
             images: [] as File[],
           };
           reset(formValues);
-
-          // Reset image previews khi chỉnh sửa sản phẩm
-          setImagePreviews([]);
         }, 100);
       }
     }
   }, [isEdit, params?.id, getProduct, reset, categories, colors, sizes]);
+
   const onSubmit = async (data: ProductFormValues) => {
     console.log("Form data:", data);
 
@@ -172,7 +185,7 @@ export default function AddProductPage() {
     }
   };
 
-  // handle manual image upload
+  // Handle manual image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
@@ -180,6 +193,7 @@ export default function AddProductPage() {
     const newPreviews: ImagePreview[] = files.map((file) => ({
       file,
       image_url: URL.createObjectURL(file),
+      isExisting: false,
     }));
 
     // Cập nhật state previews và form
@@ -189,22 +203,40 @@ export default function AddProductPage() {
 
   // Xóa ảnh khỏi preview
   const removeImage = (index: number) => {
-    const currentImages = watch("images") || [];
-    const newImages = currentImages.filter((_, i) => i !== index);
+    const imageToRemove = imagePreviews[index];
 
-    // Cleanup URL để tránh memory leak
-    URL.revokeObjectURL(imagePreviews[index].image_url);
+    // Nếu là ảnh mới (không phải từ server), cleanup URL và xóa khỏi form
+    if (!imageToRemove.isExisting) {
+      const currentImages = watch("images") || [];
+      const newImages = currentImages.filter((_, i) => {
+        // Tính index trong mảng images bằng cách đếm số ảnh mới trước đó
+        const newImageIndex = imagePreviews
+          .slice(0, index)
+          .filter((p) => !p.isExisting).length;
+        return i !== newImageIndex;
+      });
 
-    // Cập nhật state và form
+      // Cleanup URL để tránh memory leak
+      URL.revokeObjectURL(imageToRemove.image_url);
+      setValue("images", newImages);
+    }
+
+    // Xóa preview
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-    setValue("images", newImages);
+
+    // TODO: Nếu cần xóa ảnh từ server, gọi API ở đây
+    // if (imageToRemove.isExisting && imageToRemove.imageId) {
+    //   deleteProductImage(imageToRemove.imageId);
+    // }
   };
 
   // Cleanup URLs khi component unmount
   useEffect(() => {
     return () => {
       imagePreviews.forEach((preview) => {
-        URL.revokeObjectURL(preview.image_url);
+        if (!preview.isExisting && preview.image_url) {
+          URL.revokeObjectURL(preview.image_url);
+        }
       });
     };
   }, [imagePreviews]);
@@ -514,6 +546,12 @@ export default function AddProductPage() {
                             unoptimized={true}
                           />
                         </div>
+                        {/* Badge để phân biệt ảnh cũ vs mới */}
+                        {preview.isExisting && (
+                          <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                            Ảnh hiện tại
+                          </div>
+                        )}
                         <Button
                           type="button"
                           variant="destructive"
