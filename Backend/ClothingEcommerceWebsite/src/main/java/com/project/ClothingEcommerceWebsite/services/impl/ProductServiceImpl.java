@@ -155,10 +155,21 @@ public class ProductServiceImpl implements ProductService {
         inventoryRepository.flush();
         productVariantRepository.deleteAllByProductId(product.getId());
         productVariantRepository.flush();
+        List<String> keepImageUrls = request.getKeepImageUrls();
+        if (keepImageUrls == null) {
+            keepImageUrls = new ArrayList<>();
+        }
+
         List<ProductImage> productImages = productImageRepository.findAllByProductId(product.getId());
         for (ProductImage image : productImages) {
-            cloudinaryService.deleteImage(CloudinaryUtil.extractPublicIdFromUrl(image.getImageUrl()));
-            productImageRepository.delete(image);
+            if (!keepImageUrls.contains(image.getImageUrl())) {
+                try {
+                    cloudinaryService.deleteImage(CloudinaryUtil.extractPublicIdFromUrl(image.getImageUrl()));
+                    productImageRepository.delete(image);
+                } catch (Exception e) {
+                    System.err.println("Warning: Could not delete image: " + e.getMessage());
+                }
+            }
         }
         List<Size> sizes = sizeRepository.findAllById(request.getSizeIds());
         List<Color> colors = colorRepository.findAllById(request.getColorIds());

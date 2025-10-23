@@ -75,8 +75,9 @@ interface ProductState {
     productData: Partial<Product>,
     selectedSizes: number[],
     selectedColors: number[],
-    imageFiles?: File[]
-  ) => Promise<void>;
+    imageFiles?: File[],
+    keepImageUrls?: string[]
+  )=> Promise<void>;
   deleteProduct: (id: number) => Promise<void>;
   getProduct: (id: number) => Product | undefined;
   getProductBySku: (sku: string) => Product | undefined;
@@ -229,7 +230,14 @@ export const useProductStore = create<ProductState>()(
         }
       },
 
-      updateProduct: async (id, productData, selectedSizes, selectedColors, imageFiles) => {
+      updateProduct: async (
+        id, 
+        productData, 
+        selectedSizes, 
+        selectedColors, 
+        imageFiles,
+        keepImageUrls = []  // ✅ THÊM PARAM
+      ) => {
         set({ isLoading: true, error: null });
         try {
           // Step 1: Update product information first
@@ -242,31 +250,31 @@ export const useProductStore = create<ProductState>()(
             isPublished: productData.isPublished ?? true,
             sizeIds: selectedSizes,
             colorIds: selectedColors,
+            keepImageUrls: keepImageUrls,  // ✅ THÊM DÒNG NÀY
           };
-
-          await privateClient.put(`/products/${26}`, payload);
-
+      
+          await privateClient.put(`/products/${id}`, payload);  // ✅ SỬA: xóa hardcode 26
+      
           // Step 2: Upload new images with productId in URL if provided
           if (imageFiles && imageFiles.length > 0) {
             const formData = new FormData();
             imageFiles.forEach((file) => {
               formData.append("files", file);
             });
-
+      
             await privateClient.post(
               `/products/${id}/upload-image`,
               formData,
               {
                 headers: {
-                  "Content-Type": "multipart/form-data",
+                  "Content-Type": undefined,
                 },
               }
             );
           }
-
-          // Fetch lại danh sách để có data mới nhất
+      
           await get().fetchProducts();
-
+      
           toast.success("Cập nhật sản phẩm thành công");
           set({ isLoading: false });
         } catch (error) {
