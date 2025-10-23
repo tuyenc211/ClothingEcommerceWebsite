@@ -47,6 +47,7 @@ interface ImagePreview {
   file?: File;
   image_url: string;
   id?: number;
+  isExisting?: boolean;
 }
 
 export default function AddProductPage() {
@@ -110,6 +111,7 @@ export default function AddProductPage() {
           existingProduct.images?.map((img) => ({
             image_url: img.image_url,
             imageId: img.id,
+            isExisting: true,
           })) || [];
 
         setImagePreviews(existingImages);
@@ -147,12 +149,19 @@ export default function AddProductPage() {
       };
 
       if (isEdit && params?.id) {
+        const keepImageUrls = imagePreviews
+          .filter(img => img.isExisting)
+          .map(img => img.image_url);
+        
+        const newImageFiles = data.images || [];
+      
         await updateProduct(
           Number(params.id),
           productData,
           data.sizes,
           data.colors,
-          data.images || []
+          newImageFiles,   
+          keepImageUrls  
         );
       } else {
         await addProductWithVariants(

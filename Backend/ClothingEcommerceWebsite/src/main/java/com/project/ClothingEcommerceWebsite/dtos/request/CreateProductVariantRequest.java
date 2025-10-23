@@ -19,4 +19,5 @@ public class CreateProductVariantRequest {
     private Boolean isPublished;
     private List<Long> sizeIds;
     private List<Long> colorIds;
+    private List<String> keepImageUrls;
 }
