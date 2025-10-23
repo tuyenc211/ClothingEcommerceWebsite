@@ -46,7 +46,7 @@ interface ProductFormValues {
 interface ImagePreview {
   file?: File;
   image_url: string;
-  imageId?: number;
+  id?: number;
 }
 
 export default function AddProductPage() {
