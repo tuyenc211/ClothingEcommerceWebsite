@@ -170,28 +170,7 @@ export const useProductStore = create<ProductState>()(
       ) => {
         set({ isLoading: true, error: null });
         try {
-          let imageUrls: string[] = [];
-
-          // Upload images if provided
-          if (imageFiles && imageFiles.length > 0) {
-            const formData = new FormData();
-            imageFiles.forEach((file) => {
-              formData.append("files", file);
-            });
-
-            const uploadRes = await privateClient.post(
-              "/products/upload-image",
-              formData,
-              {
-                headers: {
-                  "Content-Type": "multipart/form-data",
-                },
-              }
-            );
-            imageUrls = uploadRes.data?.urls || [];
-          }
-
-          // Build payload theo DTO BE
+          // Step 1: Create product first without images
           const payload = {
             sku: productData.sku || `PRD-${Date.now()}`,
             name: productData.name,
@@ -201,16 +180,44 @@ export const useProductStore = create<ProductState>()(
             isPublished: productData.isPublished ?? true,
             sizeIds: selectedSizes,
             colorIds: selectedColors,
-            imageUrls: imageUrls, // Add image URLs to payload
           };
 
           const res = await privateClient.post("/products", payload);
           const created = res.data?.data || res.data;
+          const productId = created.id;
 
-          set((state) => ({
-            products: [...state.products, created],
-            isLoading: false,
-          }));
+          // Step 2: Upload images with productId in URL if provided
+          if (imageFiles && imageFiles.length > 0 && productId) {
+            const formData = new FormData();
+            imageFiles.forEach((file) => {
+              formData.append("files", file);
+            });
+
+            await privateClient.post(
+              `/products/${productId}/upload-image`,
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            );
+            
+            // Fetch updated product with images
+            const updatedRes = await privateClient.get(`/products/${productId}`);
+            const updatedProduct = updatedRes.data?.data || updatedRes.data;
+            
+            set((state) => ({
+              products: [...state.products, updatedProduct],
+              isLoading: false,
+            }));
+          } else {
+            set((state) => ({
+              products: [...state.products, created],
+              isLoading: false,
+            }));
+          }
+
           toast.success("Thêm sản phẩm thành công");
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
@@ -225,27 +232,7 @@ export const useProductStore = create<ProductState>()(
       updateProduct: async (id, productData, selectedSizes, selectedColors, imageFiles) => {
         set({ isLoading: true, error: null });
         try {
-          let imageUrls: string[] | undefined;
-
-          // Upload images if provided
-          if (imageFiles && imageFiles.length > 0) {
-            const formData = new FormData();
-            imageFiles.forEach((file) => {
-              formData.append("files", file);
-            });
-
-            const uploadRes = await privateClient.post(
-              "/products/upload-image",
-              formData,
-              {
-                headers: {
-                  "Content-Type": "multipart/form-data",
-                },
-              }
-            );
-            imageUrls = uploadRes.data?.urls || [];
-          }
-
+          // Step 1: Update product information first
           const payload = {
             sku: productData.sku,
             name: productData.name,
@@ -255,10 +242,27 @@ export const useProductStore = create<ProductState>()(
             isPublished: productData.isPublished ?? true,
             sizeIds: selectedSizes,
             colorIds: selectedColors,
-            ...(imageUrls && { imageUrls }), // Only add imageUrls if images were uploaded
           };
 
           await privateClient.put(`/products/${id}`, payload);
+
+          // Step 2: Upload new images with productId in URL if provided
+          if (imageFiles && imageFiles.length > 0) {
+            const formData = new FormData();
+            imageFiles.forEach((file) => {
+              formData.append("files", file);
+            });
+
+            await privateClient.post(
+              `/products/${id}/upload-image`,
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            );
+          }
 
           // Fetch lại danh sách để có data mới nhất
           await get().fetchProducts();
