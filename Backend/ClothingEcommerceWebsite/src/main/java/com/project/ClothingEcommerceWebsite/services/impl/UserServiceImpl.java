@@ -28,10 +28,18 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
-        Role role = roleRepository.findByName("CUSTOMER")
-                .orElseThrow(() -> new RuntimeException("Default role CUSTOMER not found"));
         Set<Role> roles = new HashSet<>();
-        roles.add(role);
+        if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
+            List<Role> requestedRoles = roleRepository.findAllById(request.getRoleIds());
+            if (requestedRoles.isEmpty()) {
+                throw new RuntimeException("Invalid role IDs");
+            }
+            roles.addAll(requestedRoles);
+        } else {
+            Role customerRole = roleRepository.findByName("CUSTOMER")
+                    .orElseThrow(() -> new RuntimeException("Default role CUSTOMER not found"));
+            roles.add(customerRole);
+        }
         User user = User.builder()
                 .email(request.getEmail())
                 .phone(request.getPhone())
@@ -40,6 +48,7 @@ public class UserServiceImpl implements UserService {
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .roles(roles)
                 .build();
+
         return userRepository.save(user);
     }
 
