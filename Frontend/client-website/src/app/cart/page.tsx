@@ -145,7 +145,7 @@ export default function CartPage() {
                       if (!item || !item.product) return null;
 
                       const productImage =
-                        item.product.images?.[0]?.imageUrl ||
+                        item.product.images?.[0]?.image_url ||
                         "/images/placeholder.jpg";
 
                       return (

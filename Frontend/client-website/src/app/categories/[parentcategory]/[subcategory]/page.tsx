@@ -68,7 +68,7 @@ export default function SubCategoryPage() {
     // Filter by subcategory
     if (subCategory) {
       filtered = filtered.filter(
-        (product) => product.category_id === subCategory.id
+        (product) => product.category.id === subCategory.id
       );
     }
 
@@ -76,8 +76,8 @@ export default function SubCategoryPage() {
     filtered = filtered.filter((product) => {
       // Check if product base price is in range
       if (
-        product.base_price >= filters.priceRange[0] &&
-        product.base_price <= filters.priceRange[1]
+        product.basePrice >= filters.priceRange[0] &&
+        product.basePrice <= filters.priceRange[1]
       ) {
         return true;
       }
@@ -117,7 +117,7 @@ export default function SubCategoryPage() {
           comparison = a.name.localeCompare(b.name);
           break;
         case "price":
-          comparison = a.base_price - b.base_price;
+          comparison = a.basePrice - b.basePrice;
           break;
         case "rating":
           // @ts-expect-error - rating is optional in Product type

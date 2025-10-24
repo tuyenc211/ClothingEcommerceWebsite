@@ -14,7 +14,6 @@ export interface Category {
   isActive: boolean;
   parent?: Category;
   children?: Category[];
-
 }
 
 interface CategoryState {
@@ -43,7 +42,7 @@ export const useCategoryStore = create<CategoryState>()(
           const response = await privateClient.get("/categories");
           const categories = response.data?.data || response.data || [];
 
-          set({ categories, isLoading: false });
+          set({ categories: categories, isLoading: false });
           console.log("✅ Categories fetched:", categories);
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;

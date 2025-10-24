@@ -72,7 +72,7 @@ export default function ParentCategoryPage() {
     if (parentCategory) {
       const categoryIds = [parentCategory.id, ...childCategories.map(c => c.id)];
       filtered = filtered.filter(product => 
-        product.category_id && categoryIds.includes(product.category_id)
+        product.category.id && categoryIds.includes(product.category.id)
       );
     }
 
@@ -85,13 +85,13 @@ export default function ParentCategoryPage() {
 
     // Apply category filter (specific child category)
     if (filters.categoryId) {
-      filtered = filtered.filter(product => product.category_id === filters.categoryId);
+      filtered = filtered.filter(product => product.category.id === filters.categoryId);
     }
 
     // Apply price range filter (using base_price or variant prices)
     filtered = filtered.filter(product => {
       // Check if product base price is in range
-      if (product.base_price >= filters.priceRange[0] && product.base_price <= filters.priceRange[1]) {
+      if (product.basePrice >= filters.priceRange[0] && product.basePrice <= filters.priceRange[1]) {
         return true;
       }
       // Or check if any variant price is in range
@@ -125,7 +125,7 @@ export default function ParentCategoryPage() {
           comparison = a.name.localeCompare(b.name);
           break;
         case "price":
-          comparison = a.base_price - b.base_price;
+          comparison = a.basePrice - b.basePrice;
           break;
         case "rating":
           // @ts-expect-error - rating is optional in Product type

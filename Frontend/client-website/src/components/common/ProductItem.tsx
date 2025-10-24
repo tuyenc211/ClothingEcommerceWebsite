@@ -2,14 +2,15 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/stores/productStore";
-import {formatPrice} from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
+import { Rating, RatingButton } from "../ui/shadcn-io/rating";
 // Interface cho props của ProductItem
 export interface ProductItemProps {
   id: number;
   name: string;
   slug: string;
   basePrice: number;
-  images?: {image_url: string; position: number }[];
+  images?: { image_url: string; position: number }[];
   rating?: number;
   reviewCount?: number;
   onAddToCart?: (productId: number) => void;
@@ -51,36 +52,14 @@ const ProductItem: React.FC<ProductItemProps> = ({
     imageUrls[currentImageIndex] || "/images/placeholder.jpg";
 
   const renderStars = (rating: number) => {
-    const stars = [];
     const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <span key={i} className="text-yellow-400">
-          ★
-        </span>
-      );
-    }
-
-    if (hasHalfStar) {
-      stars.push(
-        <span key="half" className="text-yellow-400">
-          ☆
-        </span>
-      );
-    }
-
-    const emptyStars = 5 - Math.ceil(rating);
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <span key={`empty-${i}`} className="text-gray-300">
-          ☆
-        </span>
-      );
-    }
-
-    return stars;
+    return (
+      <Rating value={fullStars} readOnly>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <RatingButton className="text-yellow-500" key={index} />
+        ))}
+      </Rating>
+    );
   };
 
   return (
