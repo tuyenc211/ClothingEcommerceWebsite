@@ -2,14 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  Star,
-  Heart,
-  ShoppingCart,
-  Plus,
-  Minus,
-  ArrowLeft,
-} from "lucide-react";
+import { Star, Heart, ShoppingCart, Plus, Minus } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
 import { useCartStore } from "@/stores/cartStore";
 import { useSizeStore } from "@/stores/sizeStore";
@@ -29,6 +22,7 @@ import {
 import { toast } from "react-toastify";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { Button } from "@/components/ui/button";
+import { Rating, RatingButton } from "@/components/ui/shadcn-io/rating";
 // Mock reviews data
 export default function ProductDetailPage() {
   const { productId } = useParams();
@@ -83,7 +77,6 @@ export default function ProductDetailPage() {
   };
 
   const stockStatus = getStockStatus();
-  // If product not found
   if (!product) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -147,16 +140,14 @@ export default function ProductDetailPage() {
   };
 
   const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-3 h-3 sm:w-4 sm:h-4 ${
-          i < Math.floor(rating)
-            ? "fill-yellow-400 text-yellow-400"
-            : "text-gray-300"
-        }`}
-      />
-    ));
+    const fullStars = Math.floor(rating);
+    return (
+      <Rating value={fullStars} readOnly>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <RatingButton className="text-yellow-500" key={index} />
+        ))}
+      </Rating>
+    );
   };
 
   return (
@@ -203,7 +194,7 @@ export default function ProductDetailPage() {
           {/* Product Images - FIXED FOR MOBILE */}
           <div className="w-full">
             <ProductImageGallery
-              images={product.images?.map((img) => img.imageUrl) || []}
+              images={product.images?.map((img) => img.image_url) || []}
               productName={product.name}
               className="w-full"
             />
@@ -249,7 +240,7 @@ export default function ProductDetailPage() {
             {/* Price */}
             <div className="flex items-center gap-4">
               <span className="text-3xl font-bold">
-                {formatPrice(product.base_price)}
+                {formatPrice(product.basePrice)}
               </span>
               {stockStatus && (
                 <span
@@ -408,7 +399,7 @@ export default function ProductDetailPage() {
                         </li>
                         <li>
                           <strong>Giá cơ bản:</strong>{" "}
-                          {formatPrice(product.base_price)}
+                          {formatPrice(product.basePrice)}
                         </li>
                       </ul>
                     </div>

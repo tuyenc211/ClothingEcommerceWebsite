@@ -1,10 +1,7 @@
 "use client";
 import React, { useState, useMemo } from "react";
 import ProductGrid from "../common/ProductGrid";
-import {
-  ProductItemProps,
-  convertProductToItemProps,
-} from "../common/ProductItem";
+import { convertProductToItemProps } from "../common/ProductItem";
 import { useProductStore } from "@/stores/productStore";
 
 const FeaturedProducts: React.FC = () => {
