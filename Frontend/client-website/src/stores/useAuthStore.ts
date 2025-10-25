@@ -184,13 +184,22 @@ const useAuthStore = create<AuthStore>()(
 
       changePassword: async (oldPassword: string, newPassword: string) => {
         try {
-          await privateClient.post("/auth/change-password", {
+          const currentUser = get().authUser;
+          if (!currentUser?.email) {
+            throw new Error("User not authenticated");
+          }
+
+          await privateClient.put("/users/change-password", {
+            email: currentUser.email,
             oldPassword,
             newPassword,
           });
           toast.success("Đổi mật khẩu thành công");
-        } catch (error) {
-          toast.error("Đổi mật khẩu thất bại");
+        } catch (error: unknown) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message || "Đổi mật khẩu thất bại";
+          toast.error(errorMessage);
           throw error;
         }
       },

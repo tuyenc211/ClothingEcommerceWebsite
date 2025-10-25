@@ -157,11 +157,15 @@ export default function Header() {
 
                     return (
                       <NavigationMenuItem key={parent.id} className="px-2">
-                        <Link href={`/categories/${parent.slug}`}>
-                          <NavigationMenuTrigger className="uppercase font-bold">
+                        <NavigationMenuTrigger
+                          asChild
+                          className="uppercase font-bold"
+                        >
+                          <Link href={`/categories/${parent.slug}`}>
                             {parent.name}
-                          </NavigationMenuTrigger>
-                        </Link>
+                          </Link>
+                        </NavigationMenuTrigger>
+
                         <NavigationMenuContent>
                           <ul className="grid w-[400px] gap-2 md:w-[500px] md:grid-cols-2 lg:w-[600px] p-4">
                             {children.map((child) => (

@@ -40,7 +40,8 @@ type ProfileForm = z.infer<typeof profileSchema>;
 type PasswordForm = z.infer<typeof passwordSchema>;
 
 export default function UserProfilePage() {
-  const { authUser } = useAuthStore();
+  const { authUser,changePassword } = useAuthStore();
+
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -99,18 +100,11 @@ export default function UserProfilePage() {
   const onPasswordSubmit = async (data: PasswordForm) => {
     setIsChangingPassword(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      console.log("Changing password:", {
-        currentPassword: data.currentPassword,
-        newPassword: data.newPassword,
-      });
-
+      await changePassword(data.currentPassword, data.newPassword);
+      
       resetPassword();
-      toast.success("Đổi mật khẩu thành công!");
-    } catch {
-      toast.error("Đổi mật khẩu thất bại!");
+    } catch (error) {
+      console.error("Change password error:", error);
     } finally {
       setIsChangingPassword(false);
     }
@@ -328,13 +322,16 @@ export default function UserProfilePage() {
 
               {/* Action Buttons */}
               <div className="flex justify-end space-x-3">
-                <Button type="button" variant="outline">
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => resetPassword()}
+                >
                   Hủy
                 </Button>
                 <Button
                   type="submit"
                   disabled={isChangingPassword}
-                  onClick={() => resetPassword()}
                 >
                   <Lock className="h-4 w-4 mr-2" />
                   {isChangingPassword ? "Đang xử lý..." : "Đổi mật khẩu"}
