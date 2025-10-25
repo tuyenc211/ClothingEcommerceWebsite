@@ -158,7 +158,7 @@ export default function UserProfilePage() {
                     id="email"
                     type="email"
                     {...register("email")}
-                    disabled={!isEditing}
+                    disabled={true}
                     className={!isEditing ? "bg-gray-50" : ""}
                   />
                   {errors.email && (
