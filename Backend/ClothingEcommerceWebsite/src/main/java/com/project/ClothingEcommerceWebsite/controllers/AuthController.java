@@ -1,7 +1,10 @@
 package com.project.ClothingEcommerceWebsite.controllers;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateUserRequest;
+import com.project.ClothingEcommerceWebsite.dtos.request.ForgotPassWordRequest;
 import com.project.ClothingEcommerceWebsite.dtos.request.LoginRequest;
+import com.project.ClothingEcommerceWebsite.dtos.request.ResetPasswordRequest;
+import com.project.ClothingEcommerceWebsite.dtos.respond.MessageResponse;
 import com.project.ClothingEcommerceWebsite.models.User;
 import com.project.ClothingEcommerceWebsite.services.UserService;
 import com.project.ClothingEcommerceWebsite.utils.SecurityUtil;
@@ -101,4 +104,21 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, clearAccess.toString())
                 .build();
     }
+
+//    @PostMapping("/forgot-password")
+//    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPassWordRequest request) {
+//        MessageResponse response = userService.forgotPassword(request.getEmail());
+//        return ResponseEntity.ok().body(response);
+//    }
+//
+//    @PutMapping("/reset-password")
+//    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+//        MessageResponse response = userService.resetPassword(request.getToken(), request.getNewPassword());
+//        return ResponseEntity.ok().body(response);
+//    }
+//    @GetMapping("/confirm")
+//    public ResponseEntity<?> confirm(@RequestParam String token) {
+//        MessageResponse response = userService.confirmEmail(token);
+//        return ResponseEntity.ok().body(response);
+//    }
 }
