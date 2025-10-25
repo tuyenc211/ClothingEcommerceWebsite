@@ -1,6 +1,8 @@
 package com.project.ClothingEcommerceWebsite.services;
 
+import com.project.ClothingEcommerceWebsite.dtos.request.ChangePasswordRequest;
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateUserRequest;
+import com.project.ClothingEcommerceWebsite.dtos.respond.MessageResponse;
 import com.project.ClothingEcommerceWebsite.models.Role;
 import com.project.ClothingEcommerceWebsite.models.User;
 
@@ -24,4 +26,12 @@ public interface UserService {
     void lockUser(Long userId);
 
     void unlockUser(Long userId);
+
+    void changePassword(ChangePasswordRequest request);
+
+//    MessageResponse forgotPassword(String email);
+//
+//    MessageResponse resetPassword(String token, String password);
+//
+//    MessageResponse confirmEmail(String token);
 }

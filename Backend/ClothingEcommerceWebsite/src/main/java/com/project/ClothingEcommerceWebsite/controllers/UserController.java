@@ -1,6 +1,8 @@
 package com.project.ClothingEcommerceWebsite.controllers;
 
+import com.project.ClothingEcommerceWebsite.dtos.request.ChangePasswordRequest;
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateUserRequest;
+import com.project.ClothingEcommerceWebsite.dtos.respond.MessageResponse;
 import com.project.ClothingEcommerceWebsite.models.Role;
 import com.project.ClothingEcommerceWebsite.models.User;
 import com.project.ClothingEcommerceWebsite.services.UserService;
@@ -54,6 +56,12 @@ public class UserController {
     ) {
         userService.updateUserRoles(id, role);
         return ResponseEntity.ok("User roles updated successfully");
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request){
+        userService.changePassword(request);
+        return ResponseEntity.ok(new MessageResponse("Change Password Success!"));
     }
 
     @PutMapping("/{id}/lock")
