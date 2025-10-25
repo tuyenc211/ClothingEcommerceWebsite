@@ -8,11 +8,10 @@ import { toast } from "sonner";
 // Category interface matching database schema
 export interface Category {
   id: number;
-  parentId?: number;
+  parentId?: Category;
   name: string;
   slug: string;
   isActive: boolean;
-  parent?: Category;
   children?: Category[];
 }
 
@@ -68,7 +67,9 @@ export const useCategoryStore = create<CategoryState>()(
       },
       getChildCategories: (parentId) => {
         const { categories } = get();
-        return categories.filter((category) => category.parentId === parentId);
+        return categories.filter(
+          (category) => category.parentId?.id === parentId
+        );
       },
 
       setError: (error) => {
