@@ -57,11 +57,10 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { authUser } = useAuthStore();
   const { categories, fetchCategories } = useCategoryStore();
+
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
-  console.log("Categories in Header:", categories);
-  // Category cha = không có parentId
   const parentCategories = categories.filter((cat) => !cat.parentId);
 
   return (
@@ -138,9 +137,8 @@ export default function Header() {
 
                   {parentCategories.map((parent) => {
                     const children = categories.filter(
-                      (child) => child.parentId === parent.id
+                      (child) => child.parentId?.id === parent.id
                     );
-
                     if (children.length === 0) {
                       return (
                         <NavigationMenuItem key={parent.id} className="px-2">
@@ -249,7 +247,11 @@ export default function Header() {
 
               {parentCategories.map((parent) => {
                 const children = categories.filter(
-                  (child) => child.parentId === parent.id
+                  (child) =>
+                    child.parentId &&
+                    (typeof child.parentId === "object"
+                      ? child.parentId.id === parent.id
+                      : child.parentId === parent.id)
                 );
 
                 if (children.length === 0) {

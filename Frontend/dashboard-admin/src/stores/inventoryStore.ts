@@ -149,15 +149,11 @@ export const useInventoryStore = create<InventoryState>()(
             ),
             isLoading: false,
           }));
-
-          toast.success("Cập nhật tồn kho thành công!");
-          console.log("✅ Inventory updated:", updatedInventory);
           return true;
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
           const errorMessage =
-            axiosError?.response?.data?.message ||
-            "Lỗi khi cập nhật tồn kho";
+            axiosError?.response?.data?.message || "Lỗi khi cập nhật tồn kho";
 
           set({ error: errorMessage, isLoading: false });
           console.error("❌ Update inventory error:", errorMessage);
