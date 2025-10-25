@@ -1,8 +1,6 @@
 package com.project.ClothingEcommerceWebsite.dtos.respond;
 
-import com.project.ClothingEcommerceWebsite.models.Category;
-import com.project.ClothingEcommerceWebsite.models.Color;
-import com.project.ClothingEcommerceWebsite.models.Size;
+import com.project.ClothingEcommerceWebsite.models.*;
 import lombok.*;
 
 import java.util.List;
@@ -25,5 +23,8 @@ public class ProductResponse {
     private Set<SizeResponse> sizes;
     private Set<ColorResponse> colors;
     private List<ProductImageResponse> images;
+    private List<ProductVariant> variants;
+    private List<Inventory> inventories;
+
 }
 

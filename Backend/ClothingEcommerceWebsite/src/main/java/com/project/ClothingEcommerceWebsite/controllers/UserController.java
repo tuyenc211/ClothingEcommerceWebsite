@@ -1,8 +1,11 @@
 package com.project.ClothingEcommerceWebsite.controllers;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.ChangePasswordRequest;
+import com.project.ClothingEcommerceWebsite.dtos.request.ChangeUserRequest;
+import com.project.ClothingEcommerceWebsite.dtos.request.CreateProductVariantRequest;
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateUserRequest;
 import com.project.ClothingEcommerceWebsite.dtos.respond.MessageResponse;
+import com.project.ClothingEcommerceWebsite.models.Product;
 import com.project.ClothingEcommerceWebsite.models.Role;
 import com.project.ClothingEcommerceWebsite.models.User;
 import com.project.ClothingEcommerceWebsite.services.UserService;
@@ -41,6 +44,12 @@ public class UserController {
         return userService.getUserById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/change/{id}")
+    public ResponseEntity<?> changeUser(@PathVariable Long id, @RequestBody ChangeUserRequest request) {
+        userService.changeUser(id, request);
+        return ResponseEntity.ok("Change user successfully");
     }
 
     @DeleteMapping("/{id}")
