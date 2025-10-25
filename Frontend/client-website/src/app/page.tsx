@@ -10,21 +10,14 @@ import { useProductStore } from "@/stores/productStore";
 import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
 import { useEffect } from "react";
-import { toast } from "sonner";
 export default function Home() {
   const { fetchProducts } = useProductStore();
   const {fetchColors} = useColorStore();
   const {fetchSizes} = useSizeStore();
   useEffect(() => {
-    fetchProducts().catch((error) => {
-      toast.error("Failed to fetch products:", error);
-    });
-    fetchColors().catch((error) => {
-      toast.error("Failed to fetch colors:", error);
-    });
-    fetchSizes().catch((error) => {
-      toast.error("Failed to fetch sizes:", error);
-    });
+    fetchProducts()
+    fetchColors();
+    fetchSizes();
   }, [fetchProducts, fetchColors, fetchSizes]);
   return (
     <div className=" mx-auto">
