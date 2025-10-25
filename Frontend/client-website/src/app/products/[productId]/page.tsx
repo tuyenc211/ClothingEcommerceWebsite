@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Star, Heart, ShoppingCart, Plus, Minus } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
 import { useCartStore } from "@/stores/cartStore";
-import { useSizeStore } from "@/stores/sizeStore";
-import { useColorStore } from "@/stores/colorStore";
 import ProductImageGallery from "@/components/common/ThumnailGallery";
 import { formatPrice } from "@/lib/utils";
 import { Color } from "@/stores/colorStore";
@@ -31,8 +29,6 @@ export default function ProductDetailPage() {
   // Stores
   const { getProduct } = useProductStore();
   const { addToCart } = useCartStore();
-  const { colors } = useColorStore();
-  const { sizes } = useSizeStore();
   const product = useMemo(() => {
     if (typeof productId === "string") {
       const id = parseInt(productId, 10);
@@ -43,12 +39,22 @@ export default function ProductDetailPage() {
     return undefined;
   }, [productId, getProduct]);
   const reviews = product?.reviews || [];
+  
   // Get product variants
   const variants = useMemo(() => {
     if (product) {
       return product.variants || [];
     }
     return [];
+  }, [product]);
+
+  // Get available colors and sizes from product (từ API response)
+  const availableColors = useMemo(() => {
+    return product?.colors || [];
+  }, [product]);
+
+  const availableSizes = useMemo(() => {
+    return product?.sizes || [];
   }, [product]);
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
@@ -257,9 +263,7 @@ export default function ProductDetailPage() {
                 Màu sắc: {selectedColor?.name || "Chưa chọn"}
               </h3>
               <div className="flex flex-wrap gap-2 sm:gap-3">
-                {colors
-                  .filter((c) => variants.some((v) => v.color_id === c.id))
-                  .map((color) => (
+                {availableColors.map((color) => (
                     <button
                       key={color.id}
                       onClick={() => setSelectedColor(color)}
@@ -281,9 +285,7 @@ export default function ProductDetailPage() {
                 Kích cỡ: {selectedSize?.code || "Chưa chọn"}
               </h3>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
-                {sizes
-                  .filter((s) => variants.some((v) => v.size_id === s.id))
-                  .map((size) => (
+                {availableSizes.map((size) => (
                     <button
                       key={size.id}
                       onClick={() => setSelectedSize(size)}
@@ -381,19 +383,13 @@ export default function ProductDetailPage() {
                         </li>
                         <li>
                           <strong>Màu sắc:</strong>{" "}
-                          {colors
-                            .filter((c) =>
-                              variants.some((v) => v.color_id === c.id)
-                            )
+                          {availableColors
                             .map((c) => c.name)
                             .join(", ") || "Không có"}
                         </li>
                         <li>
                           <strong>Kích cỡ:</strong>{" "}
-                          {sizes
-                            .filter((s) =>
-                              variants.some((v) => v.size_id === s.id)
-                            )
+                          {availableSizes
                             .map((s) => s.code)
                             .join(", ") || "Không có"}
                         </li>

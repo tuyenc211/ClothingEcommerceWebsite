@@ -60,6 +60,7 @@ export default function Header() {
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
+  console.log("Categories in Header:", categories);
   // Category cha = không có parentId
   const parentCategories = categories.filter((cat) => !cat.parentId);
 
