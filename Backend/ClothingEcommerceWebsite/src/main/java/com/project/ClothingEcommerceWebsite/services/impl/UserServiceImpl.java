@@ -1,6 +1,7 @@
 package com.project.ClothingEcommerceWebsite.services.impl;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.ChangePasswordRequest;
+import com.project.ClothingEcommerceWebsite.dtos.request.ChangeUserRequest;
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateUserRequest;
 import com.project.ClothingEcommerceWebsite.dtos.respond.MessageResponse;
 import com.project.ClothingEcommerceWebsite.exception.BadRequestException;
@@ -88,6 +89,15 @@ public class UserServiceImpl implements UserService {
         Set<Role> roles = new HashSet<>();
         roles.add(newRole);
         user.setRoles(roles);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void changeUser(Long id, ChangeUserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setFullName(request.getFullName());
+        user.setPhone(request.getPhone());
         userRepository.save(user);
     }
 

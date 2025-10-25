@@ -1,6 +1,7 @@
 package com.project.ClothingEcommerceWebsite.services;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.ChangePasswordRequest;
+import com.project.ClothingEcommerceWebsite.dtos.request.ChangeUserRequest;
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateUserRequest;
 import com.project.ClothingEcommerceWebsite.dtos.respond.MessageResponse;
 import com.project.ClothingEcommerceWebsite.models.Role;
@@ -20,6 +21,8 @@ public interface UserService {
     Optional<User> getUserByEmail(String email);
 
     void updateUserRoles(Long id, Role role);
+
+    void changeUser(Long id, ChangeUserRequest request);
 
     void deleteUser(Long id);
 

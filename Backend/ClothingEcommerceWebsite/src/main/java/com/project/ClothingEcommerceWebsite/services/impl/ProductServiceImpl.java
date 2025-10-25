@@ -59,7 +59,6 @@ public class ProductServiceImpl implements ProductService {
 
         List<Size> sizes = sizeRepository.findAllById(request.getSizeIds());
         List<Color> colors = colorRepository.findAllById(request.getColorIds());
-        List<ProductVariant> variants = new ArrayList<>();
         for (Size size : sizes) {
             for (Color color : colors) {
                 String variantSku = product.getSku() + "-" + color.getCode() + "-" + size.getCode();
@@ -70,7 +69,6 @@ public class ProductServiceImpl implements ProductService {
                         .color(color)
                         .price(product.getBasePrice())
                         .build();
-                variants.add(variant);
                 productVariantRepository.save(variant);
                 inventoryRepository.save(Inventory.builder()
                         .productVariant(variant)
@@ -85,7 +83,9 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponse> getAllProduct() {
         List<Product> products = productRepository.findAll();
         return products.stream().map(product -> {
+            List<Inventory> inventories = inventoryRepository.findAllByProductVariant_Product_Id(product.getId());
             List<ProductImage> images = productImageRepository.findAllByProductId(product.getId());
+            List<ProductVariant> variants = productVariantRepository.findAllByProductId(product.getId());
             List<ProductImageResponse> imageDTOs = images.stream()
                     .map(image -> ProductImageResponse.builder()
                             .id(image.getId())
@@ -93,7 +93,6 @@ public class ProductServiceImpl implements ProductService {
                             .position(image.getPosition())
                             .build())
                     .collect(Collectors.toList());
-            List<ProductVariant> variants = productVariantRepository.findAllByProductId(product.getId());
             Set<SizeResponse> sizeDTOs = variants.stream()
                     .map(v -> v.getSize())
                     .filter(Objects::nonNull)
@@ -122,6 +121,8 @@ public class ProductServiceImpl implements ProductService {
                     .basePrice(product.getBasePrice())
                     .category(product.getCategory())
                     .isPublished(product.getIsPublished())
+                    .variants(variants)
+                    .inventories(inventories)
                     .sizes(sizeDTOs)
                     .colors(colorDTOs)
                     .images(imageDTOs)
@@ -185,9 +186,13 @@ public class ProductServiceImpl implements ProductService {
                         .price(product.getBasePrice())
                         .build();
                 variants.add(variant);
+                productVariantRepository.save(variant);
+                inventoryRepository.save(Inventory.builder()
+                        .productVariant(variant)
+                        .quantity(0)
+                        .build());
             }
         }
-        productVariantRepository.saveAll(variants);
         return product;
     }
 
