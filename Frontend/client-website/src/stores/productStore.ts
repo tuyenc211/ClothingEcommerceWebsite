@@ -5,6 +5,8 @@ import { Review } from "./reviewStore";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
+import { Size } from "./sizeStore";
+import { Color } from "./colorStore";
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 
 export interface ProductImage {
@@ -17,10 +19,11 @@ export interface ProductVariant {
   id: number;
   product_id: number;
   sku: string;
-  size_id?: number;
-  color_id?: number;
+  size: Size;
+  color: Color;
   price: number;
   inventory?: Inventory;
+  quantity?: number;
 }
 
 // Inventory interface để match với inventories table
@@ -114,7 +117,7 @@ export const useProductStore = create<ProductState>()(
             product.sku?.toLowerCase().includes(lowercaseQuery) ||
             product.category?.name?.toLowerCase().includes(lowercaseQuery) ||
             product.variants?.some(
-              (variant) => variant.color_id || variant.size_id
+              (variant) => variant.color.id || variant.size.id
             )
         );
       },

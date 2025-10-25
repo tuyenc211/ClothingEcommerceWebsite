@@ -155,11 +155,11 @@ export default function Header() {
 
                     return (
                       <NavigationMenuItem key={parent.id} className="px-2">
-                        <NavigationMenuTrigger
-                          asChild
-                          className="uppercase font-bold"
-                        >
-                          <Link href={`/categories/${parent.slug}`}>
+                        <NavigationMenuTrigger className="uppercase font-bold">
+                          <Link
+                            href={`/categories/${parent.slug}`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             {parent.name}
                           </Link>
                         </NavigationMenuTrigger>

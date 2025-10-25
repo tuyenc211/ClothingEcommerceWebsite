@@ -47,40 +47,40 @@ export default function ProductInventoryPage() {
   const [variants, setVariants] = useState<VariantInventory[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Fetch data khi component mount
   useEffect(() => {
     const loadData = async () => {
-      // Chỉ cần gọi 1 API duy nhất - backend đã trả về đầy đủ thông tin
       const productInventories = await fetchInventoriesByProduct(productId);
-      
+
       if (!productInventories || productInventories.length === 0) {
         toast.error("Không tìm thấy sản phẩm hoặc sản phẩm chưa có biến thể");
         router.push("/admin/stock");
         return;
       }
-
-      // Lấy thông tin product từ inventory đầu tiên
       const firstInventory = productInventories[0];
-      setProductName(firstInventory.productVariant?.product?.name || "Sản phẩm");
+      setProductName(
+        firstInventory.productVariant?.product?.name || "Sản phẩm"
+      );
       setProductSku(firstInventory.productVariant?.product?.sku || "");
 
       // Map inventories thành variants với thông tin từ backend
-      const variantInventories: VariantInventory[] = productInventories.map((inv) => {
-        const variant = inv.productVariant;
-        return {
-          variantId: variant.id,
-          sku: variant.sku,
-          sizeName: variant.size?.name || "N/A",
-          colorName: variant.color?.name || "N/A",
-          colorCode: variant.color?.code || "#000000",
-          currentQuantity: inv.quantity || 0,
-          newQuantity: inv.quantity || 0,
-        };
-      });
+      const variantInventories: VariantInventory[] = productInventories.map(
+        (inv) => {
+          const variant = inv.productVariant;
+          return {
+            variantId: variant.id,
+            sku: variant.sku,
+            sizeName: variant.size?.name || "N/A",
+            colorName: variant.color?.name || "N/A",
+            colorCode: variant.color?.code || "#000000",
+            currentQuantity: inv.quantity || 0,
+            newQuantity: inv.quantity || 0,
+          };
+        }
+      );
 
       setVariants(variantInventories);
     };
-    
+
     loadData();
   }, [productId, fetchInventoriesByProduct, router]);
 
@@ -103,33 +103,35 @@ export default function ProductInventoryPage() {
     try {
       // Update từng variant thông qua API backend
       const updatePromises = variants
-        .filter(v => v.newQuantity !== v.currentQuantity)
-        .map(variant => 
+        .filter((v) => v.newQuantity !== v.currentQuantity)
+        .map((variant) =>
           updateInventory({
             variantId: variant.variantId,
-            quantity: variant.newQuantity
+            quantity: variant.newQuantity,
           })
         );
-      
+
       await Promise.all(updatePromises);
 
       toast.success("Cập nhật tồn kho thành công!");
 
       // Reload data từ backend
       const productInventories = await fetchInventoriesByProduct(productId);
-      
-      const updatedVariants: VariantInventory[] = productInventories.map((inv) => {
-        const variant = inv.productVariant;
-        return {
-          variantId: variant.id,
-          sku: variant.sku,
-          sizeName: variant.size?.name || "N/A",
-          colorName: variant.color?.name || "N/A",
-          colorCode: variant.color?.code || "#000000",
-          currentQuantity: inv.quantity || 0,
-          newQuantity: inv.quantity || 0,
-        };
-      });
+
+      const updatedVariants: VariantInventory[] = productInventories.map(
+        (inv) => {
+          const variant = inv.productVariant;
+          return {
+            variantId: variant.id,
+            sku: variant.sku,
+            sizeName: variant.size?.name || "N/A",
+            colorName: variant.color?.name || "N/A",
+            colorCode: variant.color?.code || "#000000",
+            currentQuantity: inv.quantity || 0,
+            newQuantity: inv.quantity || 0,
+          };
+        }
+      );
 
       setVariants(updatedVariants);
     } catch {
