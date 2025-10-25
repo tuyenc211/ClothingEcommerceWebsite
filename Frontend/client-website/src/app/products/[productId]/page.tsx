@@ -64,13 +64,19 @@ export default function ProductDetailPage() {
   const selectedVariant = useMemo(() => {
     if (!selectedColor || !selectedSize) return null;
     return variants.find(
-      (v) => v.color_id === selectedColor.id && v.size_id === selectedSize.id
+      (v) => v.color.id === selectedColor.id && v.size.id === selectedSize.id
     );
   }, [selectedColor, selectedSize, variants]);
-  const maxQuantity = selectedVariant?.inventory?.quantity || 0;
+
+  // Get inventory quantity for selected variant
+  const selectedQuantity = useMemo(() => {
+    if (!selectedVariant || !product?.variants) return null;
+    return selectedVariant.quantity;
+  }, [selectedVariant, product]);
+  const maxQuantity = selectedQuantity || 0;
   const getStockStatus = () => {
-    if (!selectedVariant?.inventory) return null;
-    const qty = selectedVariant.inventory.quantity;
+    if (!selectedQuantity) return null;
+    const qty = selectedQuantity;
 
     if (qty === 0)
       return { text: "Hết hàng", class: "bg-red-100 text-red-800" };
@@ -133,11 +139,13 @@ export default function ProductDetailPage() {
     }
 
     // Check inventory
-    if (
-      selectedVariant.inventory &&
-      selectedVariant.inventory.quantity < quantity
-    ) {
-      toast.error(`Chỉ còn ${selectedVariant.inventory.quantity} sản phẩm`);
+    if (selectedQuantity && selectedQuantity < quantity) {
+      toast.error(`Chỉ còn ${selectedQuantity} sản phẩm`);
+      return;
+    }
+
+    if (!selectedQuantity || selectedQuantity === 0) {
+      toast.error("Sản phẩm đã hết hàng");
       return;
     }
 
