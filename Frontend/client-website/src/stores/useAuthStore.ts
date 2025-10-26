@@ -52,9 +52,6 @@ interface AuthStore {
 
   // Role management
   hasRole: (roleName: string) => boolean;
-  isAdmin: () => boolean;
-  isCustomer: () => boolean;
-
   // Auth actions
   signup: (data: SignUpData) => Promise<void>;
   login: (data: LoginData) => Promise<void>;
@@ -172,12 +169,29 @@ const useAuthStore = create<AuthStore>()(
 
       updateProfile: async (data: Partial<User>) => {
         try {
-          const response = await privateClient.put("/users/profile", data);
-          const updatedUser = response.data.user || response.data;
+          const currentUser = get().authUser;
+          if (!currentUser?.id) {
+            throw new Error("User not authenticated");
+          }
+          await privateClient.put(`/users/change/${currentUser.id}`, {
+            fullName: data.fullName,
+            phone: data.phone,
+          });
+
+          // Cập nhật local state
+          const updatedUser = {
+            ...currentUser,
+            fullName: data.fullName || currentUser.fullName,
+            phone: data.phone || currentUser.phone,
+          };
           set({ authUser: updatedUser });
           toast.success("Cập nhật thông tin thành công");
         } catch (error) {
-          toast.error("Cập nhật thông tin thất bại");
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message ||
+            "Cập nhật thông tin thất bại";
+          toast.error(errorMessage);
           throw error;
         }
       },
@@ -309,14 +323,6 @@ const useAuthStore = create<AuthStore>()(
             (role) => role.name.toLowerCase() === roleName.toLowerCase()
           ) || false
         );
-      },
-
-      isAdmin: () => {
-        return get().hasRole("admin") || get().hasRole("super_admin");
-      },
-
-      isCustomer: () => {
-        return get().hasRole("customer");
       },
     }),
     {

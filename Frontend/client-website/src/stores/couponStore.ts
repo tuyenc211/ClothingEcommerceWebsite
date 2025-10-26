@@ -4,28 +4,25 @@ import { persist } from "zustand/middleware";
 
 // Coupon interface matching database schema
 export interface Coupon {
-  id: number; // BIGINT PRIMARY KEY AUTO_INCREMENT
-  code: string; // VARCHAR(50) NOT NULL UNIQUE
-  name: string; // VARCHAR(255) NOT NULL
-  description?: string; // TEXT
-  value: number; // DECIMAL(12,2) NOT NULL
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  value: number;
   max_uses?: number;
   max_uses_per_user?: number;
   min_order_total?: number;
   starts_at?: string;
   ends_at?: string;
-  is_active: boolean; // TINYINT(1) NOT NULL DEFAULT 1
+  is_active: boolean;
 }
-
-// Coupon redemption interface matching database schema
 export interface CouponRedemption {
-  id: number; // BIGINT PRIMARY KEY AUTO_INCREMENT
-  coupon_id: number; // BIGINT NOT NULL references coupons(id)
-  user_id?: number; // BIGINT references users(id)
-  order_id?: number; // BIGINT references orders(id)
-  redeemed_at: string; // DATETIME DEFAULT CURRENT_TIMESTAMP
+  id: number;
+  coupon_id: number;
+  user_id?: number;
+  order_id?: number;
+  redeemed_at: string;
 
-  // Populated fields
   coupon?: Coupon;
   user?: {
     id: number;
@@ -45,11 +42,7 @@ interface CouponStore {
   addCoupon: (
     couponData: Omit<Coupon, "id" | "createdAt" | "updatedAt">
   ) => void;
-  updateCoupon: (id: number, couponData: Partial<Coupon>) => void;
   deleteCoupon: (id: number) => void;
-
-  // Filters & Search
-  searchCoupons: (query: string) => Coupon[];
   getActiveCoupons: () => Coupon[];
   getCouponsSortedByDate: () => Coupon[];
 
@@ -58,8 +51,6 @@ interface CouponStore {
   validateCouponDates: (startsAt: string, endsAt: string) => boolean;
   getCouponStatus: (coupon: Coupon) => "active" | "expired" | "upcoming";
 
-  // State management
-  setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
 }
@@ -91,19 +82,6 @@ export const useCouponStore = create<CouponStore>()(
         }));
       },
 
-      updateCoupon: (id: number, couponData) => {
-        set((state) => ({
-          coupons: state.coupons.map((coupon) =>
-            coupon.id === id
-              ? {
-                  ...coupon,
-                  ...couponData,
-                  updatedAt: new Date().toISOString(),
-                }
-              : coupon
-          ),
-        }));
-      },
 
       deleteCoupon: (id: number) => {
         set((state) => ({
@@ -160,10 +138,6 @@ export const useCouponStore = create<CouponStore>()(
         const start = new Date(startDate);
         const end = new Date(endDate);
         return start < end;
-      },
-
-      setLoading: (loading) => {
-        set({ isLoading: loading });
       },
 
       setError: (error) => {

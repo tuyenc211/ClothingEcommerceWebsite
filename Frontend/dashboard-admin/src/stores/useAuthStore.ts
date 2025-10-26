@@ -5,36 +5,30 @@ import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { persist } from "zustand/middleware";
 
-// Role interface matching database schema
 export interface Role {
-  id: number; // BIGINT PRIMARY KEY AUTO_INCREMENT
-  name: string; // VARCHAR(100) NOT NULL
+  id: number; 
+  name: string; 
 }
-
-// Address interface matching database schema
 export interface Address {
-  id: number; // BIGINT PRIMARY KEY AUTO_INCREMENT
-  user_id: number; // BIGINT NOT NULL references users(id)
-  line: string; // VARCHAR(255) NOT NULL
-  ward?: string; // VARCHAR(100)
-  district?: string; // VARCHAR(100)
-  province?: string; // VARCHAR(100)
-  country?: string; // VARCHAR(100) DEFAULT 'VN'
-  isDefault: boolean; // TINYINT(1) DEFAULT 0
+  id: number; 
+  user_id: number; 
+  line: string; 
+  ward?: string; 
+  district?: string; 
+  province?: string; 
+  country?: string; 
+  isDefault: boolean; 
 }
 
-// User interface matching database schema
 export interface User {
-  id: number; // BIGINT PRIMARY KEY AUTO_INCREMENT
-  email: string; // VARCHAR(255) NOT NULL UNIQUE
-  password?: string; // VARCHAR(255) NOT NULL (hidden in responses)
-  fullName: string; // VARCHAR(255) NOT NULL
-  phone?: string; // VARCHAR(30)
-  isActive: boolean; // TINYINT(1) NOT NULL DEFAULT 1
-
-  // Relationships (populated from joins)
-  roles?: Role[]; // From user_roles table
-  addresses?: Address[]; // From addresses table
+  id: number; 
+  email: string; 
+  password?: string; 
+  fullName: string; 
+  phone?: string; 
+  isActive: boolean; 
+  roles?: Role[]; 
+  addresses?: Address[]; 
 }
 
 interface AuthStore {
@@ -44,25 +38,21 @@ interface AuthStore {
   isForgettingPassword: boolean;
   isResettingPassword: boolean;
 
-  // User management
   updateProfile: (data: Partial<User>) => Promise<void>;
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
 
-  // Address management
   addAddress: (address: Omit<Address, "id" | "userId">) => Promise<void>;
   updateAddress: (id: number, address: Partial<Address>) => Promise<void>;
   deleteAddress: (id: number) => Promise<void>;
   setDefaultAddress: (id: number) => Promise<void>;
   getDefaultAddress: () => Address | undefined;
 
-  // Role management
   hasRole: (roleName: string) => boolean;
   isAdmin: () => boolean;
   isStaff: () => boolean;
   isAdminOrStaff: () => boolean;
   isCustomer: () => boolean;
 
-  // Auth actions
   login: (data: LoginData) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -178,17 +168,28 @@ const useAuthStore = create<AuthStore>()(
       // User management
       updateProfile: async (data: Partial<User>) => {
         try {
-          // Mock API call
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
           const currentUser = get().authUser;
-          if (currentUser) {
-            const updatedUser = { ...currentUser, ...data };
-            set({ authUser: updatedUser });
-            toast.success("Cập nhật thông tin thành công");
+          if (!currentUser?.id) {
+            throw new Error("User not authenticated");
           }
+          await privateClient.put(`/users/change/${currentUser.id}`, {
+            fullName: data.fullName,
+            phone: data.phone,
+          });
+
+          const updatedUser = {
+            ...currentUser,
+            fullName: data.fullName || currentUser.fullName,
+            phone: data.phone || currentUser.phone,
+          };
+          set({ authUser: updatedUser });
+          toast.success("Cập nhật thông tin thành công");
         } catch (error) {
-          toast.error("Cập nhật thông tin thất bại");
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message ||
+            "Cập nhật thông tin thất bại";
+          toast.error(errorMessage);
           throw error;
         }
       },
@@ -209,9 +210,6 @@ const useAuthStore = create<AuthStore>()(
       // Address management
       addAddress: async (address: Omit<Address, "id" | "userId">) => {
         try {
-          // Mock API call
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
           const newAddress: Address = {
             ...address,
             id: Date.now(),
@@ -235,9 +233,6 @@ const useAuthStore = create<AuthStore>()(
 
       updateAddress: async (id: number, address: Partial<Address>) => {
         try {
-          // Mock API call
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
           const currentUser = get().authUser;
           if (currentUser) {
             const updatedAddresses = currentUser.addresses?.map((addr) =>
@@ -259,9 +254,6 @@ const useAuthStore = create<AuthStore>()(
 
       deleteAddress: async (id: number) => {
         try {
-          // Mock API call
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
           const currentUser = get().authUser;
           if (currentUser) {
             const updatedAddresses = currentUser.addresses?.filter(
@@ -283,9 +275,6 @@ const useAuthStore = create<AuthStore>()(
 
       setDefaultAddress: async (id: number) => {
         try {
-          // Mock API call
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
           const currentUser = get().authUser;
           if (currentUser) {
             const updatedAddresses = currentUser.addresses?.map((addr) => ({
