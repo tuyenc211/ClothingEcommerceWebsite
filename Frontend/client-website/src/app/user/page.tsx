@@ -22,13 +22,7 @@ const profileSchema = z.object({
 const passwordSchema = z
   .object({
     currentPassword: z.string().min(1, "Vui lòng nhập mật khẩu hiện tại"),
-    newPassword: z
-      .string()
-      .min(8, "Mật khẩu mới phải có ít nhất 8 ký tự")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Mật khẩu phải chứa chữ hoa, chữ thường và số"
-      ),
+    newPassword: z.string().min(6, "Mật khẩu mới phải có ít nhất 6 ký tự"),
     confirmPassword: z.string().min(1, "Vui lòng xác nhận mật khẩu"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -40,7 +34,7 @@ type ProfileForm = z.infer<typeof profileSchema>;
 type PasswordForm = z.infer<typeof passwordSchema>;
 
 export default function UserProfilePage() {
-  const { authUser,changePassword } = useAuthStore();
+  const { authUser, updateProfile, changePassword } = useAuthStore();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -84,14 +78,14 @@ export default function UserProfilePage() {
   const onSubmit = async (data: ProfileForm) => {
     setIsSaving(true);
     try {
-      // TODO: Call API to update profile
-      console.log("Updating profile with:", data);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await updateProfile({
+        fullName: data.fullName,
+        phone: data.phoneNumber,
+      });
 
       setIsEditing(false);
-      toast.success("Cập nhật thông tin thành công!");
-    } catch {
-      toast.error("Cập nhật thông tin thất bại!");
+    } catch (error) {
+      toast.error("Cập nhật thông tin thất bại");
     } finally {
       setIsSaving(false);
     }
@@ -101,7 +95,7 @@ export default function UserProfilePage() {
     setIsChangingPassword(true);
     try {
       await changePassword(data.currentPassword, data.newPassword);
-      
+
       resetPassword();
     } catch (error) {
       console.error("Change password error:", error);
@@ -158,7 +152,7 @@ export default function UserProfilePage() {
                     id="email"
                     type="email"
                     {...register("email")}
-                    disabled={true}
+                    disabled
                     className={!isEditing ? "bg-gray-50" : ""}
                   />
                   {errors.email && (
@@ -322,17 +316,14 @@ export default function UserProfilePage() {
 
               {/* Action Buttons */}
               <div className="flex justify-end space-x-3">
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   variant="outline"
                   onClick={() => resetPassword()}
                 >
                   Hủy
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isChangingPassword}
-                >
+                <Button type="submit" disabled={isChangingPassword}>
                   <Lock className="h-4 w-4 mr-2" />
                   {isChangingPassword ? "Đang xử lý..." : "Đổi mật khẩu"}
                 </Button>

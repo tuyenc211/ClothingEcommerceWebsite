@@ -166,18 +166,25 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true, error: null });
 
         try {
-          const response = await privateClient.put(`/users/${id}`, userData);
-          const updatedUser = response.data?.data || response.data;
+          await privateClient.put(`/users/change/${id}`, {
+            fullName: userData.fullName,
+            phone: userData.phone,
+          });
 
-          set((state) => ({
+            set((state) => ({
             users: state.users.map((user) =>
-              user.id === id ? updatedUser : user
+              user.id === id
+                ? {
+                    ...user,
+                    fullName: userData.fullName || user.fullName,
+                    phone: userData.phone || user.phone,
+                  }
+                : user
             ),
             isLoading: false,
           }));
 
           toast.success("Cập nhật tài khoản thành công!");
-          console.log("✅ User updated:", updatedUser);
           return true;
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;

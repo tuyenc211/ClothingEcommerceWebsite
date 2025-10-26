@@ -18,7 +18,6 @@ import { toast } from "sonner";
 export default function ProfilePage() {
   const { authUser, updateProfile, changePassword } = useAuthStore();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Profile form state
   const [profileData, setProfileData] = useState({
@@ -73,7 +72,6 @@ export default function ProfilePage() {
         newPassword: "",
         confirmPassword: "",
       });
-      setIsChangingPassword(false);
     } catch (error) {
       console.error("Error changing password:", error);
     } finally {
@@ -95,7 +93,6 @@ export default function ProfilePage() {
       newPassword: "",
       confirmPassword: "",
     });
-    setIsChangingPassword(false);
   };
 
   return (
@@ -244,93 +241,82 @@ export default function ProfilePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!isChangingPassword ? (
-            <Button
-              onClick={() => setIsChangingPassword(true)}
-              variant="outline"
-              className="w-full"
-            >
-              <Lock className="h-4 w-4" />
-              Đổi mật khẩu
-            </Button>
-          ) : (
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="oldPassword">Mật khẩu hiện tại</Label>
-                <Input
-                  id="oldPassword"
-                  type="password"
-                  value={passwordData.oldPassword}
-                  onChange={(e) =>
-                    setPasswordData({
-                      ...passwordData,
-                      oldPassword: e.target.value,
-                    })
-                  }
-                  placeholder="Nhập mật khẩu hiện tại"
-                  required
-                />
-              </div>
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="oldPassword">Mật khẩu hiện tại</Label>
+              <Input
+                id="oldPassword"
+                type="password"
+                value={passwordData.oldPassword}
+                onChange={(e) =>
+                  setPasswordData({
+                    ...passwordData,
+                    oldPassword: e.target.value,
+                  })
+                }
+                placeholder="Nhập mật khẩu hiện tại"
+                required
+              />
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">Mật khẩu mới</Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  value={passwordData.newPassword}
-                  onChange={(e) =>
-                    setPasswordData({
-                      ...passwordData,
-                      newPassword: e.target.value,
-                    })
-                  }
-                  placeholder="Nhập mật khẩu mới"
-                  required
-                  minLength={6}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">Mật khẩu mới</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) =>
+                  setPasswordData({
+                    ...passwordData,
+                    newPassword: e.target.value,
+                  })
+                }
+                placeholder="Nhập mật khẩu mới"
+                required
+                minLength={6}
+              />
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Xác nhận mật khẩu mới</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={passwordData.confirmPassword}
-                  onChange={(e) =>
-                    setPasswordData({
-                      ...passwordData,
-                      confirmPassword: e.target.value,
-                    })
-                  }
-                  placeholder="Nhập lại mật khẩu mới"
-                  required
-                  minLength={6}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Xác nhận mật khẩu mới</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) =>
+                  setPasswordData({
+                    ...passwordData,
+                    confirmPassword: e.target.value,
+                  })
+                }
+                placeholder="Nhập lại mật khẩu mới"
+                required
+                minLength={6}
+              />
+            </div>
 
-              <div className="flex gap-3 pt-2">
-                <Button
-                  type="submit"
-                  disabled={isSubmittingPassword}
-                  className="flex-1"
-                >
-                  <Lock className="h-4 w-4" />
-                  {isSubmittingPassword
-                    ? "Đang cập nhật..."
-                    : "Cập nhật mật khẩu"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCancelPassword}
-                  disabled={isSubmittingPassword}
-                  className="flex-1"
-                >
-                  Hủy
-                </Button>
-              </div>
-            </form>
-          )}
+            <div className="flex gap-3 pt-2">
+              <Button
+                type="submit"
+                disabled={isSubmittingPassword}
+                className="flex-1"
+              >
+                <Lock className="h-4 w-4" />
+                {isSubmittingPassword
+                  ? "Đang cập nhật..."
+                  : "Cập nhật mật khẩu"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancelPassword}
+                disabled={isSubmittingPassword}
+                className="flex-1"
+              >
+                Hủy
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
     </div>
