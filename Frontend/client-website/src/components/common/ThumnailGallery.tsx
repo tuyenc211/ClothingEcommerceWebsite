@@ -11,7 +11,7 @@ import "swiper/css";
 import "swiper/css/free-mode";
 import "swiper/css/navigation";
 import "swiper/css/thumbs";
-import "swiper/css/zoom";
+import {Lens} from "@/components/ui/lens";
 
 interface ProductImageGalleryProps {
   images: string[];
@@ -26,7 +26,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 }) => {
   const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-
+  const [hovering, setHovering] = useState(false);
   if (!images || images.length === 0) {
     return (
       <div className="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
@@ -55,14 +55,14 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             swiper:
               thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null,
           }}
-          modules={[FreeMode, Navigation, Thumbs, Zoom]}
+          modules={[FreeMode, Navigation, Thumbs]}
           className="w-full aspect-square rounded-lg overflow-hidden bg-gray-50"
-          zoom={true}
           onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
         >
           {images.map((image, index) => (
             <SwiperSlide key={index}>
               <div className="swiper-zoom-container w-full h-full relative">
+                <Lens hovering={hovering} setHovering={setHovering}>
                 <Image
                   src={image}
                   alt={`${productName} - Image ${index + 1}`}
@@ -71,6 +71,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                   sizes="(max-width: 768px) 100vw, 50vw"
                   priority={index === 0}
                 />
+                </Lens>
               </div>
             </SwiperSlide>
           ))}
@@ -87,12 +88,6 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             </button>
           </>
         )}
-
-        {/* Zoom Icon */}
-        {/* <div className="absolute top-4 right-4 z-10 bg-black bg-opacity-50 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <ZoomIn className="w-4 h-4" />
-        </div> */}
-
         {/* Image Counter */}
         {images.length > 1 && (
           <div className="absolute bottom-4 right-4 z-10 bg-black bg-opacity-60 text-white px-3 py-1 rounded-full text-sm">
@@ -158,6 +153,4 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     </div>
   );
 };
-
-// Usage example compon
 export default ProductImageGallery;
