@@ -17,7 +17,7 @@ public class AddressController {
     private final AddressService addressService;
 
     @PostMapping("")
-    public ResponseEntity<Address> createAddress(@RequestBody CreateAddressRequest request) {
+    public ResponseEntity<?> createAddress(@RequestBody CreateAddressRequest request) {
         return ResponseEntity.ok(addressService.createAddress(request));
     }
 
@@ -27,7 +27,7 @@ public class AddressController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Address> updateAddress(
+    public ResponseEntity<?> updateAddress(
             @PathVariable Long id,
             @RequestBody CreateAddressRequest request) {
         return ResponseEntity.ok(addressService.updateAddress(id, request));
@@ -39,8 +39,8 @@ public class AddressController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAddress(@PathVariable Long id) {
+    public ResponseEntity<?> deleteAddress(@PathVariable Long id) {
         addressService.deleteAddress(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().body("Xoa roi cu");
     }
 }
