@@ -39,7 +39,7 @@ export default function ProductDetailPage() {
     return undefined;
   }, [productId, getProduct]);
   const reviews = product?.reviews || [];
-  
+
   // Get product variants
   const variants = useMemo(() => {
     if (product) {
@@ -47,8 +47,6 @@ export default function ProductDetailPage() {
     }
     return [];
   }, [product]);
-
-  // Get available colors and sizes from product (từ API response)
   const availableColors = useMemo(() => {
     return product?.colors || [];
   }, [product]);
@@ -68,6 +66,7 @@ export default function ProductDetailPage() {
     );
   }, [selectedColor, selectedSize, variants]);
 
+  console.log("Selected Variant:", selectedVariant);
   // Get inventory quantity for selected variant
   const selectedQuantity = useMemo(() => {
     if (!selectedVariant || !product?.variants) return null;
@@ -272,18 +271,18 @@ export default function ProductDetailPage() {
               </h3>
               <div className="flex flex-wrap gap-2 sm:gap-3">
                 {availableColors.map((color) => (
-                    <button
-                      key={color.id}
-                      onClick={() => setSelectedColor(color)}
-                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all ${
-                        selectedColor?.id === color.id
-                          ? "border-gray-900 ring-2 ring-gray-300"
-                          : "border-gray-300 hover:border-gray-400"
-                      }`}
-                      style={{ backgroundColor: color.code }}
-                      title={color.name}
-                    />
-                  ))}
+                  <button
+                    key={color.id}
+                    onClick={() => setSelectedColor(color)}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all ${
+                      selectedColor?.id === color.id
+                        ? "border-gray-900 ring-2 ring-gray-300"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                    style={{ backgroundColor: color.code }}
+                    title={color.name}
+                  />
+                ))}
               </div>
             </div>
 
@@ -294,18 +293,18 @@ export default function ProductDetailPage() {
               </h3>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
                 {availableSizes.map((size) => (
-                    <button
-                      key={size.id}
-                      onClick={() => setSelectedSize(size)}
-                      className={`py-2 sm:py-3 px-3 sm:px-4 border rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                        selectedSize?.id === size.id
-                          ? "border-gray-900 bg-gray-900 text-white"
-                          : "border-gray-300 hover:border-gray-400 bg-white text-gray-700"
-                      }`}
-                    >
-                      {size.code}
-                    </button>
-                  ))}
+                  <button
+                    key={size.id}
+                    onClick={() => setSelectedSize(size)}
+                    className={`py-2 sm:py-3 px-3 sm:px-4 border rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                      selectedSize?.id === size.id
+                        ? "border-gray-900 bg-gray-900 text-white"
+                        : "border-gray-300 hover:border-gray-400 bg-white text-gray-700"
+                    }`}
+                  >
+                    {size.code}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -391,15 +390,13 @@ export default function ProductDetailPage() {
                         </li>
                         <li>
                           <strong>Màu sắc:</strong>{" "}
-                          {availableColors
-                            .map((c) => c.name)
-                            .join(", ") || "Không có"}
+                          {availableColors.map((c) => c.name).join(", ") ||
+                            "Không có"}
                         </li>
                         <li>
                           <strong>Kích cỡ:</strong>{" "}
-                          {availableSizes
-                            .map((s) => s.code)
-                            .join(", ") || "Không có"}
+                          {availableSizes.map((s) => s.code).join(", ") ||
+                            "Không có"}
                         </li>
                         <li>
                           <strong>Giá cơ bản:</strong>{" "}

@@ -29,8 +29,6 @@ export function CartSheet() {
     removeFromCart,
     clearCart,
   } = useCartStore();
-
-  // Get stores to populate variant info
   const { getProduct } = useProductStore();
   const { colors } = useColorStore();
   const { sizes } = useSizeStore();
@@ -46,8 +44,8 @@ export function CartSheet() {
         if (!variant) return null;
 
         const product = getProduct(variant.product_id);
-        const color = colors.find((c) => c.id === variant.color_id);
-        const size = sizes.find((s) => s.id === variant.size_id);
+        const color = variant.color;
+        const size = variant.size;
 
         return {
           ...item,
@@ -56,8 +54,8 @@ export function CartSheet() {
           size,
         };
       })
-      .filter(Boolean); // Remove null items
-  }, [items, getProduct, colors, sizes]);
+      .filter(Boolean);
+  }, [items, getProduct]);
 
   const handleQuantityChange = (itemId: number, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -113,7 +111,7 @@ export function CartSheet() {
                   if (!item || !item.product) return null;
 
                   const productImage =
-                    item.product.images?.[0]?.imageUrl ||
+                    item.product.images?.[0]?.image_url ||
                     "/images/placeholder.jpg";
 
                   return (

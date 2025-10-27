@@ -106,14 +106,14 @@ export default function ParentCategoryPage() {
     // Apply color filter (check variants)
     if (filters.colorIds.length > 0) {
       filtered = filtered.filter(product =>
-        product.variants?.some(v => v.color_id && filters.colorIds.includes(v.color_id))
+        product.variants?.some(v => v.color?.id && filters.colorIds.includes(v.color.id))
       );
     }
 
     // Apply size filter (check variants)
     if (filters.sizeIds.length > 0) {
       filtered = filtered.filter(product =>
-        product.variants?.some(v => v.size_id && filters.sizeIds.includes(v.size_id))
+        product.variants?.some(v => v.size?.id && filters.sizeIds.includes(v.size.id))
       );
     }
 

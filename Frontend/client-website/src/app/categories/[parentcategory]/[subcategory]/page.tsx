@@ -95,7 +95,7 @@ export default function SubCategoryPage() {
     if (filters.colorIds.length > 0) {
       filtered = filtered.filter((product) =>
         product.variants?.some(
-          (v) => v.color_id && filters.colorIds.includes(v.color_id)
+          (v) => v.color.id && filters.colorIds.includes(v.color.id)
         )
       );
     }
@@ -104,7 +104,7 @@ export default function SubCategoryPage() {
     if (filters.sizeIds.length > 0) {
       filtered = filtered.filter((product) =>
         product.variants?.some(
-          (v) => v.size_id && filters.sizeIds.includes(v.size_id)
+          (v) => v.size.id && filters.sizeIds.includes(v.size.id)
         )
       );
     }
@@ -146,7 +146,7 @@ export default function SubCategoryPage() {
     const colorIds = new Set<number>();
     filteredProducts.forEach((product) => {
       product.variants?.forEach((variant) => {
-        if (variant.color_id) colorIds.add(variant.color_id);
+        if (variant.color.id) colorIds.add(variant.color.id);
       });
     });
     return colors.filter((c) => colorIds.has(c.id));
@@ -156,7 +156,7 @@ export default function SubCategoryPage() {
     const sizeIds = new Set<number>();
     filteredProducts.forEach((product) => {
       product.variants?.forEach((variant) => {
-        if (variant.size_id) sizeIds.add(variant.size_id);
+        if (variant.size.id) sizeIds.add(variant.size.id);
       });
     });
     return sizes.filter((s) => sizeIds.has(s.id));
