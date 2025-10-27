@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -48,6 +48,7 @@ interface AddressFormData {
 export default function AddressManagementPage() {
   const {
     authUser,
+    fetchAddresses,
     addAddress,
     updateAddress,
     deleteAddress,
@@ -64,6 +65,7 @@ export default function AddressManagementPage() {
 
   // States
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [deletingAddressId, setDeletingAddressId] = useState<number | null>(
@@ -84,6 +86,24 @@ export default function AddressManagementPage() {
   const [selectedCommuneCode, setSelectedCommuneCode] = useState("");
 
   const addresses = authUser?.addresses || [];
+
+  // Fetch addresses on mount
+  useEffect(() => {
+    const loadAddresses = async () => {
+      if (authUser?.id && (!addresses || addresses.length === 0)) {
+        setIsLoadingAddresses(true);
+        try {
+          await fetchAddresses();
+        } catch (error) {
+          console.error("Failed to fetch addresses:", error);
+        } finally {
+          setIsLoadingAddresses(false);
+        }
+      }
+    };
+
+    loadAddresses();
+  }, [authUser?.id]); // Only run when user ID changes
 
   // Reset form
   const resetForm = () => {
@@ -243,7 +263,14 @@ export default function AddressManagementPage() {
         </div>
 
         {/* Address List */}
-        {addresses.length === 0 ? (
+        {isLoadingAddresses ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+              <p className="text-gray-600">Đang tải địa chỉ...</p>
+            </CardContent>
+          </Card>
+        ) : addresses.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <MapPin className="h-16 w-16 text-gray-300 mb-4" />

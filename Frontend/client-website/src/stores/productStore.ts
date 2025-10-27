@@ -23,13 +23,13 @@ export interface ProductVariant {
   color: Color;
   price: number;
   inventory?: Inventory;
-  quantity?: number;
 }
 
 // Inventory interface để match với inventories table
 export interface Inventory {
   id: number;
   variant_id: number;
+  productVariant: ProductVariant;
   quantity: number;
 }
 
@@ -50,6 +50,7 @@ export interface Product {
   reviews?: Review[];
   colors?: Array<{ id: number; name: string; code: string }>;
   sizes?: Array<{ id: number; name: string; code: string; sortOrder: number }>;
+  inventories?: Inventory[];
   // Computed fields
   totalQuantity?: number;
 }

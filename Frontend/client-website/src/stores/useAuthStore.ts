@@ -44,6 +44,7 @@ interface AuthStore {
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
 
   // Address management
+  fetchAddresses: () => Promise<void>;
   addAddress: (address: Omit<Address, "id" | "user_id">) => Promise<void>;
   updateAddress: (id: number, address: Partial<Address>) => Promise<void>;
   deleteAddress: (id: number) => Promise<void>;
@@ -218,23 +219,56 @@ const useAuthStore = create<AuthStore>()(
         }
       },
 
+      fetchAddresses: async () => {
+        try {
+          const currentUser = get().authUser;
+          if (!currentUser?.id) {
+            throw new Error("User not authenticated");
+          }
+
+          const response = await privateClient.get(
+            `/addresses/user/${currentUser.id}`
+          );
+          const addresses = response.data;
+
+          const updatedUser = {
+            ...currentUser,
+            addresses: addresses,
+          };
+          set({ authUser: updatedUser });
+        } catch (error) {
+          console.error("Fetch addresses error:", error);
+          throw error;
+        }
+      },
+
       addAddress: async (address: Omit<Address, "id" | "user_id">) => {
         try {
-          const response = await privateClient.post(
-            "/users/addresses",
-            address
-          );
-          const newAddress = response.data.address || response.data;
-
           const currentUser = get().authUser;
-          if (currentUser) {
-            const updatedUser = {
-              ...currentUser,
-              addresses: [...(currentUser.addresses || []), newAddress],
-            };
-            set({ authUser: updatedUser });
-            toast.success("Thêm địa chỉ thành công");
+          if (!currentUser?.id) {
+            throw new Error("User not authenticated");
           }
+
+          const response = await privateClient.post("/addresses", {
+            ...address,
+            userId: currentUser.id,
+          });
+          const newAddress = response.data;
+
+          // Nếu địa chỉ mới là mặc định, cập nhật các địa chỉ khác
+          let updatedAddresses = [...(currentUser.addresses || []), newAddress];
+          if (newAddress.isDefault) {
+            updatedAddresses = updatedAddresses.map((addr) =>
+              addr.id === newAddress.id ? addr : { ...addr, isDefault: false }
+            );
+          }
+
+          const updatedUser = {
+            ...currentUser,
+            addresses: updatedAddresses,
+          };
+          set({ authUser: updatedUser });
+          toast.success("Thêm địa chỉ thành công");
         } catch (error) {
           toast.error("Thêm địa chỉ thất bại");
           throw error;
@@ -243,21 +277,32 @@ const useAuthStore = create<AuthStore>()(
 
       updateAddress: async (id: number, address: Partial<Address>) => {
         try {
-          await privateClient.put(`/users/addresses/${id}`, address);
-
           const currentUser = get().authUser;
-          if (currentUser) {
-            const updatedAddresses = currentUser.addresses?.map((addr) =>
-              addr.id === id ? { ...addr, ...address } : addr
-            );
-
-            const updatedUser = {
-              ...currentUser,
-              addresses: updatedAddresses,
-            };
-            set({ authUser: updatedUser });
-            toast.success("Cập nhật địa chỉ thành công");
+          if (!currentUser?.id) {
+            throw new Error("User not authenticated");
           }
+
+          const response = await privateClient.put(`/addresses/${id}`, {
+            ...address,
+            userId: currentUser.id,
+          });
+          const updatedAddress = response.data;
+          let updatedAddresses = currentUser.addresses?.map((addr) =>
+            addr.id === id ? updatedAddress : addr
+          );
+
+          if (updatedAddress.isDefault) {
+            updatedAddresses = updatedAddresses?.map((addr) =>
+              addr.id === id ? addr : { ...addr, isDefault: false }
+            );
+          }
+
+          const updatedUser = {
+            ...currentUser,
+            addresses: updatedAddresses,
+          };
+          set({ authUser: updatedUser });
+          toast.success("Cập nhật địa chỉ thành công");
         } catch (error) {
           toast.error("Cập nhật địa chỉ thất bại");
           throw error;
@@ -266,7 +311,7 @@ const useAuthStore = create<AuthStore>()(
 
       deleteAddress: async (id: number) => {
         try {
-          await privateClient.delete(`/users/addresses/${id}`);
+          await privateClient.delete(`/addresses/${id}`);
 
           const currentUser = get().authUser;
           if (currentUser) {
@@ -289,7 +334,8 @@ const useAuthStore = create<AuthStore>()(
 
       setDefaultAddress: async (id: number) => {
         try {
-          await privateClient.patch(`/users/addresses/${id}/default`);
+          const response = await privateClient.put(`/addresses/${id}/default`);
+          const updatedAddress = response.data;
 
           const currentUser = get().authUser;
           if (currentUser) {

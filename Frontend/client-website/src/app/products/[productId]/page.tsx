@@ -57,7 +57,15 @@ export default function ProductDetailPage() {
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [quantity, setQuantity] = useState(1);
-
+  const variantQuantityMap = useMemo(() => {
+    const map: Record<number, number> = {};
+    if (product?.inventories) {
+      product.inventories.forEach((inv) => {
+        map[inv.productVariant.id] = inv.quantity;
+      });
+    }
+    return map;
+  }, [product]);
   // Get selected variant
   const selectedVariant = useMemo(() => {
     if (!selectedColor || !selectedSize) return null;
@@ -65,18 +73,14 @@ export default function ProductDetailPage() {
       (v) => v.color.id === selectedColor.id && v.size.id === selectedSize.id
     );
   }, [selectedColor, selectedSize, variants]);
-
-  console.log("Selected Variant:", selectedVariant);
-  // Get inventory quantity for selected variant
   const selectedQuantity = useMemo(() => {
-    if (!selectedVariant || !product?.variants) return null;
-    return selectedVariant.quantity;
-  }, [selectedVariant, product]);
-  const maxQuantity = selectedQuantity || 0;
+    if (!selectedVariant) return 0;
+    return variantQuantityMap[selectedVariant.id] ?? 0;
+  }, [selectedVariant, variantQuantityMap]);
+  const maxQuantity = selectedQuantity;
   const getStockStatus = () => {
-    if (!selectedQuantity) return null;
+    if (!selectedVariant) return null;
     const qty = selectedQuantity;
-
     if (qty === 0)
       return { text: "Hết hàng", class: "bg-red-100 text-red-800" };
     if (qty <= 10)
