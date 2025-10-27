@@ -90,7 +90,7 @@ export default function AddressManagementPage() {
   // Fetch addresses on mount
   useEffect(() => {
     const loadAddresses = async () => {
-      if (authUser?.id && (!addresses || addresses.length === 0)) {
+      if (authUser?.id) {
         setIsLoadingAddresses(true);
         try {
           await fetchAddresses();
@@ -102,8 +102,11 @@ export default function AddressManagementPage() {
       }
     };
 
-    loadAddresses();
-  }, [authUser?.id]); // Only run when user ID changes
+    // Only fetch if we haven't loaded addresses yet
+    if (authUser?.id && addresses.length === 0) {
+      loadAddresses();
+    }
+  }, [authUser?.id, fetchAddresses]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset form
   const resetForm = () => {
