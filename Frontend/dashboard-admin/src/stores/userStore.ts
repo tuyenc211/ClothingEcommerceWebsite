@@ -138,16 +138,15 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true, error: null });
 
         try {
-          const response = await privateClient.post("/users/staff", staffData);
-          const newUser = response.data?.data || response.data;
-
-          set((state) => ({
-            users: [newUser, ...state.users],
-            isLoading: false,
-          }));
-
+          const response = await privateClient.post("/users/create", {
+            email: staffData.email,
+            password: staffData.password,
+            fullName: staffData.fullName,
+            phone: staffData.phone,
+            isActive: staffData.isActive ?? true,
+            roleIds: [2],
+          });         
           toast.success("Tạo tài khoản nhân viên thành công!");
-          console.log("✅ Staff created:", newUser);
           return true;
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;

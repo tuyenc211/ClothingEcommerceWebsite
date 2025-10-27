@@ -12,8 +12,9 @@ import { useCartStore } from "@/stores/cartStore";
 import { useProductStore } from "@/stores/productStore";
 import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
+import useAuthStore from "@/stores/useAuthStore";
 import { Badge } from "@/components/ui/badge";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
 import Image from "next/image";
@@ -35,7 +36,11 @@ export default function CartPage() {
     updateQuantity,
     removeFromCart,
     clearCart,
+    fetchCartItems,
+    createCart,
   } = useCartStore();
+  
+  const { authUser } = useAuthStore();
 
   // Get stores to populate variant info
   const { getProduct } = useProductStore();
@@ -46,6 +51,14 @@ export default function CartPage() {
   const summary = getCartSummary();
   const router = useRouter();
 
+  // Fetch cart items when user logs in
+  useEffect(() => {
+    if (authUser?.id) {
+      createCart(authUser.id);
+      fetchCartItems(authUser.id);
+    }
+  }, [authUser?.id, fetchCartItems, createCart]);
+
   // Enrich cart items with full product, color, and size info
   const enrichedItems = useMemo(() => {
     return items
@@ -53,7 +66,7 @@ export default function CartPage() {
         const variant = item.variant;
         if (!variant) return null;
 
-        const product = getProduct(variant.product_id);
+        const product = getProduct(variant.product?.id || variant.product_id);
         const color = colors.find((c) => c.id === variant.color.id);
         const size = sizes.find((s) => s.id === variant.size.id);
 
@@ -194,25 +207,6 @@ export default function CartPage() {
                               <div className="font-semibold text-sm sm:text-base text-gray-900">
                                 {formatPrice(item.unit_price)}
                               </div>
-
-                              {/* Stock status */}
-                              {item.variant?.inventory && (
-                                <div className="mt-2">
-                                  <span
-                                    className={`text-xs px-2 py-1 rounded-full ${
-                                      item.variant.inventory.quantity > 10
-                                        ? "bg-green-100 text-green-800"
-                                        : item.variant.inventory.quantity > 0
-                                        ? "bg-yellow-100 text-yellow-800"
-                                        : "bg-red-100 text-red-800"
-                                    }`}
-                                  >
-                                    {item.variant.inventory.quantity > 0
-                                      ? `Còn ${item.variant.inventory.quantity} sản phẩm`
-                                      : "Hết hàng"}
-                                  </span>
-                                </div>
-                              )}
                             </div>
 
                             {/* Actions */}

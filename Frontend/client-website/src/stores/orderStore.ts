@@ -28,45 +28,45 @@ export interface OrderItem {
 
 // Shipment interface matching database schema
 export interface Shipment {
-  id: number; // BIGINT PRIMARY KEY AUTO_INCREMENT
-  order_id: number; // BIGINT NOT NULL references orders(id)
-  carrier?: string; // VARCHAR(100)
-  tracking_number?: string; // VARCHAR(100)
-  status?: string; // VARCHAR(50)
-  shipped_at?: string; // DATETIME
-  delivered_at?: string; // DATETIME
+  id: number;
+  order_id: number;
+  carrier?: string;
+  tracking_number?: string;
+  status?: string;
+  shipped_at?: string;
+  delivered_at?: string;
 }
 
 // Order status history interface
 export interface OrderStatusHistory {
-  id: number; // BIGINT PRIMARY KEY AUTO_INCREMENT
-  orderId: number; // BIGINT NOT NULL references orders(id)
-  fromStatus?: string; // VARCHAR(30)
-  toStatus: string; // VARCHAR(30) NOT NULL
-  changedBy?: number; // BIGINT references users(id)
-  changedAt: string; // DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-  note?: string; // VARCHAR(500)
+  id: number;
+  orderId: number;
+  fromStatus?: string;
+  toStatus: string;
+  changedBy?: number;
+  changedAt: string;
+  note?: string;
 }
 
 // Order interface matching database schema
 export interface Order {
-  id: number; // BIGINT PRIMARY KEY AUTO_INCREMENT
-  user_id?: number; // BIGINT references users(id)
-  code: string; // VARCHAR(40) NOT NULL UNIQUE
-  status: OrderStatus; // ENUM NOT NULL DEFAULT 'NEW'
-  total_items: number; // INT NOT NULL DEFAULT 0
-  subtotal: number; // DECIMAL(12,2) NOT NULL DEFAULT 0
-  discount_total: number; // DECIMAL(12,2) NOT NULL DEFAULT 0
-  shipping_fee: number; // DECIMAL(12,2) NOT NULL DEFAULT 0
-  grand_total: number; // DECIMAL(12,2) NOT NULL DEFAULT 0
-  payment_method: PaymentMethod; // ENUM NOT NULL
-  payment_status: PaymentStatus; // ENUM NOT NULL DEFAULT 'UNPAID'
+  id: number;
+  user_id?: number;
+  code: string;
+  status: OrderStatus;
+  total_items: number;
+  subtotal: number;
+  discount_total: number;
+  shipping_fee: number;
+  grand_total: number;
+  payment_method: PaymentMethod;
+  payment_status: PaymentStatus;
   shipping_address_snapshot?: Record<string, unknown>; // JSON
   placed_at?: string; // DATETIME DEFAULT CURRENT_TIMESTAMP
-  paid_at?: string; // DATETIME
-  cancelled_at?: string; // DATETIME
-  created_at: string; // DATETIME DEFAULT CURRENT_TIMESTAMP
-  updated_at: string; // DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  paid_at?: string;
+  cancelled_at?: string;
+  created_at: string;
+  updated_at: string;
 
   // Relationships (populated from joins)
   items?: OrderItem[];

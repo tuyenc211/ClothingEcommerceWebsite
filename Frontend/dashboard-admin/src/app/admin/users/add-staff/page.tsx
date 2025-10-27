@@ -204,29 +204,10 @@ export default function AddStaffPage() {
                 required
                 maxLength={50}
               />
-
-              <CustomInput
-                label="Xác nhận mật khẩu"
-                name="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) =>
-                  handleInputChange("confirmPassword", e.target.value)
-                }
-                placeholder="Nhập lại mật khẩu"
-                error={errors.confirmPassword}
-                required
-                maxLength={50}
-              />
-
               <div className="space-y-2">
                 <Label>Vai trò</Label>
                 <div className="rounded-md border border-input bg-muted px-3 py-2">
                   <p className="text-sm font-medium">Nhân viên (Staff)</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Tài khoản sẽ được tạo với vai trò nhân viên, có quyền hạn
-                    hạn chế
-                  </p>
                 </div>
               </div>
 

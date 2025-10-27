@@ -2,6 +2,9 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {  ProductVariant } from "./productStore";
 import { Coupon } from "./couponStore";
+import privateClient from "@/lib/axios";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
 export interface Cart {
   id: number;
   userId: number;
@@ -10,12 +13,11 @@ export interface Cart {
 
 export interface CartItem {
   id: number; 
-  cart_id: number; 
-  variant_id: number; 
-  unit_price: number; 
+  cart_id: number;
+  variant_id: number;
+  unit_price: number;
   quantity: number; 
-  variant?: ProductVariant;
-}
+  variant?: ProductVariant; }
 
 export interface CartSummary {
   subtotal: number;
@@ -37,21 +39,19 @@ interface CartState {
   error: string | null;
 
   // Cart management
+  fetchCartItems: (userId: number) => Promise<void>;
   createCart: (userId: number) => void;
-  loadCart: (cartId: number) => void;
-  clearCart: () => void;
+  clearCart: () => Promise<void>;
 
   // Cart item actions - using variants
-  addToCart: (variant: ProductVariant, quantity?: number) => void;
-  removeFromCart: (itemId: number) => void;
-  updateQuantity: (itemId: number, quantity: number) => void;
-  getCartItem: (itemId: number) => CartItem | undefined;
+  addToCart: (variant: ProductVariant, quantity?: number) => Promise<void>;
+  removeFromCart: (itemId: number) => Promise<void>;
+  updateQuantity: (itemId: number, quantity: number) => Promise<void>;
   // Coupon actions
   applyCoupon: (coupon: Coupon) => boolean;
   removeCoupon: () => void;
   // Calculation methods
   getCartSummary: () => CartSummary;
-  getItemTotal: (itemId: number) => number;
 
   // Utility methods
   getTotalItems: () => number;
@@ -78,6 +78,26 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       ...initialState,
 
+      // Fetch cart items from backend
+      fetchCartItems: async (userId: number) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await privateClient.get(`/carts/${userId}`);
+          const cartItems = response.data?.data || response.data || [];
+          
+          set({ 
+            items: cartItems,
+            isLoading: false 
+          });
+          console.log("✅ Cart items fetched:", cartItems);
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage = axiosError?.response?.data?.message || "Lỗi khi tải giỏ hàng";
+          set({ error: errorMessage, isLoading: false });
+          console.error("❌ Fetch cart error:", errorMessage);
+        }
+      },
+
       // Cart management
       createCart: (userId) => {
         const newCart: Cart = {
@@ -92,69 +112,107 @@ export const useCartStore = create<CartState>()(
         });
       },
 
-      loadCart: (cart_id) => {
-        // In a real app, this would fetch from API
-        set((state) => ({
-          currentCart: state.currentCart
-            ? { ...state.currentCart, id: cart_id }
-            : { id: cart_id, userId: 0, items: [] },
-        }));
-      },
-
-      clearCart: () => {
-        set((state) => ({
-          ...initialState,
-          currentCart: state.currentCart, // Keep cart reference but clear items
-        }));
-      },
-
-      // Cart item actions - using variants
-      addToCart: (variant, quantity = 1) => {
-        const existingItem = get().items.find(
-          (item) => item.variant_id === variant.id
-        );
-
-        if (existingItem) {
-          get().updateQuantity(
-            existingItem.id,
-            existingItem.quantity + quantity
-          );
-        } else {
-          const newItem: CartItem = {
-            id: generateCartItemId(variant.id),
-            cart_id: get().currentCart?.id || 0,
-            variant_id: variant.id,
-            unit_price: variant.price,
-            quantity,
-            variant, // ← Đảm bảo variant được populate đầy đủ
-          };
-
-          set((state) => ({
-            items: [...state.items, newItem],
-          }));
-        }
-      },
-      removeFromCart: (itemId) => {
-        set((state) => ({
-          items: state.items.filter((item) => item.id !== itemId),
-        }));
-      },
-
-      updateQuantity: (itemId, quantity) => {
-        if (quantity <= 0) {
-          get().removeFromCart(itemId);
+      clearCart: async () => {
+        const userId = get().currentCart?.userId;
+        if (!userId) {
+          set({ items: [] });
           return;
         }
 
-        set((state) => ({
-          items: state.items.map((item) =>
-            item.id === itemId ? { ...item, quantity } : item
-          ),
-        }));
+        set({ isLoading: true, error: null });
+        try {
+          await privateClient.delete(`/carts/${userId}/clear`);
+          set({ items: [], isLoading: false });
+          toast.success("Đã xóa giỏ hàng");
+          console.log("✅ Cart cleared");
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage = axiosError?.response?.data?.message || "Lỗi khi xóa giỏ hàng";
+          set({ error: errorMessage, isLoading: false });
+          toast.error(errorMessage);
+          console.error("❌ Clear cart error:", errorMessage);
+        }
       },
 
-      getCartItem: (itemId) => {
-        return get().items.find((item) => item.id === itemId);
+      // Cart item actions - using variants
+      addToCart: async (variant, quantity = 1) => {
+        const userId = get().currentCart?.userId;
+        if (!userId) {
+          toast.error("Vui lòng đăng nhập để thêm vào giỏ hàng");
+          return;
+        }
+
+        set({ isLoading: true, error: null });
+        try {
+          const response = await privateClient.post(
+            `/carts/${userId}/add?variantId=${variant.id}&quantity=${quantity}`
+          );
+          
+          // Refresh cart items
+          await get().fetchCartItems(userId);
+          toast.success("Đã thêm vào giỏ hàng");
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage = axiosError?.response?.data?.message || "Lỗi khi thêm vào giỏ hàng";
+          set({ error: errorMessage, isLoading: false });
+          toast.error(errorMessage);
+          console.error("❌ Add to cart error:", errorMessage);
+        }
+      },
+      removeFromCart: async (itemId) => {
+        const userId = get().currentCart?.userId;
+        if (!userId) return;
+
+        set({ isLoading: true, error: null });
+        try {
+          await privateClient.delete(`/carts/${userId}/remove/${itemId}`);
+          
+          // Update local state
+          set((state) => ({
+            items: state.items.filter((item) => item.id !== itemId),
+            isLoading: false
+          }));
+          toast.success("Đã xóa khỏi giỏ hàng");
+          console.log("✅ Item removed from cart:", itemId);
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage = axiosError?.response?.data?.message || "Lỗi khi xóa khỏi giỏ hàng";
+          set({ error: errorMessage, isLoading: false });
+          toast.error(errorMessage);
+          console.error("❌ Remove from cart error:", errorMessage);
+        }
+      },
+
+      updateQuantity: async (itemId, quantity) => {
+        if (quantity <= 0) {
+          await get().removeFromCart(itemId);
+          return;
+        }
+
+        const userId = get().currentCart?.userId;
+        if (!userId) return;
+
+        set({ isLoading: true, error: null });
+        try {
+          await privateClient.put(
+            `/carts/${userId}/update?itemId=${itemId}&quantity=${quantity}`
+          );
+          
+          // Update local state
+          set((state) => ({
+            items: state.items.map((item) =>
+              item.id === itemId ? { ...item, quantity } : item
+            ),
+            isLoading: false
+          }));
+          console.log("✅ Quantity updated:", itemId, quantity);
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage = axiosError?.response?.data?.message || "Lỗi khi cập nhật số lượng";
+          set({ error: errorMessage, isLoading: false });
+          toast.error(errorMessage);
+          console.error("❌ Update quantity error:", errorMessage);
+        }
       },
 
       applyCoupon: (coupon) => {
@@ -256,12 +314,6 @@ export const useCartStore = create<CartState>()(
           total,
           itemCount: items.reduce((count, item) => count + item.quantity, 0),
         };
-      },
-
-      getItemTotal: (itemId) => {
-        const item = get().getCartItem(itemId);
-        if (!item) return 0;
-        return item.unit_price * item.quantity;
       },
 
       getTotalItems: () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, use } from "react";
+import { useState, useMemo, useEffect, } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -135,7 +135,7 @@ export default function CheckoutPage() {
         const variant = item.variant;
         if (!variant) return null;
 
-        const product = getProduct(variant.product_id);
+        const product = getProduct(variant.product?.id || variant.product_id);
         const color = colors.find((c) => c.id === variant.color.id);
         const size = sizes.find((s) => s.id === variant.size.id);
 
@@ -187,7 +187,7 @@ export default function CheckoutPage() {
     } else {
       setIsNewAddress(true);
     }
-  }, []);
+  }, [authUser]);
 
   // Redirect if cart is empty
   useEffect(() => {
@@ -215,7 +215,7 @@ export default function CheckoutPage() {
     }));
 
     // Fetch wards for selected province
-    fetchWards(provinceCode);
+       fetchWards(provinceCode);
   };
 
   const handleWardChange = (wardCode: string) => {
@@ -365,7 +365,7 @@ export default function CheckoutPage() {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       toast.success("Đặt hàng thành công!");
-      clearCart();
+      await clearCart();
       router.push("/user/orders");
     } catch (error) {
       console.error("Order error:", error);
@@ -602,7 +602,6 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                {/* New Address Form (Only address fields for logged in users) */}
                 {isNewAddress && authUser && (
                   <div className="space-y-4 pt-4 border-t">
                     <h3 className="font-medium text-gray-900">
