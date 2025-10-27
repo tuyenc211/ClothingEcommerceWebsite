@@ -42,8 +42,7 @@ export function CartSheet() {
       .map((item) => {
         const variant = item.variant;
         if (!variant) return null;
-
-        const product = getProduct(variant.product_id);
+        const product = getProduct(variant.product?.id || variant.product_id);
         const color = variant.color;
         const size = variant.size;
 

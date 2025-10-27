@@ -22,7 +22,8 @@ export interface ProductVariant {
   size: Size;
   color: Color;
   price: number;
-  inventory?: Inventory;
+  product?: Product; // Populated from backend join (optional)
+  inventory?: Inventory; // Populated from backend join (optional)
 }
 
 // Inventory interface để match với inventories table

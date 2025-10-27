@@ -70,7 +70,7 @@ export function useAddress(initialEffectiveDate = "2025-07-01") {
   }, [effectiveDate]);
 
   useEffect(() => {
-    fetchProvinces();
+     fetchProvinces();
   }, [fetchProvinces]);
 
   // Fetch communes by province
