@@ -81,6 +81,7 @@ public class SercurityConfiguration {
                                 .antMatchers("/api/v1/products/**").permitAll()
                                 .antMatchers("/api/v1/subcategories/**").permitAll()
                                 .antMatchers("/api/v1/inventories/**").permitAll()
+                                .antMatchers("/api/v1/addresses/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
