@@ -223,7 +223,8 @@ const useAuthStore = create<AuthStore>()(
         try {
           const currentUser = get().authUser;
           if (!currentUser?.id) {
-            throw new Error("User not authenticated");
+            console.warn("User not authenticated, skipping fetch addresses");
+            return;
           }
 
           const response = await privateClient.get(
@@ -238,7 +239,8 @@ const useAuthStore = create<AuthStore>()(
           set({ authUser: updatedUser });
         } catch (error) {
           console.error("Fetch addresses error:", error);
-          throw error;
+          // Don't throw error to prevent auth state from being cleared
+          // Just log the error and keep the current state
         }
       },
 
