@@ -1,7 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import slugify from "slugify";
-import { mockCategories } from "@/data/productv2";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { toast } from "sonner";

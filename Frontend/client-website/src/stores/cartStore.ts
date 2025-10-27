@@ -1,29 +1,22 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Product, ProductVariant } from "./productStore";
-import { Color } from "./colorStore";
+import {  ProductVariant } from "./productStore";
 import { Coupon } from "./couponStore";
-import { Size } from "./sizeStore";
-// Cart interface matching database schema
 export interface Cart {
   id: number;
   userId: number;
-  items: CartItem[]; // BIGINT NOT NULL references users(id)
+  items: CartItem[]; 
 }
 
-// Cart item interface matching database schema
 export interface CartItem {
-  id: number; // BIGINT PRIMARY KEY AUTO_INCREMENT
-  cart_id: number; // BIGINT NOT NULL references carts(id)
-  variant_id: number; // BIGINT NOT NULL references product_variants(id)
-  unit_price: number; // DECIMAL(12,2) NOT NULL
-  quantity: number; // INT NOT NULL CHECK (quantity > 0)
-
-  // Populated fields from joins
+  id: number; 
+  cart_id: number; 
+  variant_id: number; 
+  unit_price: number; 
+  quantity: number; 
   variant?: ProductVariant;
 }
 
-// Cart summary interface
 export interface CartSummary {
   subtotal: number;
   discount: number;
@@ -33,13 +26,12 @@ export interface CartSummary {
   itemCount: number;
 }
 
-// Cart state interface
 interface CartState {
   currentCart: Cart | null;
   items: CartItem[];
   appliedCoupon: Coupon | null;
   shippingFee: number;
-  taxRate: number; // e.g., 0.1 for 10%
+  taxRate: number; 
   freeShippingThreshold: number;
   isLoading: boolean;
   error: string | null;
@@ -51,54 +43,24 @@ interface CartState {
 
   // Cart item actions - using variants
   addToCart: (variant: ProductVariant, quantity?: number) => void;
-  addToCartByProduct: (
-    product: Product,
-    selectedColor: Color,
-    selectedSize: Size,
-    quantity?: number
-  ) => void;
   removeFromCart: (itemId: number) => void;
   updateQuantity: (itemId: number, quantity: number) => void;
   getCartItem: (itemId: number) => CartItem | undefined;
-
   // Coupon actions
   applyCoupon: (coupon: Coupon) => boolean;
   removeCoupon: () => void;
-
   // Calculation methods
   getCartSummary: () => CartSummary;
   getItemTotal: (itemId: number) => number;
 
   // Utility methods
   getTotalItems: () => number;
-  isVariantInCart: (variantId: number) => boolean;
-  getVariantQuantity: (variantId: number) => number;
-
-  // Legacy methods for backward compatibility
-  isItemInCart: (
-    productId: number,
-    colorId: number,
-    sizeCode: string
-  ) => boolean;
-  getItemQuantity: (
-    productId: number,
-    colorId: number,
-    sizeCode: string
-  ) => number;
-
-  // State management
-  setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
 }
-
-// Generate unique cart item ID from variant ID
 const generateCartItemId = (variantId: number): number => {
   return variantId * 1000 + (Date.now() % 1000);
 };
-
-// Legacy function for backward compatibility
-
 // Initial cart state
 const initialState = {
   currentCart: null,
@@ -172,28 +134,6 @@ export const useCartStore = create<CartState>()(
           }));
         }
       },
-
-      addToCartByProduct: (
-        product,
-        selectedColor,
-        selectedSize,
-        quantity = 1
-      ) => {
-        // Find or create a variant based on product, color, and size
-        const variant: ProductVariant = {
-          id: product.id * 1000 + selectedColor.id * 100 + selectedSize.id,
-          product_id: product.id,
-          sku: `${product.sku || product.id}_${selectedColor.id}_${
-            selectedSize.code
-          }`,
-          size_id: selectedSize.id,
-          color_id: selectedColor.id,
-          price: product.base_price || 0,
-        };
-
-        get().addToCart(variant, quantity);
-      },
-
       removeFromCart: (itemId) => {
         set((state) => ({
           items: state.items.filter((item) => item.id !== itemId),
@@ -222,22 +162,22 @@ export const useCartStore = create<CartState>()(
         const summary = getCartSummary();
 
         // Check if coupon is valid
-        if (!coupon.is_active) {
+        if (!coupon.isActive) {
           set({ error: "Mã giảm giá không còn hiệu lực" });
           return false;
         }
 
-        if (coupon.ends_at && new Date(coupon.ends_at) < new Date()) {
+        if (coupon.endsAt && new Date(coupon.endsAt) < new Date()) {
           set({ error: "Mã giảm giá đã hết hạn" });
           return false;
         }
 
         if (
-          coupon.min_order_total &&
-          summary.subtotal < coupon.min_order_total
+          coupon.minOrderTotal &&
+          summary.subtotal < coupon.minOrderTotal
         ) {
           set({
-            error: `Đơn hàng tối thiểu ${coupon.min_order_total.toLocaleString(
+            error: `Đơn hàng tối thiểu ${coupon.minOrderTotal.toLocaleString(
               "vi-VN"
             )} VNĐ để sử dụng mã này`,
           });
@@ -271,22 +211,22 @@ export const useCartStore = create<CartState>()(
 
         let discount = 0;
 
-        if (appliedCoupon && appliedCoupon.is_active) {
+        if (appliedCoupon && appliedCoupon.isActive) {
           const now = new Date();
 
-          const startsAt = appliedCoupon.starts_at
-            ? new Date(appliedCoupon.starts_at)
+          const startsAt = appliedCoupon.startsAt
+            ? new Date(appliedCoupon.startsAt)
             : null;
-          const endsAt = appliedCoupon.ends_at
-            ? new Date(appliedCoupon.ends_at)
+          const endsAt = appliedCoupon.endsAt
+            ? new Date(appliedCoupon.endsAt)
             : null;
 
           const isWithinDateRange =
             (!startsAt || now >= startsAt) && (!endsAt || now <= endsAt);
 
           const meetsMinTotal =
-            !appliedCoupon.min_order_total ||
-            subtotal >= appliedCoupon.min_order_total;
+            !appliedCoupon.minOrderTotal ||
+            subtotal >= appliedCoupon.minOrderTotal;
 
           if (isWithinDateRange && meetsMinTotal) {
             // Flat discount value
@@ -326,36 +266,6 @@ export const useCartStore = create<CartState>()(
 
       getTotalItems: () => {
         return get().items.reduce((total, item) => total + item.quantity, 0);
-      },
-
-      isVariantInCart: (variantId) => {
-        return get().items.some((item) => item.variant_id === variantId);
-      },
-
-      getVariantQuantity: (variantId) => {
-        const item = get().items.find((item) => item.variant_id === variantId);
-        return item?.quantity || 0;
-      },
-
-      // Legacy methods for backward compatibility
-      isItemInCart: (productId, colorId) => {
-        return get().items.some(
-          (item) =>
-            item.variant?.product_id === productId &&
-            item.variant?.color_id === colorId
-        );
-      },
-      getItemQuantity: (productId, colorId) => {
-        const item = get().items.find(
-          (item) =>
-            item.variant?.product_id === productId &&
-            item.variant?.color_id === colorId
-        );
-        return item?.quantity || 0;
-      },
-
-      setLoading: (loading) => {
-        set({ isLoading: loading });
       },
 
       setError: (error) => {

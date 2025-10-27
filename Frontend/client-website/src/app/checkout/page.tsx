@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -75,53 +75,9 @@ interface EnrichedCartItem extends CartItem {
   };
 }
 
-// Mock user with addresses for demo (outside component to prevent recreation)
-const mockAuthUser = {
-  id: 1,
-  email: "demo@aristino.com",
-  fullName: "Nguyễn Văn A",
-  phone: "0912345678",
-  isActive: true,
-  addresses: [
-    {
-      id: 1,
-      user_id: 1,
-      line: "Số 123, Ngõ 45, Đường Láng",
-      ward: "Phường Láng Thượng",
-      district: "Quận Đống Đa",
-      province: "Thành phố Hà Nội",
-      country: "Việt Nam",
-      isDefault: true,
-    },
-    {
-      id: 2,
-      user_id: 1,
-      line: "Số 456, Đường Giải Phóng",
-      ward: "Phường Đồng Tâm",
-      district: "Quận Hai Bà Trưng",
-      province: "Thành phố Hà Nội",
-      country: "Việt Nam",
-      isDefault: false,
-    },
-    {
-      id: 3,
-      user_id: 1,
-      line: "Công ty ABC, Tòa nhà XYZ, 789 Cầu Giấy",
-      ward: "Phường Trung Hòa",
-      district: "Quận Cầu Giấy",
-      province: "Thành phố Hà Nội",
-      country: "Việt Nam",
-      isDefault: false,
-    },
-  ],
-};
-
 export default function CheckoutPage() {
   const router = useRouter();
-  const { authUser: realAuthUser } = useAuthStore();
-
-  // Use mock user for demo, or real user if logged in
-  const authUser = realAuthUser || mockAuthUser;
+  const { authUser } = useAuthStore();
   const {
     items,
     getCartSummary,
@@ -133,8 +89,11 @@ export default function CheckoutPage() {
   const { getProduct } = useProductStore();
   const { colors } = useColorStore();
   const { sizes } = useSizeStore();
-  const { getActiveCoupons } = useCouponStore();
+  const { getActiveCoupons, fetchCoupons } = useCouponStore();
 
+  useEffect(() => {
+    fetchCoupons();
+  }, [fetchCoupons]);
   // Address hook
   const {
     provinces,
@@ -169,156 +128,16 @@ export default function CheckoutPage() {
   const activeCoupons = getActiveCoupons();
   const summary = getCartSummary();
 
-  // Mock data cho testing (khi giỏ hàng trống)
-  const mockCartItems = useMemo(() => {
-    return [
-      {
-        id: 1,
-        cart_id: 1,
-        variant_id: 1001,
-        unit_price: 299000,
-        quantity: 2,
-        variant: {
-          id: 1001,
-          product_id: 1,
-          sku: "SHIRT-BLK-L",
-          size_id: 3,
-          color_id: 1,
-          price: 299000,
-        },
-        product: {
-          id: 1,
-          name: "Áo Ni Fitted L.3 7842 - Trắng - 2XL",
-          sku: "SHIRT-001",
-          base_price: 299000,
-          images: [
-            {
-              id: 1,
-              imageUrl:
-                "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-            },
-          ],
-        },
-        color: {
-          id: 1,
-          name: "Trắng",
-          code: "#FFFFFF",
-        },
-        size: {
-          id: 3,
-          code: "2XL",
-          name: "2XL",
-        },
-      },
-      {
-        id: 2,
-        cart_id: 1,
-        variant_id: 1002,
-        unit_price: 599000,
-        quantity: 1,
-        variant: {
-          id: 1002,
-          product_id: 2,
-          sku: "JEAN-BLU-32",
-          size_id: 4,
-          color_id: 2,
-          price: 599000,
-        },
-        product: {
-          id: 2,
-          name: "Quần Jeans Slim Fit - Xanh Đen - 32",
-          sku: "JEAN-002",
-          base_price: 599000,
-          images: [
-            {
-              id: 2,
-              imageUrl:
-                "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop",
-            },
-          ],
-        },
-        color: {
-          id: 2,
-          name: "Xanh Đen",
-          code: "#1e3a8a",
-        },
-        size: {
-          id: 4,
-          code: "32",
-          name: "32",
-        },
-      },
-      {
-        id: 3,
-        cart_id: 1,
-        variant_id: 1003,
-        unit_price: 799000,
-        quantity: 1,
-        variant: {
-          id: 1003,
-          product_id: 3,
-          sku: "HOOD-GRY-M",
-          size_id: 2,
-          color_id: 3,
-          price: 799000,
-        },
-        product: {
-          id: 3,
-          name: "Áo Khoác Hoodie Oversize - Xám - M",
-          sku: "HOOD-003",
-          base_price: 799000,
-          images: [
-            {
-              id: 3,
-              imageUrl:
-                "https://images.unsplash.com/photo-1556821840-3a9c6fcc9fdf?w=400&h=400&fit=crop",
-            },
-          ],
-        },
-        color: {
-          id: 3,
-          name: "Xám",
-          code: "#6b7280",
-        },
-        size: {
-          id: 2,
-          code: "M",
-          name: "M",
-        },
-      },
-    ];
-  }, []);
-
-  // Mock summary cho testing
-  const mockSummary = {
-    subtotal: 1696000,
-    discount: 0,
-    shipping: 30000,
-    tax: 169600,
-    total: 1895600,
-    itemCount: 4,
-  };
-
-  // Sử dụng data thật từ cart, nếu không có thì dùng mock data
-  const displayItems = items.length > 0 ? items : mockCartItems;
-  const displaySummary = items.length > 0 ? summary : mockSummary;
-
-  // Enrich cart items
+  // Enrich cart items with product, color, size data
   const enrichedItems = useMemo(() => {
-    return displayItems
+    return items
       .map((item) => {
         const variant = item.variant;
         if (!variant) return null;
 
-        // Nếu đang dùng mock data thì đã có đầy đủ thông tin rồi
-        if (items.length === 0) {
-          return item as EnrichedCartItem;
-        }
-
-        // Nếu dùng real data thì cần enrich
         const product = getProduct(variant.product_id);
-        const color = colors.find((c) => c.id === variant.color_id);
-        const size = sizes.find((s) => s.id === variant.size_id);
+        const color = colors.find((c) => c.id === variant.color.id);
+        const size = sizes.find((s) => s.id === variant.size.id);
 
         return {
           ...item,
@@ -328,7 +147,7 @@ export default function CheckoutPage() {
         } as EnrichedCartItem;
       })
       .filter((item): item is EnrichedCartItem => item !== null);
-  }, [displayItems, items.length, getProduct, colors, sizes]);
+  }, [items, getProduct, colors, sizes]);
 
   // Load default address on mount (only run once)
   useEffect(() => {
@@ -368,16 +187,15 @@ export default function CheckoutPage() {
     } else {
       setIsNewAddress(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount
+  }, []);
 
-  // Redirect if cart is empty (commented out để test với mock data)
-  // useEffect(() => {
-  //   if (items.length === 0) {
-  //     toast.error("Giỏ hàng trống");
-  //     router.push("/cart");
-  //   }
-  // }, [items, router]);
+  // Redirect if cart is empty
+  useEffect(() => {
+    if (items.length === 0) {
+      toast.error("Giỏ hàng trống");
+      router.push("/cart");
+    }
+  }, [items, router]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -516,7 +334,7 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
-      // TODO: Call API to create order
+      // TODO: Call backend API to create order
       const orderData = {
         user_id: authUser?.id,
         items: enrichedItems.map((item) => ({
@@ -527,28 +345,27 @@ export default function CheckoutPage() {
           unit_price: item?.unit_price,
           line_total: (item?.unit_price || 0) * (item?.quantity || 0),
         })),
-        subtotal: displaySummary.subtotal,
-        discount_total: displaySummary.discount,
-        shipping_fee: displaySummary.shipping,
-        grand_total: displaySummary.total,
+        subtotal: summary.subtotal,
+        discount_total: summary.discount,
+        shipping_fee: summary.shipping,
+        grand_total: summary.total,
         payment_method: paymentMethod,
         shipping_address_snapshot: formData,
         note: formData.note,
-        email: authUser?.email || "",
+        coupon_code: appliedCoupon?.code,
       };
 
       console.log("Creating order:", orderData);
 
-      // Simulate API call
+      // TODO: Replace with actual API call
+      // const response = await privateClient.post("/orders", orderData);
+      // const order = response.data;
+
+      // Simulate API call for now
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       toast.success("Đặt hàng thành công!");
-
-      // Chỉ clear cart nếu đang dùng real data
-      if (items.length > 0) {
-        clearCart();
-      }
-
+      clearCart();
       router.push("/user/orders");
     } catch (error) {
       console.error("Order error:", error);
@@ -558,10 +375,9 @@ export default function CheckoutPage() {
     }
   };
 
-  // Comment out redirect để test với mock data
-  // if (items.length === 0) {
-  //   return null; // Will redirect in useEffect
-  // }
+  if (items.length === 0) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -947,7 +763,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-1">
             <Card className="sticky top-4">
               <CardHeader>
-                <CardTitle>Đơn hàng ({displayItems.length} sản phẩm)</CardTitle>
+                <CardTitle>Đơn hàng ({items.length} sản phẩm)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Products List */}
@@ -1057,10 +873,10 @@ export default function CheckoutPage() {
                               <p className="text-xs text-gray-500 mt-1">
                                 {coupon.description || coupon.name}
                               </p>
-                              {coupon.min_order_total && (
+                              {coupon.minOrderTotal && (
                                 <p className="text-xs text-gray-400 mt-1">
                                   Đơn tối thiểu:{" "}
-                                  {formatPrice(coupon.min_order_total)}
+                                  {formatPrice(coupon.minOrderTotal)}
                                 </p>
                               )}
                             </div>
@@ -1083,29 +899,29 @@ export default function CheckoutPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tạm tính:</span>
                     <span className="font-medium">
-                      {formatPrice(displaySummary.subtotal)}
+                      {formatPrice(summary.subtotal)}
                     </span>
                   </div>
-                  {displaySummary.discount > 0 && (
+                  {summary.discount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Giảm giá:</span>
                       <span className="font-medium">
-                        -{formatPrice(displaySummary.discount)}
+                        -{formatPrice(summary.discount)}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span className="text-gray-600">Phí vận chuyển:</span>
                     <span className="font-medium">
-                      {displaySummary.shipping === 0
+                      {summary.shipping === 0
                         ? "Miễn phí"
-                        : formatPrice(displaySummary.shipping)}
+                        : formatPrice(summary.shipping)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Thuế (VAT 10%):</span>
                     <span className="font-medium">
-                      {formatPrice(displaySummary.tax)}
+                      {formatPrice(summary.tax)}
                     </span>
                   </div>
                 </div>
@@ -1116,7 +932,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between items-center text-lg font-semibold">
                   <span>Tổng cộng:</span>
                   <span className="text-primary">
-                    {formatPrice(displaySummary.total)}
+                    {formatPrice(summary.total)}
                   </span>
                 </div>
 

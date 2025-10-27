@@ -54,8 +54,8 @@ export default function CartPage() {
         if (!variant) return null;
 
         const product = getProduct(variant.product_id);
-        const color = colors.find((c) => c.id === variant.color_id);
-        const size = sizes.find((s) => s.id === variant.size_id);
+        const color = colors.find((c) => c.id === variant.color.id);
+        const size = sizes.find((s) => s.id === variant.size.id);
 
         return {
           ...item,
