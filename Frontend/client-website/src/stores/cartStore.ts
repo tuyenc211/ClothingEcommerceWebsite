@@ -5,6 +5,7 @@ import { Coupon } from "./couponStore";
 import privateClient from "@/lib/axios";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import useAuthStore from "./useAuthStore";
 export interface Cart {
   id: number;
   userId: number;
@@ -113,7 +114,7 @@ export const useCartStore = create<CartState>()(
       },
 
       clearCart: async () => {
-        const userId = get().currentCart?.userId;
+        const userId = useAuthStore.getState().authUser?.id;
         if (!userId) {
           set({ items: [] });
           return;
@@ -136,10 +137,16 @@ export const useCartStore = create<CartState>()(
 
       // Cart item actions - using variants
       addToCart: async (variant, quantity = 1) => {
-        const userId = get().currentCart?.userId;
+        // Lấy userId từ authStore thay vì currentCart
+        const userId = useAuthStore.getState().authUser?.id;
         if (!userId) {
           toast.error("Vui lòng đăng nhập để thêm vào giỏ hàng");
           return;
+        }
+
+        // Khởi tạo cart nếu chưa có
+        if (!get().currentCart) {
+          get().createCart(userId);
         }
 
         set({ isLoading: true, error: null });
@@ -160,8 +167,11 @@ export const useCartStore = create<CartState>()(
         }
       },
       removeFromCart: async (itemId) => {
-        const userId = get().currentCart?.userId;
-        if (!userId) return;
+        const userId = useAuthStore.getState().authUser?.id;
+        if (!userId) {
+          toast.error("Vui lòng đăng nhập");
+          return;
+        }
 
         set({ isLoading: true, error: null });
         try {
@@ -189,8 +199,11 @@ export const useCartStore = create<CartState>()(
           return;
         }
 
-        const userId = get().currentCart?.userId;
-        if (!userId) return;
+        const userId = useAuthStore.getState().authUser?.id;
+        if (!userId) {
+          toast.error("Vui lòng đăng nhập");
+          return;
+        }
 
         set({ isLoading: true, error: null });
         try {
