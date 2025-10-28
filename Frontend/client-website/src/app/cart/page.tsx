@@ -10,8 +10,6 @@ import {
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { useProductStore } from "@/stores/productStore";
-import { useColorStore } from "@/stores/colorStore";
-import { useSizeStore } from "@/stores/sizeStore";
 import useAuthStore from "@/stores/useAuthStore";
 import { Badge } from "@/components/ui/badge";
 import { useMemo, useEffect } from "react";
@@ -27,6 +25,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import { EnrichedCartItem } from "@/types/cart";
 
 export default function CartPage() {
   const {
@@ -44,9 +43,6 @@ export default function CartPage() {
 
   // Get stores to populate variant info
   const { getProduct } = useProductStore();
-  const { colors } = useColorStore();
-  const { sizes } = useSizeStore();
-
   const itemCount = getTotalItems();
   const summary = getCartSummary();
   const router = useRouter();
@@ -60,25 +56,33 @@ export default function CartPage() {
   }, [authUser?.id, fetchCartItems, createCart]);
 
   // Enrich cart items with full product, color, and size info
-  const enrichedItems = useMemo(() => {
+  const enrichedItems: EnrichedCartItem[] = useMemo(() => {
     return items
       .map((item) => {
         const variant = item.variant;
         if (!variant) return null;
 
         const product = getProduct(variant.product?.id || variant.product_id);
-        const color = colors.find((c) => c.id === variant.color.id);
-        const size = sizes.find((s) => s.id === variant.size.id);
+        let maxStock = Infinity;
+        if (product?.inventories) {
+          const inv = product.inventories.find(
+            (inv) => inv.productVariant.id === variant.id
+          );
+          if (inv) {
+            maxStock = inv.quantity;
+          }
+        }
 
         return {
           ...item,
           product,
-          color,
-          size,
-        };
+          color: variant.color,
+          size: variant.size,
+          maxStock,
+        } as EnrichedCartItem;
       })
-      .filter(Boolean); // Remove null items
-  }, [items, getProduct, colors, sizes]);
+      .filter((item): item is EnrichedCartItem => item !== null);
+  }, [items, getProduct]);
 
   const handleQuantityChange = (itemId: number, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -249,10 +253,7 @@ export default function CartPage() {
                                     )
                                   }
                                   disabled={
-                                    item.variant?.inventory
-                                      ? item.quantity >=
-                                        item.variant.inventory.quantity
-                                      : false
+                                      item.quantity >= (item.maxStock ?? Infinity)
                                   }
                                 >
                                   <Plus className="w-3 h-3" />

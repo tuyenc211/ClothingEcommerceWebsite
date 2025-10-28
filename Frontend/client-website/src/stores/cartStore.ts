@@ -18,7 +18,7 @@ export interface CartItem {
   variant_id: number;
   unit_price: number;
   quantity: number; 
-  variant?: ProductVariant; }
+  variant?: ProductVariant }
 
 export interface CartSummary {
   subtotal: number;
@@ -154,8 +154,6 @@ export const useCartStore = create<CartState>()(
           const response = await privateClient.post(
             `/carts/${userId}/add?variantId=${variant.id}&quantity=${quantity}`
           );
-          
-          // Refresh cart items
           await get().fetchCartItems(userId);
           toast.success("Đã thêm vào giỏ hàng");
         } catch (error) {

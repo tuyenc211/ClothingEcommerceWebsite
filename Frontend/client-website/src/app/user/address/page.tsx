@@ -56,11 +56,11 @@ export default function AddressManagementPage() {
   } = useAuthStore();
   const {
     provinces,
-    communes,
+    wards,
     isLoadingProvinces,
-    isLoadingCommunes,
-    fetchCommunes,
-    clearCommunes,
+    isLoadingWards,
+    fetchWards,
+    clearWards,
   } = useAddress();
 
   // States
@@ -83,7 +83,7 @@ export default function AddressManagementPage() {
 
   // Selected codes for API
   const [selectedProvinceCode, setSelectedProvinceCode] = useState("");
-  const [selectedCommuneCode, setSelectedCommuneCode] = useState("");
+  const [selectedWardCode, setSelectedWardCode] = useState("");
 
   const addresses = authUser?.addresses || [];
 
@@ -117,8 +117,8 @@ export default function AddressManagementPage() {
       isDefault: false,
     });
     setSelectedProvinceCode("");
-    setSelectedCommuneCode("");
-    clearCommunes();
+    setSelectedWardCode("");
+    clearWards();
     setEditingAddress(null);
   };
 
@@ -138,7 +138,7 @@ export default function AddressManagementPage() {
       isDefault: address.isDefault,
     });
 
-    // Nếu cần load lại communes dựa trên province
+    // Nếu cần load lại wards dựa trên province
     // (Lưu ý: không có provinceCode trong address hiện tại, nên không thể fetch lại)
     setIsDialogOpen(true);
   };
@@ -153,24 +153,21 @@ export default function AddressManagementPage() {
         province: selectedProvince.name,
         ward: "",
       }));
-      setSelectedCommuneCode("");
-      fetchCommunes(provinceCode);
+      setSelectedWardCode("");
+      fetchWards(provinceCode);
     }
   };
 
-  // Handle commune change
-  const handleCommuneChange = (communeCode: string) => {
-    const selectedCommune = communes.find((c) => c.code === communeCode);
-    if (selectedCommune) {
-      setSelectedCommuneCode(communeCode);
+  // Handle ward change
+  const handleWardChange = (wardCode: string) => {
+    const selectedWard = wards.find((w) => w.code === wardCode);
+    if (selectedWard) {
+      setSelectedWardCode(wardCode);
 
-      // Tách administrativeLevel để lấy district từ tên commune
-      // VD: "Phường Phúc Xá" -> ward = "Phường Phúc Xá"
-      // Nhưng district thì cần lấy từ đâu? API không trả về district
-      // Tạm thời chỉ set ward
+      // Set ward name
       setFormData((prev) => ({
         ...prev,
-        ward: selectedCommune.name,
+        ward: selectedWard.name,
       }));
     }
   };
@@ -407,8 +404,8 @@ export default function AddressManagementPage() {
                     Xã/Phường <span className="text-red-500">*</span>
                   </Label>
                   <Select
-                    value={selectedCommuneCode}
-                    onValueChange={handleCommuneChange}
+                    value={selectedWardCode}
+                    onValueChange={handleWardChange}
                     disabled={!selectedProvinceCode}
                   >
                     <SelectTrigger>
@@ -416,16 +413,16 @@ export default function AddressManagementPage() {
                         placeholder={
                           !selectedProvinceCode
                             ? "Chọn tỉnh/thành phố trước"
-                            : isLoadingCommunes
+                            : isLoadingWards
                             ? "Đang tải..."
                             : "Chọn xã/phường"
                         }
                       />
                     </SelectTrigger>
                     <SelectContent className="max-h-60">
-                      {communes.map((commune) => (
-                        <SelectItem key={commune.code} value={commune.code}>
-                          {commune.name}
+                      {wards.map((ward) => (
+                        <SelectItem key={ward.code} value={ward.code}>
+                          {ward.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
