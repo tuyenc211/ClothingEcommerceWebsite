@@ -60,8 +60,8 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
         >
           {images.map((image, index) => (
-            <Lens key={index} hovering={hovering} setHovering={setHovering}>
               <SwiperSlide key={index}>
+                  <Lens key={index} hovering={hovering} setHovering={setHovering}>
                 <div className="swiper-zoom-container w-full h-full relative">
                   <Image
                     src={image}
@@ -73,8 +73,8 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                     unoptimized={image.includes("cloudinary")}
                   />
                 </div>
-              </SwiperSlide>
             </Lens>
+              </SwiperSlide>
           ))}
         </Swiper>
 

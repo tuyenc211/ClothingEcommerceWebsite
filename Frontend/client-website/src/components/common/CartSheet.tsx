@@ -30,9 +30,6 @@ export function CartSheet() {
     clearCart,
   } = useCartStore();
   const { getProduct } = useProductStore();
-  const { colors } = useColorStore();
-  const { sizes } = useSizeStore();
-
   const itemCount = getTotalItems();
   const summary = getCartSummary();
 
@@ -43,14 +40,21 @@ export function CartSheet() {
         const variant = item.variant;
         if (!variant) return null;
         const product = getProduct(variant.product?.id || variant.product_id);
-        const color = variant.color;
-        const size = variant.size;
-
+          let maxStock = Infinity; // fallback an toàn
+          if (product?.inventories) {
+              const inv = product.inventories.find(
+                  (inv) => inv.productVariant.id === variant.id
+              );
+              if (inv) {
+                  maxStock = inv.quantity;
+              }
+          }
         return {
           ...item,
           product,
-          color,
-          size,
+          color : variant.color,
+          size : variant.size,
+            maxStock
         };
       })
       .filter(Boolean);
@@ -179,6 +183,9 @@ export function CartSheet() {
                             className="h-6 w-6"
                             onClick={() =>
                               handleQuantityChange(item.id, item.quantity + 1)
+                            }
+                            disabled={
+                                item.quantity >= item.maxStock
                             }
                           >
                             <Plus className="w-3 h-3" />

@@ -12,7 +12,7 @@ export interface Province {
   decree: string; // "202/2025/QH15 - 12/06/2025" | ""
 }
 
-export interface Commune {
+export interface Ward {
   code: string;
   name: string;
   englishName: string;
@@ -27,9 +27,9 @@ interface ProvinceResponse {
   provinces: Province[];
 }
 
-interface CommuneResponse {
+interface WardResponse {
   requestId: string;
-  communes: Commune[];
+  communes: Ward[];
 }
 const API_BASE = "https://production.cas.so/address-kit";
 
@@ -43,9 +43,9 @@ export function useAddress(initialEffectiveDate = "2025-07-01") {
   const [effectiveDate, setEffectiveDate] =
     useState<string>(initialEffectiveDate);
   const [provinces, setProvinces] = useState<Province[]>([]);
-  const [communes, setCommunes] = useState<Commune[]>([]);
+  const [wards, setWards] = useState<Ward[]>([]);
   const [isLoadingProvinces, setIsLoadingProvinces] = useState(false);
-  const [isLoadingCommunes, setIsLoadingCommunes] = useState(false);
+  const [isLoadingWards, setIsLoadingWards] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch provinces
@@ -73,13 +73,13 @@ export function useAddress(initialEffectiveDate = "2025-07-01") {
      fetchProvinces();
   }, [fetchProvinces]);
 
-  // Fetch communes by province
-  const fetchCommunes = async (provinceCode: string) => {
+  // Fetch wards by province
+  const fetchWards = async (provinceCode: string) => {
     if (!provinceCode) return;
-    setIsLoadingCommunes(true);
+    setIsLoadingWards(true);
     setError(null);
     try {
-      const { data } = await axios.get<CommuneResponse>(
+      const { data } = await axios.get<WardResponse>(
         `${API_BASE}/${effectiveDate}/provinces/${provinceCode}/communes`,
         { timeout: 15000 }
       );
@@ -87,36 +87,29 @@ export function useAddress(initialEffectiveDate = "2025-07-01") {
         ...c,
         name: normalizeName(c.name),
       }));
-      setCommunes(cleaned);
+      setWards(cleaned);
     } catch {
-      setCommunes([]);
+      setWards([]);
       setError("Không tải được danh sách xã/phường");
     } finally {
-      setIsLoadingCommunes(false);
+      setIsLoadingWards(false);
     }
   };
 
-  const clearCommunes = () => setCommunes([]);
+  const clearWards = () => setWards([]);
 
   return {
     // data
     provinces,
-    communes,
-    // loading & error
+    wards,
+
     isLoadingProvinces,
-    isLoadingCommunes,
+    isLoadingWards,
     error,
-    // actions
-    fetchCommunes,
-    clearCommunes,
+    fetchWards,
+    clearWards,
     effectiveDate,
     setEffectiveDate,
-
-    // Aliases để backward-compatible với code hiện tại
-    wards: communes,
-    isLoadingWards: isLoadingCommunes,
-    fetchWards: fetchCommunes,
-    clearWards: clearCommunes,
   };
 }
 
