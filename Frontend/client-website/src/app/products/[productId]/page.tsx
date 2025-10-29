@@ -21,7 +21,10 @@ import { toast } from "react-toastify";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { Button } from "@/components/ui/button";
 import { Rating, RatingButton } from "@/components/ui/shadcn-io/rating";
-// Mock reviews data
+import ReviewForm from "@/components/product/ReviewForm";
+import ReviewList from "@/components/product/ReviewList";
+import { useReviewStore } from "@/stores/reviewStore";
+
 export default function ProductDetailPage() {
   const { productId } = useParams();
   const router = useRouter();
@@ -29,6 +32,7 @@ export default function ProductDetailPage() {
   // Stores
   const { getProduct } = useProductStore();
   const { addToCart } = useCartStore();
+  const { fetchReviewsByProduct } = useReviewStore();
   const product = useMemo(() => {
     if (typeof productId === "string") {
       const id = parseInt(productId, 10);
@@ -425,69 +429,22 @@ export default function ProductDetailPage() {
             </TabsContent>
 
             <TabsContent value="reviews" className="mt-8">
-              <div className="bg-white  p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
+              <div className="space-y-6">
+                {/* Review Summary */}
+                <div className="flex items-center justify-between">
                   <h3 className="text-xl font-semibold text-gray-900">
                     Đánh giá của khách hàng
                   </h3>
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center">
-                      {renderStars(averageRating)}
-                    </div>
-                    <span className="text-lg font-medium">
-                      {averageRating || 0}
-                    </span>
-                    <span className="text-gray-500">
-                      ({reviews.length || 0} đánh giá)
-                    </span>
-                  </div>
+                  <ReviewForm
+                    productId={product.id}
+                    productName={product.name}
+                    onSuccess={() => {
+                      fetchReviewsByProduct(product.id);
+                    }}
+                  />
                 </div>
-
-                <div className="space-y-6">
-                  {reviews.map((review) => (
-                    <div
-                      key={review.id}
-                      className="border-b border-gray-200 pb-6 last:border-0"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center space-x-3">
-                          <Avatar>
-                            <AvatarFallback className="bg-gray-200 text-gray-500 w-10 h-10 flex items-center justify-center rounded-full">
-                              {review.title && review.title.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="flex items-center space-x-2">
-                              <h4 className="font-medium text-gray-900">
-                                {review.title}
-                              </h4>
-                            </div>
-                            <div className="flex items-center space-x-2 mt-1">
-                              <div className="flex">
-                                {renderStars(review.rating)}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-gray-600 leading-relaxed ml-13">
-                        {review.content}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Write a review section */}
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                  <h4 className="font-medium text-gray-900 mb-4">
-                    Viết đánh giá của bạn
-                  </h4>
-                  <div className=" p-4 rounded-lg">
-                    <button className="w-full mt-4 bg-gray-900 text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors">
-                      Đăng nhập để đánh giá
-                    </button>
-                  </div>
-                </div>
+                {/* Review List */}
+                <ReviewList productId={product.id} />
               </div>
             </TabsContent>
           </Tabs>
