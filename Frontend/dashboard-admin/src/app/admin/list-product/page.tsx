@@ -31,17 +31,14 @@ import Link from "next/link";
 import Image from "next/image";
 
 export default function ProductListPage() {
-  const { products, fetchProducts, deleteProduct, isLoading } =
-    useProductStore();
+  const { products, fetchProducts, deleteProduct } = useProductStore();
   const { categories, fetchCategories } = useCategoryStore();
   const [deleteModal, setDeleteModal] = useState({
     open: false,
     productId: 0,
   });
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     fetchProducts();
     fetchCategories();
   }, [fetchProducts, fetchCategories]);
@@ -67,15 +64,6 @@ export default function ProductListPage() {
       currency: "VND",
     }).format(price);
   };
-
-  if (!mounted || isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
