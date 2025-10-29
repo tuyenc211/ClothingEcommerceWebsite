@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { ChevronUp } from "lucide-react";
-
-export default function ScrollToTop() {
+import { Component } from "../button-rotate";
+export default function ScrollToTopAndContactButton() {
   const [isVisible, setIsVisible] = useState(false);
 
   // Hiện nút khi scroll xuống 300px
@@ -31,18 +31,21 @@ export default function ScrollToTop() {
 
   return (
     <>
-      {isVisible && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-50 bg-black text-white p-4 rounded-full shadow-lg hover:bg-gray-800 transition-all duration-300 hover:scale-110 hover:shadow-xl group"
-          aria-label="Quay về đầu trang"
-        >
-          <ChevronUp
-            size={24}
-            className="transition-transform duration-200 group-hover:-translate-y-0.5"
-          />
-        </button>
-      )}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-4">
+        <Component />
+        {isVisible && (
+          <button
+            onClick={scrollToTop}
+            className=" bg-black text-white p-4 rounded-full shadow-lg hover:bg-gray-800 transition-all duration-300 hover:scale-110 hover:shadow-xl group"
+            aria-label="Quay về đầu trang"
+          >
+            <ChevronUp
+              size={24}
+              className="transition-transform duration-200 group-hover:-translate-y-0.5"
+            />
+          </button>
+        )}
+      </div>
     </>
   );
 }

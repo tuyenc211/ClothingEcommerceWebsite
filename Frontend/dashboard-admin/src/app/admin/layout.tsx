@@ -48,19 +48,7 @@ const sidebarItems: SidebarItem[] = [
   {
     title: "Quản lý tài khoản",
     icon: Users,
-    children: [
-      {
-        title: "Danh sách tài khoản",
-        href: "/admin/users",
-        icon: List,
-      },
-      {
-        title: "Thêm nhân viên",
-        href: "/admin/users/add-staff",
-        icon: Plus,
-      },
-    ],
-  },
+      href: "/admin/users",},
   {
     title: "Quản lý danh mục",
     icon: ShoppingCart,
@@ -90,54 +78,19 @@ const sidebarItems: SidebarItem[] = [
   },
   {
     title: "Quản lý sản phẩm",
+      href: "/admin/list-product",
     icon: ShoppingCart,
-    children: [
-      {
-        title: "Thêm sản phẩm",
-        href: "/admin/product",
-        icon: Plus,
-      },
-
-      {
-        title: "Danh sách sản phẩm",
-        href: "/admin/list-product",
-        icon: List,
-      },
-    ],
   },
   {
     title: "Quản lý màu sắc",
+      href: "/admin/colors",
     icon: Palette,
-    children: [
-      {
-        title: "Thêm màu sắc",
-        href: "/admin/colors/add",
-        icon: Plus,
-      },
 
-      {
-        title: "Danh sách màu sắc",
-        href: "/admin/colors",
-        icon: List,
-      },
-    ],
   },
-  ,
   {
     title: "Quản lý kích thước",
+      href: "/admin/sizes",
     icon: Ruler,
-    children: [
-      {
-        title: "Thên kích thước",
-        href: "/admin/sizes/add",
-        icon: Plus,
-      },
-      {
-        title: "Danh sách kích thước",
-        href: "/admin/sizes",
-        icon: List,
-      },
-    ],
   },
   {
     title: "Quản lý đơn hàng",
@@ -146,19 +99,8 @@ const sidebarItems: SidebarItem[] = [
   },
   {
     title: "Quản lý mã giảm giá",
+      href: "/admin/coupon-list",
     icon: Gift,
-    children: [
-      {
-        title: "Thêm mã giảm giá",
-        href: "/admin/coupon",
-        icon: Plus,
-      },
-      {
-        title: "Danh sách mã giảm giá",
-        href: "/admin/coupon-list",
-        icon: List,
-      },
-    ],
   },
   {
     title: "Quản lý kho",

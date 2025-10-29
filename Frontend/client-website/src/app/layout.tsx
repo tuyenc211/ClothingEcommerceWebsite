@@ -3,8 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layouts/Header";
 import Footer from "@/components/layouts/Footer";
-import ScrollToTop from "@/components/common/ScrollToTop";
 import { Toaster } from "sonner";
+import ScrollToTopAndContactButton from "@/components/common/ScrollToTop";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -35,7 +35,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
         </div>
-        <ScrollToTop />
+        <ScrollToTopAndContactButton />
         <Toaster />
       </body>
     </html>
