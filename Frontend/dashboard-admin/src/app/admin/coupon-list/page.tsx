@@ -127,7 +127,7 @@ export default function CouponListPage() {
                     <TableCell>{coupon.name}</TableCell>
                     <TableCell>
                       <span className="font-medium">
-                        {coupon.value.toLocaleString("vi-VN")}
+                        {coupon.value}%
                       </span>
                     </TableCell>
                     <TableCell>

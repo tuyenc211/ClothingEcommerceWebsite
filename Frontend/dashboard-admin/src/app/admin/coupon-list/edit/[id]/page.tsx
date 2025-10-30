@@ -190,19 +190,20 @@ export default function EditCouponPage() {
 
               {/* Value */}
               <div className="space-y-2">
-                <Label htmlFor="value">Giá trị giảm *</Label>
+                <Label htmlFor="value">Giá trị giảm (%) *</Label>
                 <Input
                   id="value"
                   type="number"
-                  step="0.01"
                   {...register("value", {
                     required: "Giá trị giảm không được để trống",
                     min: { value: 0, message: "Giá trị phải lớn hơn 0" },
+                    max: { value: 100, message: "Giá trị không được vượt quá 100%" },
                   })}
-                  placeholder="VD: 10000"
+                  placeholder="VD: 10"
                   className={errors.value ? "border-red-500" : ""}
                   disabled={isSubmitting}
                 />
+                <p className="text-xs text-muted-foreground">Nhập giá trị từ 0-100 (phần trăm)</p>
                 {errors.value && (
                   <p className="text-sm text-red-500">{errors.value.message}</p>
                 )}

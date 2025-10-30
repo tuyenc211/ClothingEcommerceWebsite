@@ -25,7 +25,6 @@ export interface CartSummary {
   subtotal: number;
   discount: number;
   shipping: number;
-  tax: number;
   total: number;
   itemCount: number;
 }
@@ -35,7 +34,6 @@ interface CartState {
   items: CartItem[];
   appliedCoupon: Coupon | null;
   shippingFee: number;
-  taxRate: number;
   freeShippingThreshold: number;
   isLoading: boolean;
   error: string | null;
@@ -69,7 +67,6 @@ const initialState = {
   items: [],
   appliedCoupon: null,
   shippingFee: 30000,
-  taxRate: 0.1,
   freeShippingThreshold: 500000,
   isLoading: false,
   error: null,
@@ -272,7 +269,6 @@ export const useCartStore = create<CartState>()(
           items,
           appliedCoupon,
           shippingFee,
-          taxRate,
           freeShippingThreshold,
         } = get();
 
@@ -301,8 +297,8 @@ export const useCartStore = create<CartState>()(
             subtotal >= appliedCoupon.minOrderTotal;
 
           if (isWithinDateRange && meetsMinTotal) {
-            // Flat discount value
-            discount = appliedCoupon.value;
+            // Percentage discount calculation
+            discount = (subtotal * appliedCoupon.value) / 100;
 
             // Không cho giảm quá số tiền đơn hàng
             if (discount > subtotal) {
@@ -316,15 +312,12 @@ export const useCartStore = create<CartState>()(
         const shipping =
           subtotalAfterDiscount >= freeShippingThreshold ? 0 : shippingFee;
 
-        const tax = subtotalAfterDiscount * taxRate;
-
-        const total = subtotalAfterDiscount + shipping + tax;
+        const total = subtotalAfterDiscount + shipping;
 
         return {
           subtotal,
           discount,
           shipping,
-          tax,
           total,
           itemCount: items.reduce((count, item) => count + item.quantity, 0),
         };

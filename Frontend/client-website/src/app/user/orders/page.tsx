@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { useOrderStore } from "@/stores/orderStore";
 import { OrderTable } from "@/components/common/OrderTable";
 import {
@@ -11,18 +12,30 @@ import {
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import UserLayout from "@/components/layouts/UserLayout";
-
+import useAuthStore from "@/stores/useAuthStore";
 export default function OrdersPage() {
-  const { orders, isLoading, currentPage, itemsPerPage, setPage, fetchOrders } =
-    useOrderStore();
+  const {
+    orders,
+    isLoading,
+    currentPage,
+    itemsPerPage,
+    setPage,
+    fetchUserOrders,
+  } = useOrderStore();
+  const { authUser } = useAuthStore();
 
-  // useEffect(() => {
-  //   fetchOrders();
-  // }, [fetchOrders]);
+  useEffect(() => {
+    if (authUser?.id) {
+      fetchUserOrders(authUser.id);
+    }
+  }, [fetchUserOrders, authUser?.id]);
 
   // Sort orders by created_at (newest first)
   const sortedOrders = [...orders].sort((a, b) => {
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    return (
+      new Date(b.createdAt || 0).getTime() -
+      new Date(a.createdAt || 0).getTime()
+    );
   });
 
   // Pagination calculation

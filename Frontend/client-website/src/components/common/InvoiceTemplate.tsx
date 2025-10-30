@@ -11,7 +11,8 @@ interface InvoiceTemplateProps {
 
 export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
   const { authUser } = useAuthStore();
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "N/A";
     try {
       return format(new Date(dateString), "dd/MM/yyyy");
     } catch {
@@ -21,10 +22,10 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
 
   const formatAddress = () => {
     if (
-      typeof order.shipping_address_snapshot === "object" &&
-      order.shipping_address_snapshot
+      typeof order.shippingAddressSnapshot === "object" &&
+      order.shippingAddressSnapshot
     ) {
-      const addr = order.shipping_address_snapshot as Record<string, string>;
+      const addr = order.shippingAddressSnapshot as Record<string, string>;
       return `${addr.line || ""}, ${addr.ward || ""}, ${addr.district || ""}, ${
         addr.province || ""
       }, ${addr.country || ""}`;
@@ -60,7 +61,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <div>
           <h3 className="text-sm font-semibold text-gray-700 mb-2">Ngày</h3>
-          <p className="text-gray-900">{formatDate(order.created_at)}</p>
+          <p className="text-gray-900">{formatDate(order.createdAt)}</p>
         </div>
         <div>
           <h3 className="text-sm font-semibold text-gray-700 mb-2">
@@ -113,7 +114,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                     {index + 1}
                   </td>
                   <td className="py-4 px-2 text-sm text-gray-900 font-medium">
-                    {item.product_name}
+                    {item.productName}
                     {item.attributesSnapshot && (
                       <div className="text-xs text-gray-500">
                         {JSON.stringify(item.attributesSnapshot)}
@@ -124,10 +125,10 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                     {item.quantity}
                   </td>
                   <td className="py-4 px-2 text-sm text-gray-900 text-right">
-                    {formatPrice(item.unit_price)}
+                    {formatPrice(item.unitPrice)}
                   </td>
                   <td className="py-4 px-2 text-sm font-semibold text-gray-800 text-right">
-                    {formatPrice(item.line_total)}
+                    {formatPrice(item.lineTotal)}
                   </td>
                 </tr>
               )) || []}
@@ -144,20 +145,20 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
               Phương thức thanh toán
             </h3>
             <p className="text-gray-900 capitalize">
-              {order.payment_method === "COD" ? "Tiền mặt" : "Ví điện tử"}
+              {order.paymentMethod === "COD" ? "Tiền mặt" : "Ví điện tử"}
             </p>
           </div>
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-2">
               Phí vận chuyển
             </h3>
-            <p className="text-gray-900">{formatPrice(order.shipping_fee)}</p>
+            <p className="text-gray-900">{formatPrice(order.shippingFee)}</p>
           </div>
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-2">
               Giảm giá
             </h3>
-            <p className="text-gray-900">{formatPrice(order.discount_total)}</p>
+            <p className="text-gray-900">{formatPrice(order.discountTotal)}</p>
           </div>
         </div>
 
@@ -168,10 +169,10 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                 Tổng tiền sản phẩm: {formatPrice(order.subtotal)}
               </p>
               <p className="text-sm text-gray-600">
-                Tổng số lượng sản phẩm: {order.total_items}
+                Tổng số lượng sản phẩm: {order.totalItems}
               </p>
               <p className="text-sm text-gray-600">
-                Trạng thái thanh toán: {order.payment_status}
+                Trạng thái thanh toán: {order.paymentMethod}
               </p>
             </div>
             <div className="text-right">
@@ -179,7 +180,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                 <span className="font-semibold">Tổng tiền</span>
               </p>
               <p className="text-3xl font-bold text-gray-800">
-                {formatPrice(order.grand_total)}
+                {formatPrice(order.grandTotal)}
               </p>
             </div>
           </div>
@@ -187,26 +188,26 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
       </div>
 
       {/* Shipment Info */}
-      {order.shipments && order.shipments.length > 0 && (
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">
-            SHIPMENT INFO
-          </h3>
-          {order.shipments.map((shipment) => (
-            <div key={shipment.id} className="text-sm text-gray-600 space-y-1">
-              <p>Carrier: {shipment.carrier || "N/A"}</p>
-              <p>Tracking: {shipment.tracking_number || "N/A"}</p>
-              <p>Status: {shipment.status || "N/A"}</p>
-              {shipment.shipped_at && (
-                <p>Shipped: {formatDate(shipment.shipped_at)}</p>
-              )}
-              {shipment.delivered_at && (
-                <p>Delivered: {formatDate(shipment.delivered_at)}</p>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+      {/*{order.shipments && order.shipments.length > 0 && (*/}
+      {/*  <div className="mt-8 p-4 bg-blue-50 rounded-lg">*/}
+      {/*    <h3 className="text-sm font-semibold text-gray-700 mb-2">*/}
+      {/*      SHIPMENT INFO*/}
+      {/*    </h3>*/}
+      {/*    {order.shipments.map((shipment) => (*/}
+      {/*      <div key={shipment.id} className="text-sm text-gray-600 space-y-1">*/}
+      {/*        <p>Carrier: {shipment.carrier || "N/A"}</p>*/}
+      {/*        <p>Tracking: {shipment.tracking_number || "N/A"}</p>*/}
+      {/*        <p>Status: {shipment.status || "N/A"}</p>*/}
+      {/*        {shipment.shipped_at && (*/}
+      {/*          <p>Shipped: {formatDate(shipment.shipped_at)}</p>*/}
+      {/*        )}*/}
+      {/*        {shipment.delivered_at && (*/}
+      {/*          <p>Delivered: {formatDate(shipment.delivered_at)}</p>*/}
+      {/*        )}*/}
+      {/*      </div>*/}
+      {/*    ))}*/}
+      {/*  </div>*/}
+      {/*)}*/}
     </div>
   );
 }

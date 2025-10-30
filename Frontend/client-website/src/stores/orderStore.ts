@@ -1,7 +1,7 @@
-import { mockOrders } from "@/data/productv2";
 import { create } from "zustand";
+import privateClient from "@/lib/axios";
 
-// Order status matching database schema
+// ===== Types =====
 export type OrderStatus =
   | "NEW"
   | "CONFIRMED"
@@ -9,35 +9,33 @@ export type OrderStatus =
   | "SHIPPED"
   | "DELIVERED"
   | "CANCELLED";
+
 export type PaymentMethod = "COD" | "WALLET";
 export type PaymentStatus = "UNPAID" | "PAID" | "REFUNDED" | "PARTIAL";
 
-// Order item interface matching database schema
 export interface OrderItem {
-  id: number; // BIGINT PRIMARY KEY AUTO_INCREMENT
-  order_id: number; // BIGINT NOT NULL references orders(id)
-  product_id: number; // BIGINT NOT NULL references products(id)
-  variant_id?: number; // BIGINT references product_variants(id)
-  product_name: string; // VARCHAR(255) NOT NULL
-  sku: string; // VARCHAR(120) NOT NULL
-  attributesSnapshot?: Record<string, unknown>; // JSON - color, size info
-  unit_price: number; // DECIMAL(12,2) NOT NULL
-  quantity: number; // INT NOT NULL
-  line_total: number; // DECIMAL(12,2) NOT NULL
+  id: number;
+  orderId: number;
+  productId: number;
+  variantId?: number;
+  productName: string;
+  sku: string;
+  attributesSnapshot?: Record<string, unknown>;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
 }
 
-// Shipment interface matching database schema
 export interface Shipment {
   id: number;
-  order_id: number;
+  orderId: number;
   carrier?: string;
-  tracking_number?: string;
+  trackingNumber?: string;
   status?: string;
-  shipped_at?: string;
-  delivered_at?: string;
+  shippedAt?: string;
+  deliveredAt?: string;
 }
 
-// Order status history interface
 export interface OrderStatusHistory {
   id: number;
   orderId: number;
@@ -48,27 +46,30 @@ export interface OrderStatusHistory {
   note?: string;
 }
 
-// Order interface matching database schema
+export interface CreateOrderRequest {
+  paymentMethod: PaymentMethod;
+  shippingAddress: {
+    address: string;
+    ward: string;
+    province: string;
+  };
+}
+
 export interface Order {
   id: number;
-  user_id?: number;
   code: string;
   status: OrderStatus;
-  total_items: number;
+  totalItems: number;
   subtotal: number;
-  discount_total: number;
-  shipping_fee: number;
-  grand_total: number;
-  payment_method: PaymentMethod;
-  payment_status: PaymentStatus;
-  shipping_address_snapshot?: Record<string, unknown>; // JSON
-  placed_at?: string; // DATETIME DEFAULT CURRENT_TIMESTAMP
-  paid_at?: string;
-  cancelled_at?: string;
-  created_at: string;
-  updated_at: string;
-
-  // Relationships (populated from joins)
+  discountTotal: number;
+  shippingFee: number;
+  grandTotal: number;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  shippingAddressSnapshot?: Record<string, unknown>;
+  placedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
   items?: OrderItem[];
   shipments?: Shipment[];
   statusHistory?: OrderStatusHistory[];
@@ -77,7 +78,7 @@ export interface Order {
 export interface OrderFilters {
   status?: OrderStatus;
   paymentMethod?: PaymentMethod;
-  customerName?: string;
+  customerName?: string; // nếu BE có trả về
   startDate?: string;
   endDate?: string;
 }
@@ -88,11 +89,11 @@ interface OrderState {
   filteredOrders: Order[];
   currentOrder: Order | null;
 
-  // Loading states
+  // Loading
   isLoading: boolean;
   isUpdating: boolean;
 
-  // Filters and search
+  // Filters & search
   filters: OrderFilters;
   searchTerm: string;
 
@@ -100,13 +101,13 @@ interface OrderState {
   currentPage: number;
   itemsPerPage: number;
 
-  // Actions
-  fetchOrders: () => Promise<void>;
-  fetchOrderById: (id: number) => Promise<void>;
-  updateOrderStatus: (id: number, status: OrderStatus) => Promise<void>;
-  cancelOrder: (id: number, reason?: string) => Promise<void>;
+  // API actions
+  fetchUserOrders: (userId: number) => Promise<void>;
+  fetchOrderById: (orderId: number) => Promise<void>;
+  createOrder: (userId: number, req: CreateOrderRequest) => Promise<Order>;
+  cancelOrder: (userId: number, orderId: number) => Promise<void>;
 
-  // Filters and search actions
+  // Filters/search
   setFilters: (filters: Partial<OrderFilters>) => void;
   setSearchTerm: (term: string) => void;
   clearFilters: () => void;
@@ -116,15 +117,16 @@ interface OrderState {
   setPage: (page: number) => void;
   setItemsPerPage: (items: number) => void;
 
-  // Utility
+  // Utils
   getOrdersByStatus: (status: OrderStatus) => Order[];
   getOrdersByDateRange: (start: string, end: string) => Order[];
   getTotalRevenue: () => number;
   exportOrders: () => void;
 }
+
 export const useOrderStore = create<OrderState>((set, get) => ({
   // Initial state
-  orders: mockOrders,
+  orders: [],
   filteredOrders: [],
   currentOrder: null,
   isLoading: false,
@@ -134,184 +136,160 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   currentPage: 1,
   itemsPerPage: 10,
 
-  // Fetch orders
-  fetchOrders: async () => {
+  // ===== API actions =====
+  fetchUserOrders: async (userId) => {
     set({ isLoading: true });
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Mock delay
-      set({ orders: mockOrders });
+      const res = await privateClient.get(`/orders/user/${userId}`);
+      set({ orders: res.data });
       get().applyFilters();
-    } catch (error) {
-      console.error("Failed to fetch orders:", error);
+    } catch (e) {
+      console.error("Failed to fetch user orders:", e);
+      set({ orders: [], filteredOrders: [] });
     } finally {
       set({ isLoading: false });
     }
   },
 
-  // Fetch order by ID
-  fetchOrderById: async (id: number) => {
+  fetchOrderById: async (orderId) => {
     set({ isLoading: true });
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Mock delay
-      const order = mockOrders.find((o) => o.id === id);
-      set({ currentOrder: order || null });
-    } catch (error) {
-      console.error("Failed to fetch order:", error);
+      const res = await privateClient.get(`/orders/${orderId}`);
+      set({ currentOrder: res.data });
+    } catch (e) {
+      console.error("Failed to fetch order:", e);
+      set({ currentOrder: null });
     } finally {
       set({ isLoading: false });
     }
   },
 
-  // Update order status
-  updateOrderStatus: async (id: number, status: OrderStatus) => {
+  createOrder: async (userId, request) => {
     set({ isUpdating: true });
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Mock delay
-
-      const { orders } = get();
-      const updatedOrders = orders.map((order) =>
-        order.id === id
-          ? { ...order, status, updated_at: order.updated_at }
-          : order
-      );
-
-      set({ orders: updatedOrders });
+      const res = await privateClient.post(`/orders/${userId}`, request);
+      const newOrder = res.data;
+      set((s) => ({ orders: [newOrder, ...s.orders], currentOrder: newOrder }));
       get().applyFilters();
-    } catch (error) {
-      console.error("Failed to update order status:", error);
+      return newOrder;
+    } catch (e) {
+      console.error("Failed to create order:", e);
+      throw e;
     } finally {
       set({ isUpdating: false });
     }
   },
 
-  // Cancel order
-  cancelOrder: async (id: number, reason?: string) => {
+  cancelOrder: async (userId, orderId) => {
     set({ isUpdating: true });
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Mock delay
-
-      const { orders } = get();
-      const updatedOrders = orders.map((order) =>
-        order.id === id
-          ? {
-              ...order,
-              status: "CANCELLED" as OrderStatus,
-              notes: reason ? `Cancelled: ${reason}` : "Cancelled by admin",
-              updated_at: order.updated_at,
-            }
-          : order
-      );
-
-      set({ orders: updatedOrders });
+      await privateClient.patch(`/orders/${userId}/${orderId}/cancel`);
+      set((s) => ({
+        orders: s.orders.map((o) =>
+          o.id === orderId ? ({ ...o, status: "CANCELLED" } as Order) : o
+        ),
+        currentOrder:
+          s.currentOrder?.id === orderId
+            ? ({ ...s.currentOrder, status: "CANCELLED" } as Order)
+            : s.currentOrder,
+      }));
       get().applyFilters();
-    } catch (error) {
-      console.error("Failed to cancel order:", error);
+    } catch (e) {
+      console.error("Failed to cancel order:", e);
+      throw e;
     } finally {
       set({ isUpdating: false });
     }
   },
 
-  // Set filters
-  setFilters: (filters: Partial<OrderFilters>) => {
+  // ===== Filters/Search/Pagination/Utils =====
+  setFilters: (filters) => {
     set((state) => ({ filters: { ...state.filters, ...filters } }));
     get().applyFilters();
   },
 
-  // Set search term
-  setSearchTerm: (term: string) => {
+  setSearchTerm: (term) => {
     set({ searchTerm: term });
     get().applyFilters();
   },
 
-  // Clear filters
   clearFilters: () => {
     set({ filters: {}, searchTerm: "", currentPage: 1 });
     get().applyFilters();
   },
 
-  // Apply filters
   applyFilters: () => {
     const { orders, filters, searchTerm } = get();
-
     let filtered = [...orders];
 
-    // Apply search term
     if (searchTerm) {
       filtered = filtered.filter((order) =>
         order.code?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // Apply status filter
     if (filters.status) {
       filtered = filtered.filter((order) => order.status === filters.status);
     }
 
-    // Apply payment method filter
     if (filters.paymentMethod) {
       filtered = filtered.filter(
-        (order) => order.payment_method === filters.paymentMethod
+        (order) => order.paymentMethod === filters.paymentMethod
       );
     }
 
-    // Apply date range filter
+    // Date range (ưu tiên createdAt, fallback placedAt/updatedAt)
     if (filters.startDate || filters.endDate) {
+      const start = filters.startDate
+        ? new Date(filters.startDate).getTime()
+        : 0;
+      const end = filters.endDate
+        ? new Date(filters.endDate).getTime()
+        : Date.now();
+
       filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.created_at);
-        const start = filters.startDate
-          ? new Date(filters.startDate)
-          : new Date(0);
-        const end = filters.endDate ? new Date(filters.endDate) : new Date();
-        return orderDate >= start && orderDate <= end;
+        const t = new Date(
+          order.createdAt || order.placedAt || order.updatedAt || 0
+        ).getTime();
+        return t >= start && t <= end;
       });
     }
 
-    // Sort by order time (newest first)
+    // Newest first
     filtered.sort(
       (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        new Date(b.createdAt || b.placedAt || b.updatedAt || 0).getTime() -
+        new Date(a.createdAt || a.placedAt || a.updatedAt || 0).getTime()
     );
 
     set({ filteredOrders: filtered, currentPage: 1 });
   },
 
-  // Pagination
-  setPage: (page: number) => {
-    set({ currentPage: page });
-  },
+  setPage: (page) => set({ currentPage: page }),
+  setItemsPerPage: (items) => set({ itemsPerPage: items, currentPage: 1 }),
 
-  setItemsPerPage: (items: number) => {
-    set({ itemsPerPage: items, currentPage: 1 });
-  },
+  getOrdersByStatus: (status) =>
+    get().orders.filter((o) => o.status === status),
 
-  // Utility functions
-  getOrdersByStatus: (status: OrderStatus) => {
-    const { orders } = get();
-    return orders.filter((order) => order.status === status);
-  },
-
-  getOrdersByDateRange: (start: string, end: string) => {
-    const { orders } = get();
-    return orders.filter((order) => {
-      const orderDate = new Date(order.created_at);
-      return orderDate >= new Date(start) && orderDate <= new Date(end);
+  getOrdersByDateRange: (start, end) => {
+    const s = new Date(start).getTime();
+    const e = new Date(end).getTime();
+    return get().orders.filter((o) => {
+      const t = new Date(
+        o.createdAt || o.placedAt || o.updatedAt || 0
+      ).getTime();
+      return t >= s && t <= e;
     });
   },
 
-  getTotalRevenue: () => {
-    const { orders } = get();
-    return orders
-      .filter((order) => order.status === "DELIVERED")
-      .reduce((sum, order) => sum + order.grand_total, 0);
-  },
+  getTotalRevenue: () =>
+    get()
+      .orders.filter((o) => o.status === "DELIVERED")
+      .reduce((sum, o) => sum + o.grandTotal, 0),
 
   exportOrders: () => {
     const { filteredOrders } = get();
-    // TODO: Implement CSV export functionality
     console.log("Exporting orders:", filteredOrders);
+    // TODO: CSV export
   },
 }));

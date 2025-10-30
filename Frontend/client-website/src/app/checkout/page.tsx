@@ -23,7 +23,8 @@ import ShippingAddressForm from "@/components/checkout/ShippingAddressForm";
 import PaymentMethodSelector from "@/components/checkout/PaymentMethodSelector";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { EnrichedCartItem } from "@/types/cart";
-
+import { PaymentMethod, useOrderStore } from "@/stores/orderStore";
+import { AxiosError } from "axios";
 interface ShippingFormData {
   fullName: string;
   phone: string;
@@ -61,7 +62,7 @@ export default function CheckoutPage() {
     clearWards,
   } = useAddress();
 
-  const [paymentMethod, setPaymentMethod] = useState<"COD" | "WALLET">("COD");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
     null
   );
@@ -229,7 +230,13 @@ export default function CheckoutPage() {
     toast.info("Đã hủy mã giảm giá");
   };
   const handleSubmitOrder = async () => {
-    if (!formData.address) {
+    if (!authUser?.id) {
+      toast.error("Vui lòng đăng nhập để đặt hàng");
+      router.push("/user/login");
+      return;
+    }
+
+    if (!formData.address || !formData.fullName || !formData.phone) {
       toast.error("Vui lòng điền đầy đủ thông tin giao hàng");
       return;
     }
@@ -242,34 +249,35 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
-      const orderData = {
-        user_id: authUser?.id,
-        items: enrichedItems.map((item) => ({
-          variant_id: item?.variant?.id,
-          product_name: item?.product?.name,
-          sku: item?.variant?.sku,
-          quantity: item?.quantity,
-          unitPrice: item?.unitPrice,
-          line_total: (item?.unitPrice || 0) * (item?.quantity || 0),
-        })),
-        subtotal: summary.subtotal,
-        discount_total: summary.discount,
-        shipping_fee: summary.shipping,
-        grand_total: summary.total,
-        payment_method: paymentMethod,
-        shipping_address_snapshot: formData,
-        coupon_code: appliedCoupon?.code,
+      // Create order request matching backend structure
+      const orderRequest = {
+        paymentMethod: paymentMethod,
+        shippingAddress: {
+          address: formData.address,
+          ward: formData.ward,
+          province: formData.province,
+        },
       };
 
-      console.log("Creating order:", orderData);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      console.log("Creating order:", orderRequest);
 
-      toast.success("Đặt hàng thành công!");
+      // Call backend API
+      const order = await useOrderStore
+        .getState()
+        .createOrder(authUser.id, orderRequest);
+
+      console.log("Order created successfully:", order);
+      toast.success(`Đặt hàng thành công! Mã đơn hàng: ${order.code}`);
+
+      // Clear cart after successful order
       await clearCart();
-      router.push("/user/orders");
+
+      // Redirect to order detail or orders list
+      router.push(`/user/orders`);
     } catch (error) {
-      console.error("Order error:", error);
-      toast.error("Đặt hàng thất bại. Vui lòng thử lại!");
+      const axiosError = error as AxiosError<{ message: string }>;
+      const errorMessage =
+        axiosError?.response?.data?.message || "Lỗi khi tải danh sách danh mục";
     } finally {
       setIsSubmitting(false);
     }
