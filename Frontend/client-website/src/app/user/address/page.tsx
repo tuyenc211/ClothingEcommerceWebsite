@@ -56,12 +56,16 @@ export default function AddressManagementPage() {
   } = useAuthStore();
   const {
     provinces,
+      fetchProvinces,
     wards,
     isLoadingProvinces,
     isLoadingWards,
     fetchWards,
     clearWards,
   } = useAddress();
+    useEffect(() => {
+        fetchProvinces();
+    }, [fetchProvinces]);
 
   // States
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -73,7 +77,7 @@ export default function AddressManagementPage() {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form data
+    // Form data
   const [formData, setFormData] = useState<AddressFormData>({
     line: "",
     ward: "",
@@ -292,7 +296,7 @@ export default function AddressManagementPage() {
               <Card
                 key={address.id}
                 className={`relative ${
-                  address.isDefault ? "border-primary border-2" : ""
+                  address.isDefault ? "border-primary border-1" : ""
                 }`}
               >
                 <CardHeader>

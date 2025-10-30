@@ -12,11 +12,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, CreditCard, Settings } from "lucide-react";
-import { useCartStore, CartItem } from "@/stores/cartStore";
+import { useCartStore } from "@/stores/cartStore";
 import Link from "next/link";
 import { useProductStore } from "@/stores/productStore";
-import { useColorStore } from "@/stores/colorStore";
-import { useSizeStore } from "@/stores/sizeStore";
 import { useCouponStore } from "@/stores/couponStore";
 import useAuthStore from "@/stores/useAuthStore";
 import { toast } from "sonner";
@@ -35,7 +33,6 @@ interface ShippingFormData {
   wardCode: string;
   province: string;
   provinceCode: string;
-  note?: string;
 }
 export default function CheckoutPage() {
   const router = useRouter();
@@ -49,7 +46,7 @@ export default function CheckoutPage() {
     appliedCoupon,
   } = useCartStore();
   const { getProduct } = useProductStore();
-  const { getActiveCoupons, fetchCoupons,coupons } = useCouponStore();
+  const { getActiveCoupons, fetchCoupons, coupons } = useCouponStore();
 
   useEffect(() => {
     fetchCoupons();
@@ -65,7 +62,9 @@ export default function CheckoutPage() {
   } = useAddress();
 
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "WALLET">("COD");
-  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
+    null
+  );
   const [isNewAddress, setIsNewAddress] = useState(false);
   const [showCouponList, setShowCouponList] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -119,7 +118,6 @@ export default function CheckoutPage() {
           wardCode: "",
           province: defaultAddr.province || "",
           provinceCode: "",
-          note: "",
         });
       } else {
         setIsNewAddress(true);
@@ -132,7 +130,6 @@ export default function CheckoutPage() {
           wardCode: "",
           province: "",
           provinceCode: "",
-          note: "",
         });
       }
     } else {
@@ -193,7 +190,6 @@ export default function CheckoutPage() {
           wardCode: "",
           province: selectedAddr.province || "",
           provinceCode: "",
-          note: formData.note || "",
         });
       }
     }
@@ -211,7 +207,6 @@ export default function CheckoutPage() {
       wardCode: "",
       province: "",
       provinceCode: "",
-      note: formData.note || "",
     });
     clearWards();
   };
@@ -233,50 +228,17 @@ export default function CheckoutPage() {
     removeCoupon();
     toast.info("Đã hủy mã giảm giá");
   };
-
-  const validatePhoneNumber = (phone: string): boolean => {
-    const phoneRegex = /^(\+84|0)[0-9]{9}$/;
-    return phoneRegex.test(phone.replace(/\s/g, ""));
-  };
-
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validateForm = () => {
-    if (
-      !formData.fullName ||
-      !formData.phone ||
-      !formData.address ||
-      !formData.email
-    ) {
+  const handleSubmitOrder = async () => {
+    if (!formData.address) {
       toast.error("Vui lòng điền đầy đủ thông tin giao hàng");
-      return false;
-    }
-
-    if (!validatePhoneNumber(formData.phone)) {
-      toast.error(
-        "Số điện thoại không hợp lệ. Vui lòng nhập đúng định dạng (VD: 0912345678)"
-      );
-      return false;
-    }
-
-    if (!validateEmail(formData.email)) {
-      toast.error("Email không hợp lệ");
-      return false;
+      return;
     }
 
     if (!formData.province || !formData.ward) {
       toast.error("Vui lòng chọn tỉnh/thành phố và xã/phường");
-      return false;
+      return;
     }
 
-    return true;
-  };
-
-  const handleSubmitOrder = async () => {
-    if (!validateForm()) return;
     setIsSubmitting(true);
 
     try {
@@ -296,7 +258,6 @@ export default function CheckoutPage() {
         grand_total: summary.total,
         payment_method: paymentMethod,
         shipping_address_snapshot: formData,
-        note: formData.note,
         coupon_code: appliedCoupon?.code,
       };
 
@@ -347,7 +308,6 @@ export default function CheckoutPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Forms */}
           <div className="lg:col-span-2 space-y-6">
             {/* Shipping Address */}
             <Card>
