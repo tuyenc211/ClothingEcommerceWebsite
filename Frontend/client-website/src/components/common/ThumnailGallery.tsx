@@ -11,7 +11,6 @@ import "swiper/css";
 import "swiper/css/free-mode";
 import "swiper/css/navigation";
 import "swiper/css/thumbs";
-import { Lens } from "@/components/ui/lens";
 
 interface ProductImageGalleryProps {
   images: string[];
@@ -60,21 +59,19 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
         >
           {images.map((image, index) => (
-              <SwiperSlide key={index}>
-                  <Lens key={index} hovering={hovering} setHovering={setHovering}>
-                <div className="swiper-zoom-container w-full h-full relative">
-                  <Image
-                    src={image}
-                    alt={`${productName} - Image ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    priority={index === 0}
-                    unoptimized={image.includes("cloudinary")}
-                  />
-                </div>
-            </Lens>
-              </SwiperSlide>
+            <SwiperSlide key={index}>
+              <div className="swiper-zoom-container w-full h-full relative">
+                <Image
+                  src={image}
+                  alt={`${productName} - Image ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority={index === 0}
+                  unoptimized={image.includes("cloudinary")}
+                />
+              </div>
+            </SwiperSlide>
           ))}
         </Swiper>
 

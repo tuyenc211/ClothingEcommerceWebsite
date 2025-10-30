@@ -13,8 +13,6 @@ import {
 } from "@/components/ui/sheet";
 import { useCartStore } from "@/stores/cartStore";
 import { useProductStore } from "@/stores/productStore";
-import { useColorStore } from "@/stores/colorStore";
-import { useSizeStore } from "@/stores/sizeStore";
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
@@ -40,21 +38,21 @@ export function CartSheet() {
         const variant = item.variant;
         if (!variant) return null;
         const product = getProduct(variant.product?.id || variant.product_id);
-          let maxStock = Infinity; // fallback an toàn
-          if (product?.inventories) {
-              const inv = product.inventories.find(
-                  (inv) => inv.productVariant.id === variant.id
-              );
-              if (inv) {
-                  maxStock = inv.quantity;
-              }
+        let maxStock = Infinity; // fallback an toàn
+        if (product?.inventories) {
+          const inv = product.inventories.find(
+            (inv) => inv.productVariant.id === variant.id
+          );
+          if (inv) {
+            maxStock = inv.quantity;
           }
+        }
         return {
           ...item,
           product,
-          color : variant.color,
-          size : variant.size,
-            maxStock
+          color: variant.color,
+          size: variant.size,
+          maxStock,
         };
       })
       .filter(Boolean);
@@ -149,7 +147,7 @@ export function CartSheet() {
                           {item.size && <div>Kích thước: {item.size.code}</div>}
                         </div>
                         <div className="mt-2 font-medium text-sm">
-                          {formatPrice(item.unit_price)}
+                          {formatPrice(item.unitPrice)}
                         </div>
                       </div>
 
@@ -184,9 +182,7 @@ export function CartSheet() {
                             onClick={() =>
                               handleQuantityChange(item.id, item.quantity + 1)
                             }
-                            disabled={
-                                item.quantity >= item.maxStock
-                            }
+                            disabled={item.quantity >= item.maxStock}
                           >
                             <Plus className="w-3 h-3" />
                           </Button>
