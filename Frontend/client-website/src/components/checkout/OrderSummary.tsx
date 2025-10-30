@@ -77,7 +77,7 @@ export default function OrderSummary({
                   {item.size?.code && <span>{item.size.code}</span>}
                 </div>
                 <div className="text-sm font-medium mt-1">
-                  {formatPrice(item.unit_price * item.quantity)}
+                  {formatPrice(item.unitPrice * item.quantity)}
                 </div>
               </div>
             </div>

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import {  ProductVariant } from "./productStore";
+import { ProductVariant } from "./productStore";
 import { Coupon } from "./couponStore";
 import privateClient from "@/lib/axios";
 import { toast } from "sonner";
@@ -9,16 +9,17 @@ import useAuthStore from "./useAuthStore";
 export interface Cart {
   id: number;
   userId: number;
-  items: CartItem[]; 
+  items: CartItem[];
 }
 
 export interface CartItem {
-  id: number; 
+  id: number;
   cart_id: number;
   variant_id: number;
-  unit_price: number;
-  quantity: number; 
-  variant?: ProductVariant }
+  unitPrice: number;
+  quantity: number;
+  variant?: ProductVariant;
+}
 
 export interface CartSummary {
   subtotal: number;
@@ -34,7 +35,7 @@ interface CartState {
   items: CartItem[];
   appliedCoupon: Coupon | null;
   shippingFee: number;
-  taxRate: number; 
+  taxRate: number;
   freeShippingThreshold: number;
   isLoading: boolean;
   error: string | null;
@@ -85,15 +86,16 @@ export const useCartStore = create<CartState>()(
         try {
           const response = await privateClient.get(`/carts/${userId}`);
           const cartItems = response.data?.data || response.data || [];
-          
-          set({ 
+
+          set({
             items: cartItems,
-            isLoading: false 
+            isLoading: false,
           });
           console.log("✅ Cart items fetched:", cartItems);
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
-          const errorMessage = axiosError?.response?.data?.message || "Lỗi khi tải giỏ hàng";
+          const errorMessage =
+            axiosError?.response?.data?.message || "Lỗi khi tải giỏ hàng";
           set({ error: errorMessage, isLoading: false });
           console.error("❌ Fetch cart error:", errorMessage);
         }
@@ -128,7 +130,8 @@ export const useCartStore = create<CartState>()(
           console.log("✅ Cart cleared");
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
-          const errorMessage = axiosError?.response?.data?.message || "Lỗi khi xóa giỏ hàng";
+          const errorMessage =
+            axiosError?.response?.data?.message || "Lỗi khi xóa giỏ hàng";
           set({ error: errorMessage, isLoading: false });
           toast.error(errorMessage);
           console.error("❌ Clear cart error:", errorMessage);
@@ -158,7 +161,8 @@ export const useCartStore = create<CartState>()(
           toast.success("Đã thêm vào giỏ hàng");
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
-          const errorMessage = axiosError?.response?.data?.message || "Lỗi khi thêm vào giỏ hàng";
+          const errorMessage =
+            axiosError?.response?.data?.message || "Lỗi khi thêm vào giỏ hàng";
           set({ error: errorMessage, isLoading: false });
           toast.error(errorMessage);
           console.error("❌ Add to cart error:", errorMessage);
@@ -174,17 +178,18 @@ export const useCartStore = create<CartState>()(
         set({ isLoading: true, error: null });
         try {
           await privateClient.delete(`/carts/${userId}/remove/${itemId}`);
-          
+
           // Update local state
           set((state) => ({
             items: state.items.filter((item) => item.id !== itemId),
-            isLoading: false
+            isLoading: false,
           }));
           toast.success("Đã xóa khỏi giỏ hàng");
           console.log("✅ Item removed from cart:", itemId);
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
-          const errorMessage = axiosError?.response?.data?.message || "Lỗi khi xóa khỏi giỏ hàng";
+          const errorMessage =
+            axiosError?.response?.data?.message || "Lỗi khi xóa khỏi giỏ hàng";
           set({ error: errorMessage, isLoading: false });
           toast.error(errorMessage);
           console.error("❌ Remove from cart error:", errorMessage);
@@ -208,18 +213,19 @@ export const useCartStore = create<CartState>()(
           await privateClient.put(
             `/carts/${userId}/update?itemId=${itemId}&quantity=${quantity}`
           );
-          
+
           // Update local state
           set((state) => ({
             items: state.items.map((item) =>
               item.id === itemId ? { ...item, quantity } : item
             ),
-            isLoading: false
+            isLoading: false,
           }));
           console.log("✅ Quantity updated:", itemId, quantity);
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
-          const errorMessage = axiosError?.response?.data?.message || "Lỗi khi cập nhật số lượng";
+          const errorMessage =
+            axiosError?.response?.data?.message || "Lỗi khi cập nhật số lượng";
           set({ error: errorMessage, isLoading: false });
           toast.error(errorMessage);
           console.error("❌ Update quantity error:", errorMessage);
@@ -241,10 +247,7 @@ export const useCartStore = create<CartState>()(
           return false;
         }
 
-        if (
-          coupon.minOrderTotal &&
-          summary.subtotal < coupon.minOrderTotal
-        ) {
+        if (coupon.minOrderTotal && summary.subtotal < coupon.minOrderTotal) {
           set({
             error: `Đơn hàng tối thiểu ${coupon.minOrderTotal.toLocaleString(
               "vi-VN"
@@ -274,7 +277,7 @@ export const useCartStore = create<CartState>()(
         } = get();
 
         const subtotal = items.reduce(
-          (total, item) => total + (item.unit_price || 0) * item.quantity,
+          (total, item) => total + (item.unitPrice || 0) * item.quantity,
           0
         );
 

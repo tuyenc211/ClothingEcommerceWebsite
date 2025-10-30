@@ -209,7 +209,7 @@ export default function CartPage() {
                               </div>
 
                               <div className="font-semibold text-sm sm:text-base text-gray-900">
-                                {formatPrice(item.unit_price)}
+                                {formatPrice(item.unitPrice)}
                               </div>
                             </div>
 
@@ -262,7 +262,7 @@ export default function CartPage() {
 
                               {/* Item total */}
                               <div className="text-sm font-semibold text-gray-900 mt-2">
-                                {formatPrice(item.unit_price * item.quantity)}
+                                {formatPrice(item.unitPrice * item.quantity)}
                               </div>
                             </div>
                           </div>
