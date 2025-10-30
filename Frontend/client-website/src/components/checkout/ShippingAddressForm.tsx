@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -10,9 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Settings } from "lucide-react";
-import Link from "next/link";
-import { User, Address } from "@/stores/useAuthStore";
+import { User } from "@/stores/useAuthStore";
 import { Province, Ward } from "@/hooks/useAddress";
 
 interface ShippingFormData {
@@ -36,7 +33,9 @@ interface ShippingAddressFormProps {
   wards: Ward[];
   isLoadingProvinces: boolean;
   isLoadingWards: boolean;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onInputChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
   onProvinceChange: (provinceCode: string) => void;
   onWardChange: (wardCode: string) => void;
   onAddressSelect: (addressId: number) => void;
@@ -175,52 +174,6 @@ export default function ShippingAddressForm({
           </RadioGroup>
         </div>
       )}
-
-      {/* Guest Checkout Form */}
-      {!authUser && (
-        <div className="space-y-4">
-          <h3 className="font-medium text-gray-900">Thông tin khách hàng</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="guest-name">
-                Họ và tên <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="guest-name"
-                name="fullName"
-                value={formData.fullName}
-                onChange={onInputChange}
-                placeholder="Nhập họ và tên"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="guest-email">
-                Email <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="guest-email"
-                name="email"
-                value={formData.email}
-                onChange={onInputChange}
-                placeholder="Nhập email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="guest-phone">
-                Số điện thoại <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="guest-phone"
-                name="phone"
-                value={formData.phone}
-                onChange={onInputChange}
-                placeholder="Nhập số điện thoại"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* New Address Form */}
       {isNewAddress && authUser && (
         <div className="space-y-4 pt-4 border-t">

@@ -49,9 +49,7 @@ export default function CheckoutPage() {
     appliedCoupon,
   } = useCartStore();
   const { getProduct } = useProductStore();
-  const { colors } = useColorStore();
-  const { sizes } = useSizeStore();
-  const { getActiveCoupons, fetchCoupons } = useCouponStore();
+  const { getActiveCoupons, fetchCoupons,coupons } = useCouponStore();
 
   useEffect(() => {
     fetchCoupons();
@@ -83,7 +81,7 @@ export default function CheckoutPage() {
     provinceCode: "",
   });
 
-  const activeCoupons = getActiveCoupons();
+  // const activeCoupons = getActiveCoupons();
   const summary = getCartSummary();
 
   const enrichedItems: EnrichedCartItem[] = useMemo(() => {
@@ -219,7 +217,7 @@ export default function CheckoutPage() {
   };
 
   const handleApplyCoupon = (couponCode: string) => {
-    const coupon = activeCoupons.find((c) => c.code === couponCode);
+    const coupon = coupons.find((c) => c.code === couponCode);
     if (coupon) {
       const success = applyCoupon(coupon);
       if (success) {
@@ -416,7 +414,7 @@ export default function CheckoutPage() {
                   items={enrichedItems}
                   summary={summary}
                   appliedCoupon={appliedCoupon}
-                  activeCoupons={activeCoupons}
+                  activeCoupons={coupons}
                   showCouponList={showCouponList}
                   isSubmitting={isSubmitting}
                   onToggleCouponList={() => setShowCouponList(!showCouponList)}

@@ -38,7 +38,7 @@ export default function CartPage() {
     fetchCartItems,
     createCart,
   } = useCartStore();
-  
+
   const { authUser } = useAuthStore();
 
   // Get stores to populate variant info
@@ -83,7 +83,8 @@ export default function CartPage() {
       })
       .filter((item): item is EnrichedCartItem => item !== null);
   }, [items, getProduct]);
-
+  const hasRawItems = items.length > 0;
+  const isEnriching = hasRawItems && enrichedItems.length === 0;
   const handleQuantityChange = (itemId: number, newQuantity: number) => {
     if (newQuantity < 1) {
       removeFromCart(itemId);
@@ -139,6 +140,16 @@ export default function CartPage() {
               </Button>
             </CardContent>
           </Card>
+        ) : isEnriching ? (
+          <div className="flex items-center justify-center min-h-screen bg-white">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative">
+                {/* Spinner */}
+                <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
+              </div>
+              <p className="text-gray-600 text-lg font-medium">Đang tải...</p>
+            </div>
+          </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Cart Items - Takes 2/3 on large screens */}
@@ -253,7 +264,7 @@ export default function CartPage() {
                                     )
                                   }
                                   disabled={
-                                      item.quantity >= (item.maxStock ?? Infinity)
+                                    item.quantity >= (item.maxStock ?? Infinity)
                                   }
                                 >
                                   <Plus className="w-3 h-3" />
