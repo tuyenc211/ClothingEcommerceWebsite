@@ -61,18 +61,14 @@ export function useAddress(initialEffectiveDate = "2025-07-01") {
         name: normalizeName(p.name),
       }));
       setProvinces(cleaned);
-    } catch {
+    } catch (error) {
+      console.error("Error fetching provinces:", error);
       setProvinces([]);
       setError("Không tải được danh sách tỉnh/thành");
     } finally {
       setIsLoadingProvinces(false);
     }
   }, [effectiveDate]);
-
-  useEffect(() => {
-     fetchProvinces();
-  }, [fetchProvinces]);
-
   // Fetch wards by province
   const fetchWards = async (provinceCode: string) => {
     if (!provinceCode) return;
@@ -102,7 +98,7 @@ export function useAddress(initialEffectiveDate = "2025-07-01") {
     // data
     provinces,
     wards,
-
+fetchProvinces,
     isLoadingProvinces,
     isLoadingWards,
     error,

@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import useAuthStore from "@/stores/useAuthStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import Logo from "../common/Logo";
+import SearchBar from "../common/SearchBar";
 // Component ListItem
 const ListItem = ({
   className,
@@ -40,7 +41,7 @@ const ListItem = ({
           )}
           {...props}
         >
-          <div className="text-sm text-center uppercase font-mmedium leading-none">
+          <div className="text-sm text-left uppercase font-medium leading-none">
             {title}
           </div>
           <p className="text-sm leading-snug text-muted-foreground">
@@ -191,17 +192,8 @@ export default function Header() {
 
             {/* Search, Cart, User */}
             <div className="flex items-center space-x-4">
-              {/* Search Input */}
-              <div className="relative hidden md:block">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="w-5 h-5" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="TÌM KIẾM SẢN PHẨM"
-                  className="w-80 pl-10 pr-4 py-2 border border-gray-500 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-800 focus:border-transparent text-sm"
-                />
-              </div>
+              {/* Desktop Search */}
+              <SearchBar className="hidden md:block" />
 
               {/* Mobile Search Button */}
               <button
@@ -293,16 +285,10 @@ export default function Header() {
           {/* Mobile Search */}
           {isSearchOpen && (
             <div className="md:hidden py-4 border-t bg-gray-50">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="w-5 h-5" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="TÌM KIẾM SẢN PHẨM"
-                  className="w-full pl-10 pr-4 py-3 border text-sm border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-600 focus:border-transparent"
-                />
-              </div>
+              <SearchBar 
+                isMobile={true} 
+                onClose={() => setIsSearchOpen(false)} 
+              />
             </div>
           )}
         </div>
