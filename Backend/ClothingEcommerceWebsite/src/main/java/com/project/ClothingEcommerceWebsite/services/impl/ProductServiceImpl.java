@@ -131,6 +131,23 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<ProductResponse> searchByName(String name) {
+        List<Product> products = productRepository.findByNameContainingIgnoreCase(name);
+        return products.stream()
+                .map(p -> ProductResponse.builder()
+                        .id(p.getId())
+                        .sku(p.getSku())
+                        .name(p.getName())
+                        .slug(p.getSlug())
+                        .description(p.getDescription())
+                        .basePrice(p.getBasePrice())
+                        .category(p.getCategory())
+                        .isPublished(p.getIsPublished())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Product getProductById(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
