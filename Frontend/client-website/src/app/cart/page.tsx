@@ -212,11 +212,6 @@ export default function CartPage() {
                                 {item.size && (
                                   <div>Kích thước: {item.size.code}</div>
                                 )}
-                                {item.variant?.sku && (
-                                  <div className="text-gray-400">
-                                    SKU: {item.variant.sku}
-                                  </div>
-                                )}
                               </div>
 
                               <div className="font-semibold text-sm sm:text-base text-gray-900">
@@ -317,12 +312,6 @@ export default function CartPage() {
                         {summary.shipping === 0
                           ? "Miễn phí"
                           : formatPrice(summary.shipping)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Thuế (VAT 10%):</span>
-                      <span className="font-medium">
-                        {formatPrice(summary.tax)}
                       </span>
                     </div>
                   </div>

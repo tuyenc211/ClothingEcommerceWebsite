@@ -1,5 +1,3 @@
-import { cn } from "@/lib/utils";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 export const Component = () => {
@@ -8,7 +6,7 @@ export const Component = () => {
   return (
     <div className="border p-1 rounded-full border-dotted border-primary">
       <Button
-        className="relative w-[100px] h-[100px] rounded-full overflow-hidden p-0 grid place-content-center bg-primary"
+        className="relative w-[80px] h-[80px] rounded-full overflow-hidden p-0 grid place-content-center bg-primary"
         onClick={() => {}}
       >
         <p
@@ -24,7 +22,7 @@ export const Component = () => {
               key={i}
               style={{
                 position: "absolute",
-                inset: "6px",
+                inset: "5px",
                 transform: `rotate(${19 * i}deg)`,
                 transformOrigin: "50% 50%",
                 userSelect: "none",
@@ -36,7 +34,7 @@ export const Component = () => {
           ))}
         </p>
 
-        <div className="relative w-[40px] h-[40px] rounded-full text-primary bg-white flex items-center justify-center overflow-hidden">
+        <div className="relative w-[32px] h-[32px] rounded-full text-primary bg-white flex items-center justify-center overflow-hidden">
           <svg
             viewBox="0 0 14 15"
             fill="none"

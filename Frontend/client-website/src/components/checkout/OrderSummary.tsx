@@ -138,7 +138,7 @@ export default function OrderSummary({
                         {coupon.code}
                       </Badge>
                       <span className="text-sm font-medium">
-                        Giảm {formatPrice(coupon.value)}
+                        Giảm {coupon.value}%
                       </span>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
@@ -181,10 +181,6 @@ export default function OrderSummary({
           <span className="font-medium">
             {summary.shipping === 0 ? "Miễn phí" : formatPrice(summary.shipping)}
           </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-600">Thuế (VAT 10%):</span>
-          <span className="font-medium">{formatPrice(summary.tax)}</span>
         </div>
       </div>
 

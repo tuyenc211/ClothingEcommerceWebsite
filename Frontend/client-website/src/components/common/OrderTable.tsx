@@ -80,13 +80,13 @@ export function OrderTable({ orders }: OrderTableProps) {
             <TableRow key={order.id} className="hover:bg-gray-50">
               <TableCell className="font-medium">#{order.code}</TableCell>
               <TableCell className="text-gray-600">
-                {formatDate(order.created_at)}
+                {formatDate(order.createdAt || "")}
               </TableCell>
               <TableCell>
-                <PaymentMethodBadge method={order.payment_method} />
+                <PaymentMethodBadge method={order.paymentMethod} />
               </TableCell>
               <TableCell className="font-medium">
-                {formatPrice(order.grand_total)}
+                {formatPrice(order.grandTotal)}
               </TableCell>
               <TableCell>
                 <OrderStatusBadge status={order.status} />

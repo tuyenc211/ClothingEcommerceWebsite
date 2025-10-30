@@ -214,11 +214,7 @@ export function CartSheet() {
                         : formatPrice(summary.shipping)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Thuế:</span>
-                    <span>{formatPrice(summary.tax)}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-lg pt-2">
+                  <div className="flex justify-between font-bold text-lg pt-2 border-t mt-2">
                     <span>Tổng cộng:</span>
                     <span className="text-primary">
                       {formatPrice(summary.total)}

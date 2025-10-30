@@ -11,13 +11,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import UserLayout from "@/components/layouts/UserLayout";
 import { OrderStatus } from "@/stores/orderStore";
 import { toast } from "sonner";
-
+import useAuthStore from "@/stores/useAuthStore";
 export default function OrderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const orderId = parseInt(params.id as string, 10);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-
+  const { authUser } = useAuthStore();
   const { currentOrder, isLoading, fetchOrderById, cancelOrder } =
     useOrderStore();
 
@@ -33,16 +33,20 @@ export default function OrderDetailPage() {
     return status === "NEW" || status === "CONFIRMED";
   };
   // Handle cancel order
-  const handleCancelOrder = async (reason?: string) => {
+  const handleCancelOrder = async () => {
+    if (!authUser?.id) {
+      toast.error("Vui lòng đăng nhập để hủy đơn hàng!");
+      return;
+    }
     try {
-      await cancelOrder(orderId, reason);
+      await cancelOrder(authUser.id, orderId);
       setIsCancelDialogOpen(false);
       toast.success("Đơn hàng đã được hủy thành công!");
 
       // Show refund info if payment was made
       if (
-        currentOrder?.payment_method === "WALLET" &&
-        currentOrder?.payment_status === "PAID"
+        currentOrder?.paymentMethod === "WALLET" &&
+        currentOrder?.paymentStatus === "PAID"
       ) {
         toast.info("Quy trình hoàn tiền đã được khởi tạo.");
       }
@@ -134,8 +138,8 @@ export default function OrderDetailPage() {
           onOpenChange={setIsCancelDialogOpen}
           onConfirm={handleCancelOrder}
           orderCode={currentOrder.code}
-          paymentMethod={currentOrder.payment_method}
-          paymentStatus={currentOrder.payment_status}
+          paymentMethod={currentOrder.paymentMethod}
+          paymentStatus={currentOrder.paymentStatus}
         />
       </div>
     </UserLayout>
