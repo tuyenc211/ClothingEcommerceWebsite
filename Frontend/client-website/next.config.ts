@@ -23,6 +23,13 @@ const nextConfig: NextConfig = {
         hostname: "picsum.photos",
       },
     ],
+  }, async rewrites() {
+    return [
+      {
+        source: "/address-kit/:path*",
+        destination: "https://production.cas.so/address-kit/:path*",
+      },
+    ];
   },
   // rewrites: async () => [
   //   {

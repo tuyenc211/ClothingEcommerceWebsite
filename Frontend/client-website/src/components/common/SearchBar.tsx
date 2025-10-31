@@ -125,7 +125,7 @@ export default function SearchBar({ className, isMobile = false, onClose }: Sear
                 {searchResults.map((product) => (
                   <Link
                     key={product.id}
-                    href={`/products/${product.slug}`}
+                    href={`/products/${product.id}`}
                     onClick={handleProductClick}
                     className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors"
                   >

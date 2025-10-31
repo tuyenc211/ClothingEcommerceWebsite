@@ -12,11 +12,9 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { formatPrice } from "@/lib/utils";
 import { Category } from "@/stores/categoryStore";
 import { ProductImage } from "@/stores/productStore";
 import ProductGrid from "@/components/common/ProductGrid";
-import { convertProductToItemProps, ProductItemProps } from "@/components/common/ProductItem";
 import { useCartStore } from "@/stores/cartStore";
 
 export interface SearchProduct {
