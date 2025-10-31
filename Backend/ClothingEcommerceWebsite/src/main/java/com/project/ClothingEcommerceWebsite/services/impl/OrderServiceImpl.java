@@ -101,6 +101,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<Order> getAllOrder() {
+        return orderRepository.findAll();
+    }
+
+    @Override
     public List<Order> getOrdersByUser(Long userId) {
         return orderRepository.findByUserId(userId);
     }
@@ -117,5 +122,19 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(Enums.OrderStatus.CANCELLED);
         order.setCancelledAt(LocalDateTime.now());
         orderRepository.save(order);
+    }
+
+    @Override
+    public Order updateOrderStatus(Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        try {
+            Enums.OrderStatus newStatus = Enums.OrderStatus.valueOf(status.toUpperCase());
+            order.setStatus(newStatus);
+            order.setUpdatedAt(LocalDateTime.now());
+            return orderRepository.save(order);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid order status: " + status);
+        }
     }
 }
