@@ -19,15 +19,28 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
 
   const formatAddress = () => {
     if (
-      typeof order.shipping_address_snapshot === "object" &&
-      order.shipping_address_snapshot
+      typeof order.shippingAddressSnapshot === "object" &&
+      order.shippingAddressSnapshot
     ) {
-      const addr = order.shipping_address_snapshot as Record<string, string>;
+      const addr = order.shippingAddressSnapshot as Record<string, string>;
       return `${addr.line || ""}, ${addr.ward || ""}, ${addr.district || ""}, ${
         addr.province || ""
       }, ${addr.country || ""}`;
     }
-    return order.shippingAddress || "N/A";
+    return order.shippingAddressSnapshot || "N/A";
+  };
+
+  // Get customer info from order.user or direct fields
+  const getCustomerName = () => {
+    return order.user?.fullName || order.customerName || "N/A";
+  };
+
+  const getCustomerEmail = () => {
+    return order.user?.email || order.customerEmail || "N/A";
+  };
+
+  const getCustomerPhone = () => {
+    return order.user?.phoneNumber || order.customerPhone || "";
   };
 
   return (
@@ -59,7 +72,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <div>
           <h3 className="text-sm font-semibold text-gray-700 mb-2">Ngày</h3>
-          <p className="text-gray-900">{formatDate(order.created_at)}</p>
+          <p className="text-gray-900">{order.createdAt ? formatDate(order.createdAt) : "N/A"}</p>
         </div>
         <div>
           <h3 className="text-sm font-semibold text-gray-700 mb-2">
@@ -72,12 +85,12 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
             Khách hàng
           </h3>
           <div className="text-gray-900 space-y-1">
-            <p className="font-medium">{order.customerName || "N/A"}</p>
+            <p className="font-medium">{getCustomerName()}</p>
             <p className="text-sm text-gray-600">
-              {order.customerEmail || "N/A"}
+              {getCustomerEmail()}
             </p>
-            {order.customerPhone && (
-              <p className="text-sm text-gray-600">{order.customerPhone}</p>
+            {getCustomerPhone() && (
+              <p className="text-sm text-gray-600">{getCustomerPhone()}</p>
             )}
             <p className="text-sm text-gray-600">{formatAddress()}</p>
           </div>
@@ -114,7 +127,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                     {index + 1}
                   </td>
                   <td className="py-4 px-2 text-sm text-gray-900 font-medium">
-                    {item.product_name}
+                    {item.productName}
                     {item.attributesSnapshot && (
                       <div className="text-xs text-gray-500">
                         {JSON.stringify(item.attributesSnapshot)}
@@ -125,10 +138,10 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                     {item.quantity}
                   </td>
                   <td className="py-4 px-2 text-sm text-gray-900 text-right">
-                    {formatCurrency(item.unit_price)}
+                    {formatCurrency(item.unitPrice)}
                   </td>
                   <td className="py-4 px-2 text-sm font-semibold text-gray-800 text-right">
-                    {formatCurrency(item.line_total)}
+                    {formatCurrency(item.lineTotal)}
                   </td>
                 </tr>
               )) || []}
@@ -145,7 +158,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
               Phương thức thanh toán
             </h3>
             <p className="text-gray-900 capitalize">
-              {order.payment_method === "COD" ? "Tiền mặt" : "Ví điện tử"}
+              {order.paymentMethod === "COD" ? "Tiền mặt" : "Ví điện tử"}
             </p>
           </div>
           <div>
@@ -153,7 +166,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
               Phí vận chuyển
             </h3>
             <p className="text-gray-900">
-              {formatCurrency(order.shipping_fee)}
+              {formatCurrency(order.shippingFee)}
             </p>
           </div>
           <div>
@@ -161,7 +174,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
               Giảm giá
             </h3>
             <p className="text-gray-900">
-              {formatCurrency(order.discount_total)}
+              {formatCurrency(order.discountTotal)}
             </p>
           </div>
         </div>
@@ -173,10 +186,10 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                 Tổng tiền sản phẩm: {formatCurrency(order.subtotal)}
               </p>
               <p className="text-sm text-gray-600">
-                Tổng số lượng sản phẩm: {order.total_items}
+                Tổng số lượng sản phẩm: {order.totalItems}
               </p>
               <p className="text-sm text-gray-600">
-                Trạng thái thanh toán: {order.payment_status}
+                Trạng thái thanh toán: {order.paymentStatus}
               </p>
             </div>
             <div className="text-right">
@@ -184,7 +197,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                 <span className="font-semibold">Tổng tiền</span>
               </p>
               <p className="text-3xl font-bold text-gray-800">
-                {formatCurrency(order.grand_total)}
+                {formatCurrency(order.grandTotal)}
               </p>
             </div>
           </div>
@@ -192,26 +205,26 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
       </div>
 
       {/* Shipment Info */}
-      {order.shipments && order.shipments.length > 0 && (
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">
-            SHIPMENT INFO
-          </h3>
-          {order.shipments.map((shipment) => (
-            <div key={shipment.id} className="text-sm text-gray-600 space-y-1">
-              <p>Carrier: {shipment.carrier || "N/A"}</p>
-              <p>Tracking: {shipment.tracking_number || "N/A"}</p>
-              <p>Status: {shipment.status || "N/A"}</p>
-              {shipment.shipped_at && (
-                <p>Shipped: {formatDate(shipment.shipped_at)}</p>
-              )}
-              {shipment.delivered_at && (
-                <p>Delivered: {formatDate(shipment.delivered_at)}</p>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+      {/*{order.shipments && order.shipments.length > 0 && (*/}
+      {/*  <div className="mt-8 p-4 bg-blue-50 rounded-lg">*/}
+      {/*    <h3 className="text-sm font-semibold text-gray-700 mb-2">*/}
+      {/*      SHIPMENT INFO*/}
+      {/*    </h3>*/}
+      {/*    {order.shipments.map((shipment) => (*/}
+      {/*      <div key={shipment.id} className="text-sm text-gray-600 space-y-1">*/}
+      {/*        <p>Carrier: {shipment.carrier || "N/A"}</p>*/}
+      {/*        <p>Tracking: {shipment.tracking_number || "N/A"}</p>*/}
+      {/*        <p>Status: {shipment.status || "N/A"}</p>*/}
+      {/*        {shipment.shipped_at && (*/}
+      {/*          <p>Shipped: {formatDate(shipment.shipped_at)}</p>*/}
+      {/*        )}*/}
+      {/*        {shipment.delivered_at && (*/}
+      {/*          <p>Delivered: {formatDate(shipment.delivered_at)}</p>*/}
+      {/*        )}*/}
+      {/*      </div>*/}
+      {/*    ))}*/}
+      {/*  </div>*/}
+      {/*)}*/}
     </div>
   );
 }
