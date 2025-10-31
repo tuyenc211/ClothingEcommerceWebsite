@@ -28,16 +28,30 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrder(id));
     }
 
+    @GetMapping("")
+    public ResponseEntity<List<Order>> getOrder() {
+        return ResponseEntity.ok(orderService.getAllOrder());
+    }
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Order>> getUserOrders(@PathVariable Long userId) {
         return ResponseEntity.ok(orderService.getOrdersByUser(userId));
     }
 
     @PatchMapping("/{userId}/{orderId}/cancel")
-    public ResponseEntity<Void> cancelOrder(
+    public ResponseEntity<?> cancelOrder(
             @PathVariable Long userId,
             @PathVariable Long orderId) {
         orderService.cancelOrder(userId, orderId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().body("");
     }
+
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<Order> updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestParam("status") String status) {
+        Order updatedOrder = orderService.updateOrderStatus(orderId, status);
+        return ResponseEntity.ok(updatedOrder);
+    }
+
 }
