@@ -31,7 +31,7 @@ interface WardResponse {
   requestId: string;
   communes: Ward[];
 }
-const API_BASE = "https://production.cas.so/address-kit";
+const API_BASE = "/address-kit";
 
 const normalizeName = (s: string) =>
   (s || "")
