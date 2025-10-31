@@ -32,9 +32,9 @@ public interface UserService {
 
     void changePassword(ChangePasswordRequest request);
 
-//    MessageResponse forgotPassword(String email);
-//
-//    MessageResponse resetPassword(String token, String password);
-//
-//    MessageResponse confirmEmail(String token);
+    MessageResponse forgotPassword(String email);
+
+    MessageResponse resetPassword(String token, String password);
+
+    MessageResponse confirmEmail(String token);
 }

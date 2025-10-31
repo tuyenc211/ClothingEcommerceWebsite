@@ -105,20 +105,20 @@ public class AuthController {
                 .build();
     }
 
-//    @PostMapping("/forgot-password")
-//    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPassWordRequest request) {
-//        MessageResponse response = userService.forgotPassword(request.getEmail());
-//        return ResponseEntity.ok().body(response);
-//    }
-//
-//    @PutMapping("/reset-password")
-//    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
-//        MessageResponse response = userService.resetPassword(request.getToken(), request.getNewPassword());
-//        return ResponseEntity.ok().body(response);
-//    }
-//    @GetMapping("/confirm")
-//    public ResponseEntity<?> confirm(@RequestParam String token) {
-//        MessageResponse response = userService.confirmEmail(token);
-//        return ResponseEntity.ok().body(response);
-//    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPassWordRequest request) {
+        MessageResponse response = userService.forgotPassword(request.getEmail());
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PutMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        MessageResponse response = userService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok().body(response);
+    }
+    @GetMapping("/confirm")
+    public ResponseEntity<?> confirm(@RequestParam String token) {
+        MessageResponse response = userService.confirmEmail(token);
+        return ResponseEntity.ok().body(response);
+    }
 }
