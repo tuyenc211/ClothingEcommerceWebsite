@@ -45,7 +45,7 @@ export function RoleGuard({
   useEffect(() => {
     // Nếu đã có user nhưng không có quyền -> redirect về dashboard
     if (authUser && !hasAccess) {
-      router.push("/admin");
+      router.push("/");
     }
   }, [authUser, hasAccess, router]);
 
@@ -88,7 +88,7 @@ export function RoleGuard({
             </div>
           </CardContent>
           <CardFooter>
-            <Button onClick={() => router.push("/admin")} className="w-full">
+            <Button onClick={() => router.push("/")} className="w-full">
               Quay về Dashboard
             </Button>
           </CardFooter>

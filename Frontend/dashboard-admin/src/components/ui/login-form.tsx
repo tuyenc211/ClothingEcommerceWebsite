@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 export function LoginForm({
   className,
@@ -16,7 +17,7 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/admin";
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   const { login, isLoggingIn, authUser } = useAuthStore();
 
@@ -96,11 +97,13 @@ export function LoginForm({
 
           {/* Ảnh bên phải */}
           <div className="bg-muted relative hidden md:block">
-            <img
-              src="../assets/login.jpg"
+            <Image
+              src="/assets/login.jpg"
               alt="Image"
-              className="absolute inset-0 h-full w-full object-cover
+              className="absolute inset-0 object-cover
                          dark:brightness-[0.2] dark:grayscale"
+              fill
+              unoptimized
             />
           </div>
         </CardContent>

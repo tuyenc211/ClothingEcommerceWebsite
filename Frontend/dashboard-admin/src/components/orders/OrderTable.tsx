@@ -23,7 +23,7 @@ export function OrderTable({ orders }: OrderTableProps) {
   const { updateOrderStatus } = useOrderStore();
 
   const handleViewInvoice = (orderId: number) => {
-    router.push(`/admin/orders/${orderId}`);
+    router.push(`/orders/${orderId}`);
   };
 
   const formatDate = (dateString: string) => {
