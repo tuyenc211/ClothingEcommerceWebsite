@@ -12,6 +12,7 @@ import com.project.ClothingEcommerceWebsite.repositories.RoleRepository;
 import com.project.ClothingEcommerceWebsite.repositories.UserRepository;
 import com.project.ClothingEcommerceWebsite.services.EmailService;
 import com.project.ClothingEcommerceWebsite.services.UserService;
+import com.project.ClothingEcommerceWebsite.utils.JwtUtil;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.crossstore.ChangeSetPersister;
@@ -35,6 +36,8 @@ public class UserServiceImpl implements UserService {
 
     private final EmailService emailService;
 
+    private final JwtUtil jwtUtil;
+
     @Override
     public User createUser(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -57,11 +60,16 @@ public class UserServiceImpl implements UserService {
                 .phone(request.getPhone())
                 .fullName(request.getFullName())
                 .password(request.getPassword())
-                .isActive(request.getIsActive() != null ? request.getIsActive() : true)
+                .isActive(false)
                 .roles(roles)
                 .build();
+        userRepository.save(user);
+        String confirmToken = jwtUtil.generateConfirmToken(user.getEmail());
+        String confirmLink = "http://localhost:3000/authenticate?token=" + confirmToken;
+        emailService.sendResetPasswordEmail("Xác thực email", user.getEmail(), confirmLink);
 
-        return userRepository.save(user);
+        System.out.println("✅ Đã gửi email xác thực tới: " + user.getEmail());
+        return user;
     }
 
     @Override
@@ -139,42 +147,39 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
-//    @Override
-//    public MessageResponse forgotPassword(String email) {
-//        User user = userRepository.findByEmail(email).orElseThrow(() -> new ChangeSetPersister.NotFoundException("Not found user"));
-//        String token = jwtUtils.generateResetToken(user.getEmail());
-//        String resetLink = "http://localhost:3000/reset-password?token=" + token;
-//        emailService.sendResetPasswordEmail("Đặt lại mật khẩu", user.getEmail(), resetLink);
-//        return new MessageResponse("Email da duoc gui!");
-//    }
-//
-//    @Override
-//    public MessageResponse resetPassword(String token, String password) {
-//        // Kiểm tra token hợp lệ
-//        if (!jwtUtils.validateResetToken(token)) {
-//            throw new BadRequestException("Token không hợp lệ hoặc đã hết hạn.");
-//        }
-//
-//        // Lấy email từ token
-//        String email = jwtUtils.getEmailFromToken(token);
-//        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
-//
-//        // Cập nhật mật khẩu mới
-//        user.setPassword(passwordEncoder.encode(password));
-//        userRepository.save(user);
-//
-//        return new MessageResponse("Mat khau thay doi thanh cong!");
-//    }
-//
-//    @Override
-//    public MessageResponse confirmEmail(String token) {
-//        if (!jwtUtils.validateConfirmToken(token)) {
-//            throw new BadRequestException("Token không hợp lệ hoặc đã hết hạn.");
-//        }
-//        String email = jwtUtils.getEmailFromToken(token);
-//        User user = userRepository.findByEmail(email).orElseThrow(() -> new ChangeSetPersister.NotFoundException("Không tìm thấy người dùng"));
-//        user.setIsActive(true);
-//        userRepository.save(user);
-//        return new MessageResponse("Account verified. You can now login.");
-//    }
+    @Override
+    public MessageResponse forgotPassword(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("Not found user"));
+        String resetToken = jwtUtil.generateResetToken(user.getEmail());
+        String resetLink = "http://localhost:3000/reset-password?token=" + resetToken;
+        emailService.sendResetPasswordEmail("Đặt lại mật kh ẩu", user.getEmail(), resetLink);
+        return new MessageResponse("Email da duoc gui!");
+    }
+
+    @Override
+    public MessageResponse resetPassword(String token, String password) {
+        // Kiểm tra token hợp lệ
+        if (!jwtUtil.validateResetToken(token)) {
+            throw new BadRequestException("Token không hợp lệ hoặc đã hết hạn.");
+        }
+
+        String email = jwtUtil.getEmailFromToken(token);
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+        return new MessageResponse("Mat khau thay doi thanh cong!");
+    }
+
+    @Override
+    public MessageResponse confirmEmail(String token) {
+        if (!jwtUtil.validateConfirmToken(token)) {
+            throw new BadRequestException("Token không hợp lệ hoặc đã hết hạn.");
+        }
+        String email = jwtUtil.getEmailFromToken(token);
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        user.setIsActive(true);
+        userRepository.save(user);
+        return new MessageResponse("Account verified. You can now login.");
+    }
 }
