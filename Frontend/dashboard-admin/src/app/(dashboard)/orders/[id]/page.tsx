@@ -21,7 +21,6 @@ export default function OrderDetailPage() {
     isUpdating,
     fetchOrderById,
     cancelOrder,
-    updateOrderStatus,
   } = useOrderStore();
 
   // Local state
@@ -43,16 +42,16 @@ export default function OrderDetailPage() {
     return status === "NEW" || status === "CONFIRMED";
   };
   // Handle cancel order
-  const handleCancelOrder = async (reason?: string) => {
+  const handleCancelOrder = async () => {
     try {
-      await cancelOrder(orderId, reason);
+      await cancelOrder(currentOrder?.userId|| 0,orderId);
       setIsCancelDialogOpen(false);
       toast.success("Đơn hàng đã được hủy thành công!");
 
       // Show refund info if payment was made
       if (
-        currentOrder?.payment_method === "WALLET" &&
-        currentOrder?.payment_status === "PAID"
+        currentOrder?.paymentMethod === "WALLET" &&
+        currentOrder?.paymentStatus === "PAID"
       ) {
         toast.info("Quy trình hoàn tiền đã được khởi tạo.");
       }
@@ -146,8 +145,8 @@ export default function OrderDetailPage() {
         onConfirm={handleCancelOrder}
         isLoading={isUpdating}
         orderCode={currentOrder.code}
-        paymentMethod={currentOrder.payment_method}
-        paymentStatus={currentOrder.payment_status}
+        paymentMethod={currentOrder.paymentMethod}
+        paymentStatus={currentOrder.status}
       />
     </div>
   );

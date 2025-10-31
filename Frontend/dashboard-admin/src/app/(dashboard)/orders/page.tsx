@@ -13,7 +13,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function OrdersPage() {
-  const { orders, isLoading, currentPage, itemsPerPage, setPage, fetchOrders } =
+  const { orders, isLoading, currentPage, itemsPerPage, setPage } =
     useOrderStore();
 
   // useEffect(() => {
@@ -22,7 +22,7 @@ export default function OrdersPage() {
 
   // Sort orders by created_at (newest first)
   const sortedOrders = [...orders].sort((a, b) => {
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    return new Date(b.createdAt|| "").getTime() - new Date(a.createdAt|| "").getTime();
   });
 
   // Pagination calculation

@@ -27,6 +27,7 @@ export function OrderTable({ orders }: OrderTableProps) {
   };
 
   const formatDate = (dateString: string) => {
+    
     try {
       return new Date(dateString).toLocaleString("vi-VN", {
         year: "numeric",
@@ -87,23 +88,23 @@ export function OrderTable({ orders }: OrderTableProps) {
             <TableRow key={order.id} className="hover:bg-gray-50">
               <TableCell className="font-medium">#{order.code}</TableCell>
               <TableCell className="text-gray-600">
-                {formatDate(order.created_at)}
+                {order.createdAt ? formatDate(order.createdAt) : "N/A"}
               </TableCell>
               <TableCell>
                 <div>
                   <div className="font-medium text-gray-900">
-                    {order.customerName || "N/A"}
+                    {order.user?.fullName || order.customerName || "N/A"}
                   </div>
                   <div className="text-sm text-gray-500">
-                    {order.customerEmail || "N/A"}
+                    {order.user?.email || order.customerEmail || "N/A"}
                   </div>
                 </div>
               </TableCell>
               <TableCell>
-                <PaymentMethodBadge method={order.payment_method} />
+                <PaymentMethodBadge method={order.paymentMethod} />
               </TableCell>
               <TableCell className="font-medium">
-                {formatCurrency(order.grand_total)}
+                {formatCurrency(order.grandTotal)}
               </TableCell>
               <TableCell>
                 <OrderStatusBadge status={order.status} />
