@@ -22,6 +22,32 @@ export function OrderTable({ orders }: OrderTableProps) {
   const router = useRouter();
   const { updateOrderStatus } = useOrderStore();
 
+  // Get valid next statuses based on current status
+  const getValidNextStatuses = (currentStatus: OrderStatus): OrderStatus[] => {
+    const statusFlow: Record<OrderStatus, OrderStatus[]> = {
+      NEW: ["NEW", "CONFIRMED", "CANCELLED"],
+      CONFIRMED: ["CONFIRMED", "PACKING", "CANCELLED"],
+      PACKING: ["PACKING", "SHIPPED"],
+      SHIPPED: ["SHIPPED", "DELIVERED"],
+      DELIVERED: ["DELIVERED"],
+      CANCELLED: ["CANCELLED"],
+    };
+    return statusFlow[currentStatus] || [currentStatus];
+  };
+
+  // Get status label in Vietnamese
+  const getStatusLabel = (status: OrderStatus): string => {
+    const labels: Record<OrderStatus, string> = {
+      NEW: "Mới",
+      CONFIRMED: "Đã xác nhận",
+      PACKING: "Đang đóng gói",
+      SHIPPED: "Đang giao",
+      DELIVERED: "Đã giao",
+      CANCELLED: "Đã hủy",
+    };
+    return labels[status] || status;
+  };
+
   const handleViewInvoice = (orderId: number) => {
     router.push(`/orders/${orderId}`);
   };
@@ -116,13 +142,13 @@ export function OrderTable({ orders }: OrderTableProps) {
                     updateOrderStatus(order.id, e.target.value as OrderStatus)
                   }
                   className="form-control border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={order.status === "DELIVERED" || order.status === "CANCELLED"}
                 >
-                  <option value="NEW">Mới</option>
-                  <option value="CONFIRMED">Đã xác nhận</option>
-                  <option value="PACKING">Đang đóng gói</option>
-                  <option value="SHIPPED">Đang giao</option>
-                  <option value="DELIVERED">Đã giao</option>
-                  <option value="CANCELLED">Đã hủy</option>
+                  {getValidNextStatuses(order.status).map((status) => (
+                    <option key={status} value={status}>
+                      {getStatusLabel(status)}
+                    </option>
+                  ))}
                 </select>
               </TableCell>
               <TableCell>

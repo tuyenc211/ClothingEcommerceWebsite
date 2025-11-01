@@ -15,7 +15,6 @@ import { Province, Ward } from "@/hooks/useAddress";
 interface ShippingFormData {
   fullName: string;
   phone: string;
-  email: string;
   address: string;
   ward: string;
   wardCode: string;
@@ -59,42 +58,33 @@ export default function ShippingAddressForm({
 }: ShippingAddressFormProps) {
   return (
     <div className="space-y-4">
-      {/* Customer Information (Read-only) */}
+      {/* Customer Information (Editable) */}
       {authUser && (
         <div className="space-y-4 pb-4 border-b">
           <h3 className="font-medium text-gray-900">Thông tin khách hàng</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="customer-name">
+              <Label htmlFor="fullName">
                 Họ và tên <span className="text-red-500">*</span>
               </Label>
               <Input
-                id="customer-name"
-                value={authUser.fullName}
-                disabled
-                className="bg-gray-50"
+                id="fullName"
+                name="fullName"
+                value={formData.fullName}
+                onChange={onInputChange}
+                placeholder="Nhập họ và tên"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="customer-email">
-                Email <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="customer-email"
-                value={authUser.email}
-                disabled
-                className="bg-gray-50"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="customer-phone">
+              <Label htmlFor="phone">
                 Số điện thoại <span className="text-red-500">*</span>
               </Label>
               <Input
-                id="customer-phone"
-                value={authUser.phone || ""}
-                disabled
-                className="bg-gray-50"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={onInputChange}
+                placeholder="Nhập số điện thoại"
               />
             </div>
           </div>

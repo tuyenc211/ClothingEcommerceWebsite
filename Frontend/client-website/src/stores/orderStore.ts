@@ -49,6 +49,8 @@ export interface OrderStatusHistory {
 export interface CreateOrderRequest {
   paymentMethod: PaymentMethod;
   shippingAddress: {
+    fullName: string;
+    phone: string;
     address: string;
     ward: string;
     province: string;
