@@ -2,12 +2,15 @@ import { Button } from "@/components/ui/button";
 
 export const Component = () => {
   const text = "CONTACT US NOW";
+  const handleClick = () => {
+    window.open("https://m.me/61582315304972", "_blank");
+  };
 
   return (
     <div className="border p-1 rounded-full border-dotted border-primary">
       <Button
         className="relative w-[80px] h-[80px] rounded-full overflow-hidden p-0 grid place-content-center bg-primary"
-        onClick={() => {}}
+        onClick={handleClick}
       >
         <p
           className="absolute inset-0"

@@ -28,7 +28,6 @@ import { AxiosError } from "axios";
 interface ShippingFormData {
   fullName: string;
   phone: string;
-  email: string;
   address: string;
   ward: string;
   wardCode: string;
@@ -73,7 +72,6 @@ export default function CheckoutPage() {
   const [formData, setFormData] = useState<ShippingFormData>({
     fullName: "",
     phone: "",
-    email: "",
     address: "",
     ward: "",
     wardCode: "",
@@ -113,7 +111,6 @@ export default function CheckoutPage() {
         setFormData({
           fullName: authUser.fullName,
           phone: authUser.phone || "",
-          email: authUser.email || "",
           address: defaultAddr.line,
           ward: defaultAddr.ward || "",
           wardCode: "",
@@ -125,7 +122,6 @@ export default function CheckoutPage() {
         setFormData({
           fullName: authUser.fullName,
           phone: authUser.phone || "",
-          email: authUser.email || "",
           address: "",
           ward: "",
           wardCode: "",
@@ -185,7 +181,6 @@ export default function CheckoutPage() {
         setFormData({
           fullName: authUser.fullName,
           phone: authUser.phone || "",
-          email: authUser.email || "",
           address: selectedAddr.line,
           ward: selectedAddr.ward || "",
           wardCode: "",
@@ -202,7 +197,6 @@ export default function CheckoutPage() {
     setFormData({
       fullName: authUser?.fullName || "",
       phone: authUser?.phone || "",
-      email: authUser?.email || "",
       address: "",
       ward: "",
       wardCode: "",
@@ -253,6 +247,8 @@ export default function CheckoutPage() {
       const orderRequest = {
         paymentMethod: paymentMethod,
         shippingAddress: {
+          fullName: formData.fullName,
+          phone: formData.phone,
           address: formData.address,
           ward: formData.ward,
           province: formData.province,
