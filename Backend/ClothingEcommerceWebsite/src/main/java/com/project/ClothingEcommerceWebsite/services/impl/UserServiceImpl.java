@@ -65,8 +65,8 @@ public class UserServiceImpl implements UserService {
                 .build();
         userRepository.save(user);
         String confirmToken = jwtUtil.generateConfirmToken(user.getEmail());
-        String confirmLink = "http://localhost:3000/auth/confirm?token=" + confirmToken;
-        emailService.sendResetPasswordEmail("Xác thực email", user.getEmail(), confirmLink);
+        String confirmLink = "http://localhost:3000/user/authenticate?token=" + confirmToken;
+        emailService.sendConfirmEmail("Xác thực email", user.getEmail(), confirmLink);
 
         System.out.println("✅ Đã gửi email xác thực tới: " + user.getEmail());
         return user;
@@ -151,8 +151,8 @@ public class UserServiceImpl implements UserService {
     public MessageResponse forgotPassword(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("Not found user"));
         String resetToken = jwtUtil.generateResetToken(user.getEmail());
-        String resetLink = "http://localhost:3000/reset-password?token=" + resetToken;
-        emailService.sendResetPasswordEmail("Đặt lại mật kh ẩu", user.getEmail(), resetLink);
+        String resetLink = "http://localhost:3000/user/reset-password?token=" + resetToken;
+        emailService.sendResetPasswordEmail("Đặt lại mật khẩu", user.getEmail(), resetLink);
         return new MessageResponse("Email da duoc gui!");
     }
 

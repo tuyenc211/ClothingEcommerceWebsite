@@ -17,7 +17,7 @@ public class CorsConfig {
                 ,"http://localhost:3001"
                 ,"https://clothing-ecommerce-website-client.vercel.app"
                 ,"https://clothing-ecommerce-website.vercel.app"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allowed methods
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")); // Allowed methods
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);

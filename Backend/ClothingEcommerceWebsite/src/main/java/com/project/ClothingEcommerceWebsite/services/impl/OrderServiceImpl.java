@@ -118,9 +118,12 @@ public class OrderServiceImpl implements OrderService {
         if (!order.getUser().getId().equals(userId)) {
             throw new RuntimeException("Order does not belong to this user");
         }
-
+        if (order.getStatus() != Enums.OrderStatus.NEW) {
+            throw new RuntimeException("Cannot cancel order that is already " + order.getStatus());
+        }
         order.setStatus(Enums.OrderStatus.CANCELLED);
         order.setCancelledAt(LocalDateTime.now());
+        order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
     }
 
@@ -128,13 +131,36 @@ public class OrderServiceImpl implements OrderService {
     public Order updateOrderStatus(Long orderId, String status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
+        Enums.OrderStatus currentStatus = order.getStatus();
+        Enums.OrderStatus newStatus;
         try {
-            Enums.OrderStatus newStatus = Enums.OrderStatus.valueOf(status.toUpperCase());
-            order.setStatus(newStatus);
-            order.setUpdatedAt(LocalDateTime.now());
-            return orderRepository.save(order);
+            newStatus = Enums.OrderStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid order status: " + status);
         }
+        if (!isValidTransition(currentStatus, newStatus)) {
+            throw new RuntimeException("Invalid transition: cannot change from " + currentStatus + " to " + newStatus);
+        }
+        order.setStatus(newStatus);
+        order.setUpdatedAt(LocalDateTime.now());
+
+        switch (newStatus) {
+            case CONFIRMED -> order.setPlacedAt(LocalDateTime.now());
+            case SHIPPED -> order.setPaidAt(LocalDateTime.now());
+            case DELIVERED -> order.setCancelledAt(null);
+            case CANCELLED -> order.setCancelledAt(LocalDateTime.now());
+        }
+        return orderRepository.save(order);
     }
+
+    private boolean isValidTransition(Enums.OrderStatus current, Enums.OrderStatus next) {
+        return switch (current) {
+            case NEW -> next == Enums.OrderStatus.CONFIRMED || next == Enums.OrderStatus.CANCELLED;
+            case CONFIRMED -> next == Enums.OrderStatus.PACKING;
+            case PACKING -> next == Enums.OrderStatus.SHIPPED;
+            case SHIPPED -> next == Enums.OrderStatus.DELIVERED;
+            case DELIVERED, CANCELLED -> false;
+        };
+    }
+
 }
