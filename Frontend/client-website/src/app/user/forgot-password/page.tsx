@@ -10,7 +10,6 @@ export default function ForgotPasswordPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect if already logged in (sau khi đã check auth xong)
     if (authUser) {
       router.push("/user");
     }

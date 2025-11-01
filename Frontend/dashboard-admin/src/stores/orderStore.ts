@@ -217,15 +217,12 @@ export const useOrderStore = create<OrderState>((set, get) => ({
             const res = await privateClient.get(`/orders/${orderId}`);
             const order = res.data;
             
-            // Try to get userId from different possible fields
             const userId = order.userId || order.user_id || order.user?.id;
             
-            // Fetch user information if userId exists
             if (userId) {
                 const { useUserStore } = await import("./userStore");
                 const userStore = useUserStore.getState();
                 
-                // Ensure users are loaded
                 if (userStore.users.length === 0) {
                     await userStore.fetchUsers();
                 }
