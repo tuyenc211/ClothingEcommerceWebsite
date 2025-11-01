@@ -2,6 +2,7 @@ package com.project.ClothingEcommerceWebsite.services.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateOrderRequest;
+import com.project.ClothingEcommerceWebsite.exception.NotFoundException;
 import com.project.ClothingEcommerceWebsite.models.*;
 import com.project.ClothingEcommerceWebsite.repositories.*;
 import com.project.ClothingEcommerceWebsite.services.OrderService;
@@ -19,6 +20,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
+    private final InventoryRepository inventoryRepository;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
@@ -65,20 +67,26 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
 
         // Tạo order_items
-        List<OrderItem> orderItems = cartItems.stream()
-                .map(i -> OrderItem.builder()
-                        .order(order)
-                        .product(i.getVariant().getProduct())
-                        .variant(i.getVariant())
-                        .productName(i.getVariant().getProduct().getName())
-                        .sku(i.getVariant().getSku())
-                        .unitPrice(i.getUnitPrice())
-                        .quantity(i.getQuantity())
-                        .lineTotal(i.getUnitPrice() * i.getQuantity())
-                        .build())
-                .collect(Collectors.toList());
-
-        orderItemRepository.saveAll(orderItems);
+        List<OrderItem> orderItems = cartItems.stream().map(i -> {
+            ProductVariant variant = i.getVariant();
+            Inventory inventory = inventoryRepository.findByProductVariant(variant)
+                    .orElseThrow(() -> new NotFoundException("Inventory not found!!"));
+            if (inventory.getQuantity() < i.getQuantity()) {
+                throw new RuntimeException("Sản phẩm " + variant.getProduct().getName() + " không đủ hàng.");
+            }
+            inventory.setQuantity(inventory.getQuantity() - i.getQuantity());
+            inventoryRepository.save(inventory);
+            return OrderItem.builder()
+                    .order(order)
+                    .product(variant.getProduct())
+                    .variant(variant)
+                    .productName(variant.getProduct().getName())
+                    .sku(variant.getSku())
+                    .unitPrice(i.getUnitPrice())
+                    .quantity(i.getQuantity())
+                    .lineTotal(i.getUnitPrice() * i.getQuantity())
+                    .build();
+        }).collect(Collectors.toList());
 
         // Xóa giỏ hàng sau khi đặt
         cartItemRepository.deleteAll(cartItems);
@@ -125,6 +133,14 @@ public class OrderServiceImpl implements OrderService {
         order.setCancelledAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+        for (OrderItem item : orderItems) {
+            ProductVariant variant = item.getVariant();
+            Inventory inventory = inventoryRepository.findByProductVariant(variant)
+                    .orElseThrow(() -> new NotFoundException("Inventory not found!!"));
+            inventory.setQuantity(inventory.getQuantity() + item.getQuantity());
+            inventoryRepository.save(inventory);
+        }
     }
 
     @Override
@@ -146,9 +162,18 @@ public class OrderServiceImpl implements OrderService {
 
         switch (newStatus) {
             case CONFIRMED -> order.setPlacedAt(LocalDateTime.now());
-            case SHIPPED -> order.setPaidAt(LocalDateTime.now());
-            case DELIVERED -> order.setCancelledAt(null);
-            case CANCELLED -> order.setCancelledAt(LocalDateTime.now());
+            case SHIPPED, DELIVERED -> order.setPaidAt(LocalDateTime.now());
+            case CANCELLED -> {
+                order.setCancelledAt(LocalDateTime.now());
+                List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+                for (OrderItem item : orderItems) {
+                    ProductVariant variant = item.getVariant();
+                    Inventory inventory = inventoryRepository.findByProductVariant(variant)
+                            .orElseThrow(() -> new NotFoundException("Inventory not found!!"));
+                    inventory.setQuantity(inventory.getQuantity() + item.getQuantity());
+                    inventoryRepository.save(inventory);
+                }
+            }
         }
         return orderRepository.save(order);
     }
