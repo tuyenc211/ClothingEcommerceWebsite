@@ -4,11 +4,14 @@ import { Order } from "@/stores/orderStore";
 import { OrderStatusBadge } from "./StatusBadges";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
+import { useUserStore } from "@/stores/userStore";
 interface InvoiceTemplateProps {
   order: Order;
 }
 
 export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
+  const { getUserById } = useUserStore(); 
+  const user = getUserById(order.userId|| order.user?.id ||0);
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "dd/MM/yyyy");
@@ -31,17 +34,6 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
   };
 
   // Get customer info from order.user or direct fields
-  const getCustomerName = () => {
-    return order.user?.fullName || order.customerName || "N/A";
-  };
-
-  const getCustomerEmail = () => {
-    return order.user?.email || order.customerEmail || "N/A";
-  };
-
-  const getCustomerPhone = () => {
-    return order.user?.phoneNumber || order.customerPhone || "";
-  };
 
   return (
     <div
@@ -85,12 +77,12 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
             Khách hàng
           </h3>
           <div className="text-gray-900 space-y-1">
-            <p className="font-medium">{getCustomerName()}</p>
+            <p className="font-medium">{user?.fullName || "N/A"}</p>
             <p className="text-sm text-gray-600">
-              {getCustomerEmail()}
+              {user?.email || "N/A"}
             </p>
-            {getCustomerPhone() && (
-              <p className="text-sm text-gray-600">{getCustomerPhone()}</p>
+            {user?.phone && (
+              <p className="text-sm text-gray-600">{user?.phone}</p>
             )}
             <p className="text-sm text-gray-600">{formatAddress()}</p>
           </div>

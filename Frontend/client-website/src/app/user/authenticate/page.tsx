@@ -29,7 +29,6 @@ export default function AuthenticatePage() {
       try {
         await confirmEmail(token);
         setStatus("success");
-        // Redirect to login after 3 seconds
         setTimeout(() => {
           router.push("/user/login");
         }, 3000);
