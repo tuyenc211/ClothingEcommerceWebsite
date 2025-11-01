@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { useOrderStore } from "@/stores/orderStore";
 import { OrderStatsCards } from "@/components/orders/OrderStatsCards";
 import { OrderTable } from "@/components/orders/OrderTable";
@@ -13,12 +14,12 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function OrdersPage() {
-  const { orders, isLoading, currentPage, itemsPerPage, setPage } =
+  const { orders, isLoading, currentPage, itemsPerPage, setPage, fetchAllOrders } =
     useOrderStore();
 
-  // useEffect(() => {
-  //   fetchOrders();
-  // }, [fetchOrders]);
+  useEffect(() => {
+    fetchAllOrders();
+  }, [fetchAllOrders]);
 
   // Sort orders by created_at (newest first)
   const sortedOrders = [...orders].sort((a, b) => {

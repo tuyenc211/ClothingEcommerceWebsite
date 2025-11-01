@@ -113,6 +113,7 @@ interface OrderState {
     itemsPerPage: number;
 
     // API actions
+    fetchAllOrders: () => Promise<void>;
     fetchUserOrders: (userId: number) => Promise<void>;
     fetchOrderById: (orderId: number) => Promise<void>;
     createOrder: (userId: number, req: CreateOrderRequest) => Promise<Order>;
@@ -148,6 +149,54 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     itemsPerPage: 10,
 
     // ===== API actions =====
+    fetchAllOrders: async () => {
+        set({ isLoading: true });
+        try {
+            const res = await privateClient.get(`/orders`);
+            const orders = res.data || [];
+            
+            // Fetch user information for each order
+            const { useUserStore } = await import("./userStore");
+            const userStore = useUserStore.getState();
+            
+            // Ensure users are loaded
+            if (userStore.users.length === 0) {
+                await userStore.fetchUsers();
+            }
+            
+            // Map orders with user information
+            const ordersWithUserInfo = await Promise.all(orders.map(async (order: any) => {
+                // Try to get userId from different possible fields
+                const userId = order.userId || order.user_id || order.user?.id;
+                
+                if (userId) {
+                    const user = userStore.getUserById(userId);
+                    if (user) {
+                        return {
+                            ...order,
+                            userId: userId,
+                            user: {
+                                id: user.id,
+                                fullName: user.fullName,
+                                email: user.email,
+                                phoneNumber: user.phone,
+                            },
+                        };
+                    }
+                }
+                return order;
+            }));
+            
+            set({ orders: ordersWithUserInfo });
+            get().applyFilters();
+        } catch (e) {
+            console.error("Failed to fetch all orders:", e);
+            set({ orders: [], filteredOrders: [] });
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
     fetchUserOrders: async (userId) => {
         set({ isLoading: true });
         try {
@@ -166,7 +215,34 @@ export const useOrderStore = create<OrderState>((set, get) => ({
         set({ isLoading: true });
         try {
             const res = await privateClient.get(`/orders/${orderId}`);
-            set({ currentOrder: res.data });
+            const order = res.data;
+            
+            // Try to get userId from different possible fields
+            const userId = order.userId || order.user_id || order.user?.id;
+            
+            // Fetch user information if userId exists
+            if (userId) {
+                const { useUserStore } = await import("./userStore");
+                const userStore = useUserStore.getState();
+                
+                // Ensure users are loaded
+                if (userStore.users.length === 0) {
+                    await userStore.fetchUsers();
+                }
+                
+                const user = userStore.getUserById(userId);
+                if (user) {
+                    order.userId = userId;
+                    order.user = {
+                        id: user.id,
+                        fullName: user.fullName,
+                        email: user.email,
+                        phoneNumber: user.phone,
+                    };
+                }
+            }
+            
+            set({ currentOrder: order });
         } catch (e) {
             console.error("Failed to fetch order:", e);
             set({ currentOrder: null });
