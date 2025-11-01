@@ -70,9 +70,7 @@ public class SercurityConfiguration {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(
                         authz -> authz
-                                .antMatchers("/api/v1/auth/login").permitAll()
-                                .antMatchers("/api/v1/auth/register").permitAll()
-                                .antMatchers("/api/v1/auth/logout").permitAll()
+                                .antMatchers("/api/v1/auth/**").permitAll()
                                 .antMatchers("/api/v1/colors/**").permitAll()
                                 .antMatchers("/api/v1/sizes/**").permitAll()
                                 .antMatchers("/api/v1/coupons/**").permitAll()
