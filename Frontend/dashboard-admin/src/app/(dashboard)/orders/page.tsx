@@ -20,6 +20,7 @@ export default function OrdersPage() {
   useEffect(() => {
     fetchAllOrders();
   }, [fetchAllOrders]);
+  console.log("Orders:", orders);
 
   // Sort orders by created_at (newest first)
   const sortedOrders = [...orders].sort((a, b) => {
