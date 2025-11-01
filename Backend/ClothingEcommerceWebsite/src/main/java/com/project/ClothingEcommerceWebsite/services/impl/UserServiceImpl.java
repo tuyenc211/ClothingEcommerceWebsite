@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
                 .build();
         userRepository.save(user);
         String confirmToken = jwtUtil.generateConfirmToken(user.getEmail());
-        String confirmLink = "http://localhost:3000/authenticate?token=" + confirmToken;
+        String confirmLink = "http://localhost:3000/auth/confirm?token=" + confirmToken;
         emailService.sendResetPasswordEmail("Xác thực email", user.getEmail(), confirmLink);
 
         System.out.println("✅ Đã gửi email xác thực tới: " + user.getEmail());
