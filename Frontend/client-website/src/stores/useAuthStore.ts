@@ -38,6 +38,7 @@ interface AuthStore {
   isLoggingIn: boolean;
   isForgettingPassword: boolean;
   isResettingPassword: boolean;
+  isConfirmingEmail: boolean;
 
   // User management
   updateProfile: (data: Partial<User>) => Promise<void>;
@@ -59,6 +60,7 @@ interface AuthStore {
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, password: string) => Promise<void>;
+  confirmEmail: (token: string) => Promise<void>;
 }
 
 const useAuthStore = create<AuthStore>()(
@@ -69,6 +71,7 @@ const useAuthStore = create<AuthStore>()(
       isLoggingIn: false,
       isForgettingPassword: false,
       isResettingPassword: false,
+      isConfirmingEmail: false,
 
       login: async (data: LoginData) => {
         set({ isLoggingIn: true });
@@ -100,7 +103,9 @@ const useAuthStore = create<AuthStore>()(
 
         try {
           const res = await privateClient.post("/auth/register", data);
-          toast.success("Đăng ký thành công");
+          toast.success(
+            "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản."
+          );
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
           const errorMessage =
@@ -148,10 +153,10 @@ const useAuthStore = create<AuthStore>()(
       resetPassword: async (token: string, password: string) => {
         set({ isResettingPassword: true });
         try {
-          const response = await privateClient.post(
-            `/auth/reset-password/${token}`,
-            { password }
-          );
+          const response = await privateClient.put("/auth/reset-password", {
+            token,
+            newPassword: password,
+          });
           toast.success("Mật khẩu đã được đặt lại thành công");
           return response.data;
         } catch (error: unknown) {
@@ -165,6 +170,28 @@ const useAuthStore = create<AuthStore>()(
           throw error;
         } finally {
           set({ isResettingPassword: false });
+        }
+      },
+
+      confirmEmail: async (token: string) => {
+        set({ isConfirmingEmail: true });
+        try {
+          const response = await privateClient.get("/auth/confirm", {
+            params: { token },
+          });
+          toast.success("Xác thực email thành công! Bạn có thể đăng nhập ngay.");
+          return response.data;
+        } catch (error: unknown) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message ||
+            "Có lỗi xảy ra khi xác thực email. Token có thể đã hết hạn.";
+
+          console.log("❌ Confirm email error:", errorMessage);
+          toast.error(errorMessage);
+          throw error;
+        } finally {
+          set({ isConfirmingEmail: false });
         }
       },
 
