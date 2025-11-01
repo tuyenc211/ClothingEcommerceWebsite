@@ -87,7 +87,7 @@ public class OrderServiceImpl implements OrderService {
                     .lineTotal(i.getUnitPrice() * i.getQuantity())
                     .build();
         }).collect(Collectors.toList());
-
+        orderItemRepository.saveAll(orderItems);
         // Xóa giỏ hàng sau khi đặt
         cartItemRepository.deleteAll(cartItems);
 
