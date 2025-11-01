@@ -179,7 +179,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
                                 id: user.id,
                                 fullName: user.fullName,
                                 email: user.email,
-                                phoneNumber: user.phone,
+                                phone: user.phone,
                             },
                         };
                     }
@@ -215,29 +215,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
         set({ isLoading: true });
         try {
             const res = await privateClient.get(`/orders/${orderId}`);
-            const order = res.data;
-            
-            const userId = order.userId || order.user_id || order.user?.id;
-            
-            if (userId) {
-                const { useUserStore } = await import("./userStore");
-                const userStore = useUserStore.getState();
-                
-                if (userStore.users.length === 0) {
-                    await userStore.fetchUsers();
-                }
-                
-                const user = userStore.getUserById(userId);
-                if (user) {
-                    order.userId = userId;
-                    order.user = {
-                        id: user.id,
-                        fullName: user.fullName,
-                        email: user.email,
-                        phoneNumber: user.phone,
-                    };
-                }
-            }
+            const order = res.data || res.data?.data;
             
             set({ currentOrder: order });
         } catch (e) {
@@ -289,7 +267,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     updateOrderStatus: async (orderId: number, status: OrderStatus) => {
         set({ isUpdating: true });
         try {
-            await privateClient.patch(`/orders/${orderId}/status`, { status });
+            await privateClient.patch(`/orders/${orderId}/status?status=${status}`);
             set((s) => ({
                 orders: s.orders.map((o) =>
                     o.id === orderId ? ({ ...o, status } as Order) : o
