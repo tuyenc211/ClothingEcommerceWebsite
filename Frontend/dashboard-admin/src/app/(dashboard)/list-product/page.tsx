@@ -29,6 +29,7 @@ import { useCategoryStore } from "@/stores/categoryStore";
 import { Edit, Trash2, MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import {formatCurrency} from "@/lib/utils";
 
 export default function ProductListPage() {
   const { products, fetchProducts, deleteProduct } = useProductStore();
@@ -58,12 +59,6 @@ export default function ProductListPage() {
   };
 
   // Format currency VND
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -139,7 +134,7 @@ export default function ProductListPage() {
                     </TableCell>
                     <TableCell>
                       <span className="font-medium">
-                        {formatPrice(product.basePrice)}
+                        {formatCurrency(product.basePrice)}
                       </span>
                     </TableCell>
                     <TableCell>

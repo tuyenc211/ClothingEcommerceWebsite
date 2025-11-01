@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import {formatCurrency} from "@/lib/utils";
 
 // Mock data doanh thu theo tháng (VNĐ)
 const revenueData = [
@@ -50,16 +51,6 @@ const chartConfig = {
     color: "#BDE3C3",
   },
 } satisfies ChartConfig;
-
-// Format số thành VNĐ
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-};
 
 const formatCurrencyShort = (value: number) => {
   if (value >= 1000000000) {
