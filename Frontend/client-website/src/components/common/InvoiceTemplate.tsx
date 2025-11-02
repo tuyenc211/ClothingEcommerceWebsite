@@ -3,7 +3,7 @@
 import { Order } from "@/stores/orderStore";
 import { OrderStatusBadge } from "./StatusBadges";
 import { format } from "date-fns";
-import { formatPrice } from "@/lib/utils";
+import {formatDate, formatPrice} from "@/lib/utils";
 import useAuthStore from "@/stores/useAuthStore";
 interface InvoiceTemplateProps {
   order: Order;
@@ -11,25 +11,41 @@ interface InvoiceTemplateProps {
 
 export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
   const { authUser } = useAuthStore();
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "N/A";
+  
+  // Parse shipping address snapshot
+  const getShippingInfo = () => {
+    if (!order.shippingAddressSnapshot) return null;
+    
     try {
-      return format(new Date(dateString), "dd/MM/yyyy");
-    } catch {
-      return dateString;
+      let addr: Record<string, string>;
+      
+      if (typeof order.shippingAddressSnapshot === "string") {
+        addr = JSON.parse(order.shippingAddressSnapshot);
+      } else {
+        addr = order.shippingAddressSnapshot as Record<string, string>;
+      }
+      
+      return addr;
+    } catch (error) {
+      console.error("Error parsing shipping address:", error);
+      return null;
     }
   };
 
+  const shippingInfo = getShippingInfo();
+  
   const formatAddress = () => {
-    if (
-      typeof order.shippingAddressSnapshot === "object" &&
-      order.shippingAddressSnapshot
-    ) {
-      const addr = order.shippingAddressSnapshot as Record<string, string>;
-      return `${addr.line || ""}, ${addr.ward || ""}, ${addr.district || ""}, ${
-        addr.province || ""
-      }, ${addr.country || ""}`;
-    }
+    if (!shippingInfo) return "N/A";
+    
+    const parts = [
+     shippingInfo.line,
+      shippingInfo.ward,
+      shippingInfo.district,
+      shippingInfo.province,
+      shippingInfo.country
+    ].filter(Boolean);
+    
+    return parts.length > 0 ? parts.join(", ") : "N/A";
   };
 
   return (
@@ -74,10 +90,13 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
             Khách hàng
           </h3>
           <div className="text-gray-900 space-y-1">
-            <p className="font-medium">{authUser?.fullName || "N/A"}</p>
-            <p className="text-sm text-gray-600">{authUser?.email || "N/A"}</p>
-            {authUser?.phone && (
-              <p className="text-sm text-gray-600">{authUser.phone}</p>
+            <p className="font-medium">
+              {shippingInfo?.customerName || authUser?.fullName || "N/A"}
+            </p>
+            {(shippingInfo?.phone || authUser?.phone) && (
+              <p className="text-sm text-gray-600">
+                {shippingInfo?.phone || authUser?.phone}
+              </p>
             )}
             <p className="text-sm text-gray-600">{formatAddress()}</p>
           </div>
@@ -115,11 +134,6 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                   </td>
                   <td className="py-4 px-2 text-sm text-gray-900 font-medium">
                     {item.productName}
-                    {item.attributesSnapshot && (
-                      <div className="text-xs text-gray-500">
-                        {JSON.stringify(item.attributesSnapshot)}
-                      </div>
-                    )}
                   </td>
                   <td className="py-4 px-2 text-sm text-gray-900 text-center">
                     {item.quantity}

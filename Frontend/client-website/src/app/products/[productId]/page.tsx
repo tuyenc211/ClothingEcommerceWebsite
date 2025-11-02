@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Star, Heart, ShoppingCart, Plus, Minus } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
 import { useCartStore } from "@/stores/cartStore";
@@ -28,6 +28,7 @@ import { useReviewStore } from "@/stores/reviewStore";
 export default function ProductDetailPage() {
   const { productId } = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Stores
   const { getProduct } = useProductStore();
@@ -43,6 +44,15 @@ export default function ProductDetailPage() {
     return undefined;
   }, [productId, getProduct]);
   const reviews = product?.reviews || [];
+  const orderId =  parseInt(searchParams.get("orderId") || "0", 10);
+
+  // Check if should open review tab
+  useEffect(() => {
+    const shouldReview = searchParams.get("review");
+    if (shouldReview === "true") {
+      setActiveTab("reviews");
+    }
+  }, [searchParams]);
 
   // Get product variants
   const variants = useMemo(() => {
@@ -61,6 +71,7 @@ export default function ProductDetailPage() {
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState("description");
   const variantQuantityMap = useMemo(() => {
     const map: Record<number, number> = {};
     if (product?.inventories) {
@@ -362,7 +373,7 @@ export default function ProductDetailPage() {
 
         {/* Tabs Section - Description & Reviews */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Tabs defaultValue="description" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="flex items-start w-full grid-cols-2 mx-auto">
               <TabsTrigger value="description" className="text-sm sm:text-base">
                 Mô tả sản phẩm
@@ -437,7 +448,7 @@ export default function ProductDetailPage() {
                   </h3>
                   <ReviewForm
                     productId={product.id}
-                    productName={product.name}
+                    orderId={orderId}
                     onSuccess={() => {
                       fetchReviewsByProduct(product.id);
                     }}

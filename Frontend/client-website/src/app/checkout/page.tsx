@@ -45,7 +45,7 @@ export default function CheckoutPage() {
     removeCoupon,
     appliedCoupon,
   } = useCartStore();
-  const { getProduct } = useProductStore();
+  const { getProduct,fetchProducts } = useProductStore();
   const { getActiveCoupons, fetchCoupons, coupons } = useCouponStore();
 
   useEffect(() => {
@@ -267,9 +267,9 @@ export default function CheckoutPage() {
 
       // Clear cart after successful order
       await clearCart();
-
+      await fetchProducts() ;
       // Redirect to order detail or orders list
-      router.push(`/user/orders`);
+      router.push(`/`);
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =

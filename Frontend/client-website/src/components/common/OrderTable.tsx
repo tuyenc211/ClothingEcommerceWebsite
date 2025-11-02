@@ -13,7 +13,7 @@ import { Eye } from "lucide-react";
 import { Order } from "@/stores/orderStore";
 import { OrderStatusBadge, PaymentMethodBadge } from "./StatusBadges";
 import { useRouter } from "next/navigation";
-import { formatPrice } from "@/lib/utils";
+import {formatDate, formatPrice} from "@/lib/utils";
 interface OrderTableProps {
   orders: Order[];
 }
@@ -25,19 +25,7 @@ export function OrderTable({ orders }: OrderTableProps) {
     router.push(`/user/orders/${orderId}`);
   };
 
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleString("vi-VN", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return dateString;
-    }
-  };
+
 
   if (orders.length === 0) {
     return (

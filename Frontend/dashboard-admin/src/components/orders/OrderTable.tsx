@@ -17,7 +17,19 @@ import { formatCurrency } from "@/lib/utils";
 interface OrderTableProps {
   orders: Order[];
 }
-
+export const formatDate = (dateString: string) => {
+  try {
+    return new Date(dateString).toLocaleString("vi-VN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return dateString;
+  }
+};
 export function OrderTable({ orders }: OrderTableProps) {
   const router = useRouter();
   const { updateOrderStatus } = useOrderStore();
@@ -50,21 +62,6 @@ export function OrderTable({ orders }: OrderTableProps) {
 
   const handleViewInvoice = (orderId: number) => {
     router.push(`/orders/${orderId}`);
-  };
-
-  const formatDate = (dateString: string) => {
-    
-    try {
-      return new Date(dateString).toLocaleString("vi-VN", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return dateString;
-    }
   };
 
   if (orders.length === 0) {
@@ -142,7 +139,9 @@ export function OrderTable({ orders }: OrderTableProps) {
                     updateOrderStatus(order.id, e.target.value as OrderStatus)
                   }
                   className="form-control border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={order.status === "DELIVERED" || order.status === "CANCELLED"}
+                  disabled={
+                    order.status === "DELIVERED" || order.status === "CANCELLED"
+                  }
                 >
                   {getValidNextStatuses(order.status).map((status) => (
                     <option key={status} value={status}>

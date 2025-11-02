@@ -123,7 +123,6 @@ export const useCartStore = create<CartState>()(
         try {
           await privateClient.delete(`/carts/${userId}/clear`);
           set({ items: [], isLoading: false });
-          toast.success("Đã xóa giỏ hàng");
           console.log("✅ Cart cleared");
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;

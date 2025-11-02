@@ -26,13 +26,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Package, AlertTriangle, Search, Filter, Edit } from "lucide-react";
+import {Package, AlertTriangle, Search, Filter, Edit, DollarSign, ShoppingCart, Users} from "lucide-react";
 import Link from "next/link";
 import { useProductStore, StockStatus } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useInventoryStore } from "@/stores/inventoryStore";
 import { formatCurrency } from "@/lib/utils";
 import { RoleGuard } from "@/components/auth/RoleGuard";
+import StatCard from "@/components/shared/StatCard";
 
 export default function InventoryOverviewPage() {
   const { products, fetchProducts } = useProductStore();
@@ -157,7 +158,28 @@ export default function InventoryOverviewPage() {
       </div>
     );
   }
-
+    const statsCards = [
+        {
+            title: "Tổng sản phẩm",
+            value: stats.totalProducts.toString(),
+            icon: Package,
+        },
+        {
+            title: "Tổng tồn kho",
+            value: stats.totalStock.toString(),
+            icon: Package,
+        },
+        {
+            title: "Tổng hết hàng",
+            value: stats.outOfStock.toString(),
+            icon: AlertTriangle,
+        },
+        {
+            title: "Tổng săp hết",
+            value: stats.lowStock.toString(),
+            icon: AlertTriangle,
+        },
+    ];
   return (
     <RoleGuard requireStaff>
       <div className="space-y-6">
@@ -171,53 +193,9 @@ export default function InventoryOverviewPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tổng sản phẩm</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProducts}</div>
-            <p className="text-xs text-muted-foreground">Đang quản lý</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tổng tồn kho</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalStock}</div>
-            <p className="text-xs text-muted-foreground">Sản phẩm trong kho</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Hết hàng</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {stats.outOfStock}
-            </div>
-            <p className="text-xs text-muted-foreground">Cần nhập thêm</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sắp hết</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {stats.lowStock}
-            </div>
-            <p className="text-xs text-muted-foreground">Cần chú ý</p>
-          </CardContent>
-        </Card>
+          {statsCards.map((stat, index) => (
+              <StatCard key={index} {...stat} />
+          ))}
       </div>
 
       {/* Filters */}
