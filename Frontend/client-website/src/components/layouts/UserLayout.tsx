@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Home,
   MapPin,
+  Star,
 } from "lucide-react";
 interface UserLayoutProps {
   children: ReactNode;
@@ -33,6 +34,11 @@ const sidebarItems = [
     href: "/user/address",
     label: "Quản Lý Địa Chỉ",
     icon: MapPin,
+  },
+  {
+    href: "/user/reviews",
+    label: "Đánh Giá Của Tôi",
+    icon: Star,
   },
 ];
 

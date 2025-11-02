@@ -113,7 +113,7 @@ export default function Footer() {
             <Input
               type="email"
               placeholder="Enter your email"
-              className="p-5 backdrop-blur-sm"
+              className="p-5 backdrop-blur-sm text-white"
             />
             <Button
               type="submit"

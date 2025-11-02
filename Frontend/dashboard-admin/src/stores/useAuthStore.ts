@@ -92,7 +92,7 @@ const useAuthStore = create<AuthStore>()(
           set({ authUser: user });
           toast.success(
             `Đăng nhập thành công với vai trò ${
-              user.roles?.[0]?.name || "ADMIN"
+              user.roles?.[0]?.name?.toLowerCase()
             }`
           );
         } catch (error: unknown) {

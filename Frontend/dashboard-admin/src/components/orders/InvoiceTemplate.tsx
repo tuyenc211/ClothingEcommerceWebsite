@@ -20,17 +20,40 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
     }
   };
 
-  const formatAddress = () => {
-    if (
-      typeof order.shippingAddressSnapshot === "object" &&
-      order.shippingAddressSnapshot
-    ) {
-      const addr = order.shippingAddressSnapshot as Record<string, string>;
-      return `${addr.line || ""}, ${addr.ward || ""}, ${addr.district || ""}, ${
-        addr.province || ""
-      }, ${addr.country || ""}`;
+  // Parse shipping address snapshot
+  const getShippingInfo = () => {
+    if (!order.shippingAddressSnapshot) return null;
+    
+    try {
+      let addr: Record<string, string>;
+      
+      if (typeof order.shippingAddressSnapshot === "string") {
+        addr = JSON.parse(order.shippingAddressSnapshot);
+      } else {
+        addr = order.shippingAddressSnapshot as Record<string, string>;
+      }
+      
+      return addr;
+    } catch (error) {
+      console.error("Error parsing shipping address:", error);
+      return null;
     }
-    return order.shippingAddressSnapshot || "N/A";
+  };
+
+  const shippingInfo = getShippingInfo();
+  
+  const formatAddress = () => {
+    if (!shippingInfo) return "N/A";
+    
+    const parts = [
+     shippingInfo.line,
+      shippingInfo.ward,
+      shippingInfo.district,
+      shippingInfo.province,
+      shippingInfo.country
+    ].filter(Boolean);
+    
+    return parts.length > 0 ? parts.join(", ") : "N/A";
   };
 
   // Get customer info from order.user or direct fields
@@ -77,12 +100,13 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
             Khách hàng
           </h3>
           <div className="text-gray-900 space-y-1">
-            <p className="font-medium">{user?.fullName || "N/A"}</p>
-            <p className="text-sm text-gray-600">
-              {user?.email || "N/A"}
+            <p className="font-medium">
+              {shippingInfo?.customerName || user?.fullName || "N/A"}
             </p>
-            {user?.phone && (
-              <p className="text-sm text-gray-600">{user?.phone}</p>
+            {(shippingInfo?.phone || user?.phone) && (
+              <p className="text-sm text-gray-600">
+                {shippingInfo?.phone || user?.phone}
+              </p>
             )}
             <p className="text-sm text-gray-600">{formatAddress()}</p>
           </div>

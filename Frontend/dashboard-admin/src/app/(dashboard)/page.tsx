@@ -18,127 +18,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  ShoppingCart,
-  Users,
-  Package,
-} from "lucide-react";
+import { DollarSign, ShoppingCart, Users, Package } from "lucide-react";
 import { RevenueChart } from "@/components/shared/RevenueChart";
-
-// Mock data - similar to Admin project
-const mockStats = [
-  {
-    title: "Total Revenue",
-    value: "$45,231.89",
-    change: "+20.1%",
-    trend: "up" as const,
-    icon: DollarSign,
-  },
-  {
-    title: "Total Orders",
-    value: "2,350",
-    change: "+12.5%",
-    trend: "up" as const,
-    icon: ShoppingCart,
-  },
-  {
-    title: "Total Customers",
-    value: "1,284",
-    change: "+5.2%",
-    trend: "up" as const,
-    icon: Users,
-  },
-  {
-    title: "Total Products",
-    value: "456",
-    change: "-2.1%",
-    trend: "down" as const,
-    icon: Package,
-  },
-];
-
-const mockOrders = [
-  {
-    id: "ORD-001",
-    customer: "John Doe",
-    email: "john@example.com",
-    products: 3,
-    total: "$234.50",
-    discountedTotal: "$210.05",
-    status: "Completed",
-  },
-  {
-    id: "ORD-002",
-    customer: "Jane Smith",
-    email: "jane@example.com",
-    products: 2,
-    total: "$156.30",
-    discountedTotal: "$140.67",
-    status: "Processing",
-  },
-  {
-    id: "ORD-003",
-    customer: "Bob Johnson",
-    email: "bob@example.com",
-    products: 5,
-    total: "$412.80",
-    discountedTotal: "$371.52",
-    status: "Shipped",
-  },
-  {
-    id: "ORD-004",
-    customer: "Alice Brown",
-    email: "alice@example.com",
-    products: 1,
-    total: "$89.99",
-    discountedTotal: "$80.99",
-    status: "Cancelled",
-  },
-  {
-    id: "ORD-005",
-    customer: "Charlie Wilson",
-    email: "charlie@example.com",
-    products: 4,
-    total: "$298.75",
-    discountedTotal: "$268.88",
-    status: "Completed",
-  },
-];
-
-function StatCard({
-  title,
-  value,
-  icon: Icon,
-}: {
-  title: string;
-  value: string;
-  icon: React.ElementType;
-}) {
-  return (
-    <Card className="gap-0">
-      <CardHeader className="flex flex-row items-center justify-center  space-y-0 ">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent className="flex justify-center">
-        <div className="text-2xl font-bold">{value}</div>
-      </CardContent>
-    </Card>
-  );
-}
+import { useDashboardStore } from "@/stores/dashboardStore";
+import { formatCurrency } from "@/lib/utils";
+import StatCard from "@/components/shared/StatCard";
 
 function getStatusBadgeVariant(status: string) {
-  switch (status.toLowerCase()) {
-    case "completed":
+  switch (status.toUpperCase()) {
+    case "DELIVERED":
       return "default";
-    case "processing":
+    case "CONFIRMED":
+    case "PACKING":
       return "secondary";
-    case "shipped":
+    case "SHIPPED":
       return "outline";
-    case "cancelled":
+    case "CANCELLED":
       return "destructive";
     default:
       return "secondary";
@@ -147,18 +42,53 @@ function getStatusBadgeVariant(status: string) {
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
+  const {
+    stats,
+    recentOrders,
+    isLoading,
+    fetchDashboardStats,
+    fetchRecentOrders,
+    fetchRevenueData,
+  } = useDashboardStore();
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // Fetch data when component mounts
+    fetchDashboardStats();
+    fetchRecentOrders();
+    fetchRevenueData();
+  }, [fetchDashboardStats, fetchRecentOrders, fetchRevenueData]);
 
-  if (!mounted) {
+  if (!mounted || isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
     );
   }
+
+  const statsCards = [
+    {
+      title: "Total Revenue",
+      value: formatCurrency(stats.totalRevenue),
+      icon: DollarSign,
+    },
+    {
+      title: "Total Orders",
+      value: stats.totalOrders.toString(),
+      icon: ShoppingCart,
+    },
+    {
+      title: "Total Customers",
+      value: stats.totalCustomers.toString(),
+      icon: Users,
+    },
+    {
+      title: "Total Products",
+      value: stats.totalProducts.toString(),
+      icon: Package,
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -172,7 +102,7 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {mockStats.map((stat, index) => (
+        {statsCards.map((stat, index) => (
           <StatCard key={index} {...stat} />
         ))}
       </div>
@@ -195,26 +125,34 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle>Recent Sales</CardTitle>
                 <CardDescription>
-                  You made 265 sales this month.
+                  {recentOrders.length > 0
+                    ? `You made ${stats.totalOrders} sales this month.`
+                    : "No sales data available"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockOrders.slice(0, 5).map((order) => (
-                    <div key={order.id} className="flex items-center">
-                      <div className="ml-4 space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          {order.customer}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {order.email}
-                        </p>
+                  {recentOrders.length > 0 ? (
+                    recentOrders.map((order) => (
+                      <div key={order.id} className="flex items-center">
+                        <div className="ml-4 space-y-1">
+                          <p className="text-sm font-medium leading-none">
+                            {order.customerName}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {order.customerEmail}
+                          </p>
+                        </div>
+                        <div className="ml-auto font-medium">
+                          {formatCurrency(order.discountedTotal)}
+                        </div>
                       </div>
-                      <div className="ml-auto font-medium">
-                        {order.discountedTotal}
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No recent orders
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -228,7 +166,7 @@ export default function DashboardPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Order ID</TableHead>
+                    <TableHead>Order Code</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Products</TableHead>
                     <TableHead>Total</TableHead>
@@ -237,27 +175,44 @@ export default function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.id}</TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{order.customer}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {order.email}
+                  {recentOrders.length > 0 ? (
+                    recentOrders.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium">
+                          {order.code}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">
+                              {order.customerName}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {order.customerEmail}
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{order.products}</TableCell>
-                      <TableCell>{order.total}</TableCell>
-                      <TableCell>{order.discountedTotal}</TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusBadgeVariant(order.status)}>
-                          {order.status}
-                        </Badge>
+                        </TableCell>
+                        <TableCell>{order.products}</TableCell>
+                        <TableCell>{formatCurrency(order.total)}</TableCell>
+                        <TableCell>
+                          {formatCurrency(order.discountedTotal)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getStatusBadgeVariant(order.status)}>
+                            {order.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        className="text-center text-muted-foreground"
+                      >
+                        No recent orders available
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </CardContent>

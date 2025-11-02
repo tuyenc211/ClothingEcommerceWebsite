@@ -23,23 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TrendingUp, TrendingDown } from "lucide-react";
-import {formatCurrency} from "@/lib/utils";
-
-// Mock data doanh thu theo tháng (VNĐ)
-const revenueData = [
-  { date: "2024-01-01", currentMonth: 285000000, lastMonth: 245000000 },
-  { date: "2024-02-01", currentMonth: 320000000, lastMonth: 285000000 },
-  { date: "2024-03-01", currentMonth: 310000000, lastMonth: 320000000 },
-  { date: "2024-04-01", currentMonth: 450000000, lastMonth: 310000000 },
-  { date: "2024-05-01", currentMonth: 520000000, lastMonth: 450000000 },
-  { date: "2024-06-01", currentMonth: 580000000, lastMonth: 520000000 },
-  { date: "2024-07-01", currentMonth: 650000000, lastMonth: 580000000 },
-  { date: "2024-08-01", currentMonth: 720000000, lastMonth: 650000000 },
-  { date: "2024-09-01", currentMonth: 690000000, lastMonth: 720000000 },
-  { date: "2024-10-01", currentMonth: 780000000, lastMonth: 690000000 },
-  { date: "2024-11-01", currentMonth: 850000000, lastMonth: 780000000 },
-  { date: "2024-12-01", currentMonth: 920000000, lastMonth: 850000000 },
-];
+import { formatCurrency } from "@/lib/utils";
+import { useDashboardStore } from "@/stores/dashboardStore";
 
 const chartConfig = {
   currentMonth: {
@@ -67,6 +52,11 @@ const formatCurrencyShort = (value: number) => {
 
 export function RevenueChart() {
   const [timeRange, setTimeRange] = React.useState("6m");
+  const { revenueData, fetchRevenueData } = useDashboardStore();
+
+  React.useEffect(() => {
+    fetchRevenueData();
+  }, [fetchRevenueData]);
 
   const filteredData = React.useMemo(() => {
     let monthsToShow = 6;
@@ -78,7 +68,7 @@ export function RevenueChart() {
     }
 
     return revenueData.slice(-monthsToShow);
-  }, [timeRange]);
+  }, [timeRange, revenueData]);
 
   // Tính toán phần trăm thay đổi
   const currentMonthRevenue =
@@ -219,24 +209,28 @@ export function RevenueChart() {
         </ChartContainer>
         <div className="flex items-center justify-between pt-4">
           <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div
-                className="h-3 w-3 rounded-full"
-                style={{
-                  backgroundColor: "hsl(var(--chart-1))",
-                }}
-              />
-              <span>Tháng này: {formatCurrencyShort(currentMonthRevenue)}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div
-                className="h-3 w-3 rounded-full"
-                style={{
-                  backgroundColor: "hsl(var(--chart-2))",
-                }}
-              />
-              <span>Tháng trước: {formatCurrencyShort(lastMonthRevenue)}</span>
-            </div>
+            {filteredData.length > 0 && (
+              <>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="h-3 w-3 rounded-full"
+                    style={{
+                      backgroundColor: "hsl(var(--chart-1))",
+                    }}
+                  />
+                  <span>Tháng này: {formatCurrencyShort(currentMonthRevenue)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="h-3 w-3 rounded-full"
+                    style={{
+                      backgroundColor: "hsl(var(--chart-2))",
+                    }}
+                  />
+                  <span>Tháng trước: {formatCurrencyShort(lastMonthRevenue)}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </CardContent>

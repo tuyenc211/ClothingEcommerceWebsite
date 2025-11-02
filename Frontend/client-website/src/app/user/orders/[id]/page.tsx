@@ -122,7 +122,7 @@ export default function OrderDetailPage() {
                 currentOrder.status !== "CANCELLED" && (
                   <p className="text-sm text-gray-500 italic flex items-center">
                     <span className="mr-2">🚫</span>
-                    Đơn hàng không thể hủy ở trạng thái này
+                    Đơn hàng không thể hủy
                   </p>
                 )}
             </div>

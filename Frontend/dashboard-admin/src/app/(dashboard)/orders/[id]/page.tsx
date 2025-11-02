@@ -110,8 +110,7 @@ export default function OrderDetailPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2">
-            {/* Cancel Button - Only for NEW or CONFIRMED orders */}
+          {/* <div className="flex flex-wrap gap-2">
             {canCancelOrder(currentOrder.status) && (
               <Button
                 variant="destructive"
@@ -123,7 +122,6 @@ export default function OrderDetailPage() {
               </Button>
             )}
 
-            {/* Info if order cannot be cancelled */}
             {!canCancelOrder(currentOrder.status) &&
               currentOrder.status !== "CANCELLED" && (
                 <p className="text-sm text-gray-500 italic flex items-center">
@@ -131,15 +129,14 @@ export default function OrderDetailPage() {
                   Đơn hàng không thể hủy ở trạng thái này
                 </p>
               )}
-          </div>
+          </div> */}
         </div>
       </div>
 
       {/* Invoice Content */}
       <InvoiceTemplate order={currentOrder} />
 
-      {/* Cancel Order Dialog */}
-      <CancelOrderDialog
+      {/* <CancelOrderDialog
         open={isCancelDialogOpen}
         onOpenChange={setIsCancelDialogOpen}
         onConfirm={handleCancelOrder}
@@ -147,7 +144,7 @@ export default function OrderDetailPage() {
         orderCode={currentOrder.code}
         paymentMethod={currentOrder.paymentMethod}
         paymentStatus={currentOrder.status}
-      />
+      /> */}
     </div>
   );
 }

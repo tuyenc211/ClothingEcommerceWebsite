@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 export const Component = () => {
   const text = "CONTACT US NOW";
   const handleClick = () => {
-    window.open("https://m.me/61582315304972", "_blank");
+    window.open("https://m.me/852959337897700", "_blank");
   };
 
   return (

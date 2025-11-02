@@ -14,3 +14,17 @@ export function formatPrice(price: number | undefined | null) {
     currency: "VND",
   });
 }
+export const formatDate = (dateString: string | undefined) => {
+        if(!dateString) return dateString;
+    try {
+        return new Date(dateString).toLocaleString("vi-VN", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    } catch {
+        return dateString;
+    }
+};
