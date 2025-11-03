@@ -293,9 +293,9 @@ export default function ProductDetailPage() {
                   <button
                     key={color.id}
                     onClick={() => setSelectedColor(color)}
-                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all ${
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-1 transition-all ${
                       selectedColor?.id === color.id
-                        ? "border-gray-900 ring-2 ring-gray-300"
+                        ? "border-gray-900 border-2 ring-2 ring-gray-300"
                         : "border-gray-300 hover:border-gray-400"
                     }`}
                     style={{ backgroundColor: color.code }}

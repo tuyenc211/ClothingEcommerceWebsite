@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Carousel,
   CarouselContent,
@@ -26,6 +26,8 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
   autoPlay = true,
   showArrows = true,
 }) => {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   const handleAddToCart = (productId: number) => {
     console.log("Adding to cart:", productId);
     onAddToCart?.(productId);
@@ -84,13 +86,19 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
           className="w-full"
         >
           <CarouselContent className="-ml-2 md:-ml-4">
-            {products.map((product) => (
+            {products.map((product, index) => (
               <CarouselItem
                 key={product.id}
                 className="pl-2 md:pl-4  md:basis-1/4 basis-1/2"
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
               >
                 <div className="p-1">
-                  <ProductItem {...product} onAddToCart={handleAddToCart} />
+                  <ProductItem 
+                    {...product} 
+                    isHovered={hoveredIndex === index}
+                    isFocused={hoveredIndex !== null && hoveredIndex !== index}
+                  />
                 </div>
               </CarouselItem>
             ))}
