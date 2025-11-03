@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Product } from "@/stores/productStore";
 import { formatPrice } from "@/lib/utils";
 import { Rating, RatingButton } from "../ui/shadcn-io/rating";
-// Interface cho props của ProductItem
+import { toast } from "sonner";
 export interface ProductItemProps {
   id: number;
   name: string;
@@ -13,10 +13,10 @@ export interface ProductItemProps {
   images?: { image_url: string; position: number }[];
   rating?: number;
   reviewCount?: number;
-  onAddToCart?: (productId: number) => void;
+  isHovered?: boolean;
+  isFocused?: boolean;
 }
 
-// Helper function to convert Product to ProductItemProps
 export const convertProductToItemProps = (
   product: Product
 ): ProductItemProps => {
@@ -42,7 +42,8 @@ const ProductItem: React.FC<ProductItemProps> = ({
   images = [],
   rating = 0,
   reviewCount = 0,
-  onAddToCart,
+  isHovered: isHoveredFromParent,
+  isFocused = false,
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -64,7 +65,9 @@ const ProductItem: React.FC<ProductItemProps> = ({
 
   return (
     <div
-      className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer relative"
+      className={`group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer relative ${
+        isFocused ? "blur-sm scale-[0.98]" : ""
+      }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -89,28 +92,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
         >
           <button
             onClick={() => {
-              onAddToCart?.(id);
-            }}
-            className="bg-white/90 backdrop-blur-sm hover:bg-white text-gray-700 hover:text-black p-2 rounded-full shadow-md transition-all duration-200 hover:scale-110"
-            title="Thêm vào giỏ hàng"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m0 0h8"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={() => {
-              // Handle wishlist
+              toast.info("Chức năng chưa được phát triển");
             }}
             className="bg-white/90 backdrop-blur-sm hover:bg-white text-gray-700 hover:text-red-500 p-2 rounded-full shadow-md transition-all duration-200 hover:scale-110"
             title="Thêm vào yêu thích"
@@ -132,7 +114,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
         </div>
 
         {/* Image Navigation Dots */}
-        {imageUrls.length > 1 && (
+        {/* {imageUrls.length > 1 && (
           <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
             {imageUrls.map((_, index) => (
               <button
@@ -147,7 +129,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
               />
             ))}
           </div>
-        )}
+        )} */}
       </div>
       {/* Product Info */}
       <div className="p-4 text-center">
