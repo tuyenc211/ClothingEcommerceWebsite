@@ -20,6 +20,9 @@ public class Review {
     @ManyToOne(fetch = FetchType.EAGER) @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @ManyToOne(fetch = FetchType.EAGER) @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
+
     @ManyToOne(fetch = FetchType.EAGER) @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
