@@ -72,7 +72,7 @@ export const useReviewStore = create<ReviewState>()(
           const response = await privateClient.post("/reviews", {
             userId: reviewData.user_id,
             productId: reviewData.product_id,
-            orderId: reviewData.order?.id,
+            orderId: reviewData.order_id,
             rating: reviewData.rating,
             title: reviewData.title,
             content: reviewData.content,
