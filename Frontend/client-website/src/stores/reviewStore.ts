@@ -15,7 +15,7 @@ export interface Review {
   title?: string;
   content?: string;
   is_approved: boolean;
-  created_at: string;
+  createdAt: string;
 
   // Populated fields from joins
   user?: {
@@ -87,7 +87,7 @@ export const useReviewStore = create<ReviewState>()(
             title: response.data.title,
             content: response.data.content,
             is_approved: response.data.is_approved,
-            created_at: response.data.created_at,
+            createdAt: response.data.createdAt,
             user: {
               id: response.data.user.id,
               fullName: response.data.user.fullName,
@@ -134,7 +134,7 @@ export const useReviewStore = create<ReviewState>()(
             title: response.data.title,
             content: response.data.content,
             is_approved: response.data.is_approved,
-            created_at: response.data.created_at,
+            createdAt: response.data.createdAt,
             user: {
               id: response.data.user.id,
               fullName: response.data.user.fullName,
@@ -210,7 +210,7 @@ export const useReviewStore = create<ReviewState>()(
             title: Review.title,
             content: Review.content,
             is_approved: Review?.is_approved,
-            created_at: Review.created_at,
+            createdAt: Review.createdAt,
             user: {
               id: Review.user?.id,
               fullName: Review.user?.fullName,
