@@ -27,19 +27,20 @@ const nextConfig: NextConfig = {
             hostname: "pos.nvncdn.com",
         },
     ],
-  }, async rewrites() {
-    return [
-      {
-        source: "/address-kit/:path*",
-        destination: "https://production.cas.so/address-kit/:path*",
-      },
-      {
-        source: "/api/v1/:path*",
-        destination:
-          "https://clothingecommercewebsite.onrender.com/api/v1/:path*",
-      },
-    ];
-  },
+  }, 
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: "/address-kit/:path*",
+  //       destination: "https://production.cas.so/address-kit/:path*",
+  //     },
+  //     {
+  //       source: "/api/v1/:path*",
+  //       destination:
+  //         "https://clothingecommercewebsite.onrender.com/api/v1/:path*",
+  //     },
+  //   ];
+  // },
   // rewrites: async () => [
   //   {
   //     source: "/api/:path*",
