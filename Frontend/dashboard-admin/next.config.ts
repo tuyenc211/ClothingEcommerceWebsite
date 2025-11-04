@@ -25,27 +25,20 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   async rewrites() {
-    //   return process.env.NODE_ENV === "development"
-    //     ? [
-    //         {
-    //           source: "/api/v1/:path*",
-    //           destination: "http://localhost:8088/api/v1/:path*",
-    //         },
-    //       ]
-    //     : [
-    //         {
-    //           source: "/api/v1/:path*",
-    //           destination:
-    //             "https://clothingecommercewebsite.onrender.com/api/v1/:path*",
-    //         },
-    //       ];
-    return [
-      {
-        source: "/api/v1/:path*",
-        destination:
-          "https://clothingecommercewebsite.onrender.com/api/v1/:path*",
-      },
-    ];
+      return process.env.NODE_ENV === "development"
+        ? [
+            {
+              source: "/api/v1/:path*",
+              destination: "http://localhost:8088/api/v1/:path*",
+            },
+          ]
+        : [
+            {
+              source: "/api/v1/:path*",
+              destination:
+                "https://clothingecommercewebsite.onrender.com/api/v1/:path*",
+            },
+          ];
   },
 };
 
