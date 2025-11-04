@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Breadcrumb,
   BreadcrumbSeparator,
@@ -11,20 +12,23 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, CreditCard, Settings } from "lucide-react";
+import { CreditCard, MapPin, Settings } from "lucide-react";
+import { toast } from "sonner";
+
 import { useCartStore } from "@/stores/cartStore";
-import Link from "next/link";
 import { useProductStore } from "@/stores/productStore";
 import { useCouponStore } from "@/stores/couponStore";
 import useAuthStore from "@/stores/useAuthStore";
-import { toast } from "sonner";
 import { useAddress } from "@/hooks/useAddress";
+
 import ShippingAddressForm from "@/components/checkout/ShippingAddressForm";
 import PaymentMethodSelector from "@/components/checkout/PaymentMethodSelector";
 import OrderSummary from "@/components/checkout/OrderSummary";
+
 import { EnrichedCartItem } from "@/types/cart";
 import { PaymentMethod, useOrderStore } from "@/stores/orderStore";
 import { AxiosError } from "axios";
+
 interface ShippingFormData {
   fullName: string;
   phone: string;
@@ -33,10 +37,19 @@ interface ShippingFormData {
   wardCode: string;
   province: string;
   provinceCode: string;
+  note?: string;
 }
+
 export default function CheckoutPage() {
   const router = useRouter();
-  const { authUser } = useAuthStore();
+
+  // Auth & addresses
+  const {
+    authUser,
+    fetchAddresses, // <-- dùng để tải địa chỉ khi vào checkout
+  } = useAuthStore();
+
+  // Cart & products
   const {
     items,
     getCartSummary,
@@ -45,13 +58,15 @@ export default function CheckoutPage() {
     removeCoupon,
     appliedCoupon,
   } = useCartStore();
-  const { getProduct,fetchProducts } = useProductStore();
-  const { getActiveCoupons, fetchCoupons, coupons } = useCouponStore();
+  const { getProduct, fetchProducts } = useProductStore();
 
+  // Coupons
+  const { fetchCoupons, coupons } = useCouponStore();
   useEffect(() => {
     fetchCoupons();
   }, [fetchCoupons]);
 
+  // Provinces/Wards
   const {
     provinces,
     wards,
@@ -62,11 +77,11 @@ export default function CheckoutPage() {
     clearWards,
   } = useAddress();
 
-  // Fetch provinces on mount
   useEffect(() => {
     fetchProvinces();
   }, [fetchProvinces]);
 
+  // Local UI state
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
     null
@@ -85,61 +100,56 @@ export default function CheckoutPage() {
     provinceCode: "",
   });
 
-  // const activeCoupons = getActiveCoupons();
-  const summary = getCartSummary();
-
-  const enrichedItems: EnrichedCartItem[] = useMemo(() => {
-    return items
-      .map((item) => {
-        const variant = item.variant;
-        if (!variant) return null;
-
-        const product = getProduct(variant.product?.id || variant.product_id);
-
-        return {
-          ...item,
-          product,
-          color: variant.color,
-          size: variant.size,
-        } as EnrichedCartItem;
-      })
-      .filter((item): item is EnrichedCartItem => item !== null);
-  }, [items, getProduct]);
-
+  // === 1) Fetch addresses khi vào /checkout (nếu thiếu) ===
   useEffect(() => {
-    if (authUser) {
-      const defaultAddr =
-        authUser.addresses?.find((addr) => addr.isDefault) ||
-        authUser.addresses?.[0];
+    if (!authUser?.id) return;
+    const needFetch = !authUser.addresses || authUser.addresses.length === 0;
+    if (needFetch) {
+      fetchAddresses().catch((e) =>
+        console.error("Failed to fetch addresses on checkout:", e)
+      );
+    }
+  }, [authUser?.id, fetchAddresses, authUser?.addresses]);
 
-      if (defaultAddr) {
-        setSelectedAddressId(defaultAddr.id);
-        setFormData({
-          fullName: authUser.fullName,
-          phone: authUser.phone || "",
-          address: defaultAddr.line,
-          ward: defaultAddr.ward || "",
-          wardCode: "",
-          province: defaultAddr.province || "",
-          provinceCode: "",
-        });
-      } else {
-        setIsNewAddress(true);
-        setFormData({
-          fullName: authUser.fullName,
-          phone: authUser.phone || "",
-          address: "",
-          ward: "",
-          wardCode: "",
-          province: "",
-          provinceCode: "",
-        });
-      }
+  // === 2) Re-hydrate form khi danh sách địa chỉ cập nhật ===
+  useEffect(() => {
+    if (!authUser) {
+      setIsNewAddress(true);
+      return;
+    }
+
+    const defaultAddr =
+      authUser.addresses?.find((a) => a.isDefault) || authUser.addresses?.[0];
+
+    if (defaultAddr) {
+      setSelectedAddressId(defaultAddr.id);
+      setIsNewAddress(false);
+      setFormData({
+        fullName: authUser.fullName,
+        phone: authUser.phone || "",
+        address: defaultAddr.line,
+        ward: defaultAddr.ward || "",
+        wardCode: "",
+        province: defaultAddr.province || "",
+        provinceCode: "",
+      });
     } else {
       setIsNewAddress(true);
+      setSelectedAddressId(null);
+      setFormData({
+        fullName: authUser.fullName,
+        phone: authUser.phone || "",
+        address: "",
+        ward: "",
+        wardCode: "",
+        province: "",
+        provinceCode: "",
+      });
+      clearWards();
     }
-  }, [authUser]);
+  }, [authUser, authUser?.addresses, clearWards]);
 
+  // Redirect nếu giỏ hàng trống
   useEffect(() => {
     if (items.length === 0) {
       toast.error("Giỏ hàng trống");
@@ -147,6 +157,26 @@ export default function CheckoutPage() {
     }
   }, [items, router]);
 
+  // Enrich cart items để render tóm tắt đơn hàng
+  const enrichedItems: EnrichedCartItem[] = useMemo(() => {
+    return items
+      .map((item) => {
+        const variant = item.variant;
+        if (!variant) return null;
+        const product = getProduct(variant.product?.id || variant.product_id);
+        return {
+          ...item,
+          product,
+          color: variant.color,
+          size: variant.size,
+        } as EnrichedCartItem;
+      })
+      .filter((i): i is EnrichedCartItem => i !== null);
+  }, [items, getProduct]);
+
+  const summary = getCartSummary();
+
+  // --- Handlers ---
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -158,7 +188,7 @@ export default function CheckoutPage() {
     const selectedProvince = provinces.find((p) => p.code === provinceCode);
     setFormData((prev) => ({
       ...prev,
-      provinceCode: provinceCode,
+      provinceCode,
       province: selectedProvince?.name || "",
       wardCode: "",
       ward: "",
@@ -170,7 +200,7 @@ export default function CheckoutPage() {
     const selectedWard = wards.find((w) => w.code === wardCode);
     setFormData((prev) => ({
       ...prev,
-      wardCode: wardCode,
+      wardCode,
       ward: selectedWard?.name || "",
     }));
   };
@@ -179,21 +209,18 @@ export default function CheckoutPage() {
     setSelectedAddressId(addressId);
     setIsNewAddress(false);
 
-    if (authUser) {
-      const selectedAddr = authUser.addresses?.find(
-        (addr) => addr.id === addressId
-      );
-      if (selectedAddr) {
-        setFormData({
-          fullName: authUser.fullName,
-          phone: authUser.phone || "",
-          address: selectedAddr.line,
-          ward: selectedAddr.ward || "",
-          wardCode: "",
-          province: selectedAddr.province || "",
-          provinceCode: "",
-        });
-      }
+    if (!authUser) return;
+    const addr = authUser.addresses?.find((a) => a.id === addressId);
+    if (addr) {
+      setFormData({
+        fullName: authUser.fullName,
+        phone: authUser.phone || "",
+        address: addr.line,
+        ward: addr.ward || "",
+        wardCode: "",
+        province: addr.province || "",
+        provinceCode: "",
+      });
     }
   };
 
@@ -212,16 +239,15 @@ export default function CheckoutPage() {
     clearWards();
   };
 
-  const handleApplyCoupon = (couponCode: string) => {
-    const coupon = coupons.find((c) => c.code === couponCode);
-    if (coupon) {
-      const success = applyCoupon(coupon);
-      if (success) {
-        setShowCouponList(false);
-        toast.success(`Đã áp dụng mã giảm giá: ${couponCode}`);
-      } else {
-        toast.error("Không thể áp dụng mã giảm giá này");
-      }
+  const handleApplyCoupon = (code: string) => {
+    const coupon = coupons.find((c) => c.code === code);
+    if (!coupon) return;
+    const ok = applyCoupon(coupon);
+    if (ok) {
+      setShowCouponList(false);
+      toast.success(`Đã áp dụng mã: ${code}`);
+    } else {
+      toast.error("Không thể áp dụng mã này");
     }
   };
 
@@ -229,6 +255,7 @@ export default function CheckoutPage() {
     removeCoupon();
     toast.info("Đã hủy mã giảm giá");
   };
+
   const handleSubmitOrder = async () => {
     if (!authUser?.id) {
       toast.error("Vui lòng đăng nhập để đặt hàng");
@@ -240,18 +267,15 @@ export default function CheckoutPage() {
       toast.error("Vui lòng điền đầy đủ thông tin giao hàng");
       return;
     }
-
     if (!formData.province || !formData.ward) {
       toast.error("Vui lòng chọn tỉnh/thành phố và xã/phường");
       return;
     }
 
     setIsSubmitting(true);
-
     try {
-      // Create order request matching backend structure
       const orderRequest = {
-        paymentMethod: paymentMethod,
+        paymentMethod,
         shippingAddress: {
           fullName: formData.fullName,
           phone: formData.phone,
@@ -261,31 +285,25 @@ export default function CheckoutPage() {
         },
       };
 
-      console.log("Creating order:", orderRequest);
-
-      // Call backend API
       const order = await useOrderStore
         .getState()
         .createOrder(authUser.id, orderRequest);
+      toast.success(`Đặt hàng thành công! Mã đơn: ${order.code}`);
 
-      console.log("Order created successfully:", order);
-      toast.success(`Đặt hàng thành công! Mã đơn hàng: ${order.code}`);
-
-      // Clear cart after successful order
       await clearCart();
-      await fetchProducts() ;
-    } catch (error) {
-      const axiosError = error as AxiosError<{ message: string }>;
-      const errorMessage =
-        axiosError?.response?.data?.message || "Lỗi khi tải danh sách danh mục";
+      await fetchProducts();
+      // router.push(`/orders/${order.id}`) // nếu muốn điều hướng
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      const msg = axiosError?.response?.data?.message || "Lỗi khi tạo đơn hàng";
+      toast.error(msg);
+      console.error(err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (items.length === 0) {
-    return null;
-  }
+  if (items.length === 0) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -316,6 +334,7 @@ export default function CheckoutPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: Shipping + Payment */}
           <div className="lg:col-span-2 space-y-6">
             {/* Shipping Address */}
             <Card>
@@ -354,7 +373,7 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            {/* Payment Method */}
+            {/* Payment */}
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2">
@@ -371,7 +390,7 @@ export default function CheckoutPage() {
             </Card>
           </div>
 
-          {/* Right Column - Order Summary */}
+          {/* Right: Order Summary */}
           <div className="lg:col-span-1">
             <Card className="sticky top-4">
               <CardHeader>
@@ -385,7 +404,7 @@ export default function CheckoutPage() {
                   activeCoupons={coupons}
                   showCouponList={showCouponList}
                   isSubmitting={isSubmitting}
-                  onToggleCouponList={() => setShowCouponList(!showCouponList)}
+                  onToggleCouponList={() => setShowCouponList((v) => !v)}
                   onApplyCoupon={handleApplyCoupon}
                   onRemoveCoupon={handleRemoveCoupon}
                   onSubmitOrder={handleSubmitOrder}

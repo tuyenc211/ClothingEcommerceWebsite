@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import privateClient from "@/lib/axios";
-import { useProductStore } from "./productStore";
+import { Product, useProductStore } from "./productStore";
 
 // ===== Types =====
 export type OrderStatus =
@@ -17,7 +17,7 @@ export type PaymentStatus = "UNPAID" | "PAID" | "REFUNDED" | "PARTIAL";
 export interface OrderItem {
   id: number;
   orderId: number;
-  productId: number;
+  product: Product;
   variantId?: number;
   productName: string;
   sku: string;
@@ -197,7 +197,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
             : s.currentOrder,
       }));
       get().applyFilters();
-      
+
       // Fetch lại products để cập nhật inventory sau khi hủy đơn
       const productStore = useProductStore.getState();
       await productStore.fetchProducts();

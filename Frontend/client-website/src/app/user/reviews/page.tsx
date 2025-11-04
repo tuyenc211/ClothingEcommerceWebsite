@@ -11,7 +11,7 @@ import useAuthStore from "@/stores/useAuthStore";
 import { useOrderStore } from "@/stores/orderStore";
 import { useReviewStore } from "@/stores/reviewStore";
 import { formatPrice } from "@/lib/utils";
-
+import { Review } from "@/stores/reviewStore";
 interface ReviewableProduct {
   orderId: number;
   orderCode: string;
@@ -29,7 +29,7 @@ export default function ReviewsPage() {
   const { authUser } = useAuthStore();
   const { orders, fetchUserOrders, isLoading } = useOrderStore();
   const { reviews, fetchReviewsByUser } = useReviewStore();
-  const [userReviews, setUserReviews] = useState<any[]>([]);
+  const [userReviews, setUserReviews] = useState<Review[]>([]);
 
   useEffect(() => {
     if (authUser?.id) {
@@ -59,13 +59,15 @@ export default function ReviewsPage() {
         order.items.forEach((item) => {
           // Check if user has already reviewed this product for this order
           const hasReviewed = userReviews.some(
-            (review) => review.product_id === item.productId && review.order_id === order.id
+            (review) =>
+              review.product?.id === item.product.id &&
+              review.order?.id === order.id
           );
 
           products.push({
             orderId: order.id,
             orderCode: order.code,
-            productId: item.productId || 0,
+            productId: item.product.id,
             productName: item.productName,
             variantId: item.variantId,
             sku: item.sku,
@@ -122,9 +124,7 @@ export default function ReviewsPage() {
                 Bạn chưa có đơn hàng nào hoàn thành hoặc đã đánh giá tất cả sản
                 phẩm
               </p>
-              <Button onClick={() => router.push("/")}>
-                Tiếp tục mua sắm
-              </Button>
+              <Button onClick={() => router.push("/")}>Tiếp tục mua sắm</Button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -147,7 +147,8 @@ export default function ReviewsPage() {
                             <span>SKU: {product.sku}</span>
                           </div>
                           <div className="text-sm text-gray-900 mt-1">
-                            {formatPrice(product.unitPrice)} x {product.quantity}
+                            {formatPrice(product.unitPrice)} x{" "}
+                            {product.quantity}
                           </div>
                         </div>
 
@@ -165,7 +166,10 @@ export default function ReviewsPage() {
                             <Button
                               size="sm"
                               onClick={() =>
-                                handleReviewClick(product.productId, product.orderId)
+                                handleReviewClick(
+                                  product.productId,
+                                  product.orderId
+                                )
                               }
                               className="gap-2"
                             >
