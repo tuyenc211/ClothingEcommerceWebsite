@@ -1,12 +1,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import privateClient from "@/lib/axios";
+import { Order } from "./orderStore";
+import { AxiosError } from "axios";
 
 // Review interface matching database schema
 export interface Review {
   id: number;
   product_id: number;
   user_id: number;
+  order?: Order;
   order_id?: number;
   rating: number;
   title?: string;
@@ -69,7 +72,7 @@ export const useReviewStore = create<ReviewState>()(
           const response = await privateClient.post("/reviews", {
             userId: reviewData.user_id,
             productId: reviewData.product_id,
-            orderId: reviewData.order_id,
+            orderId: reviewData.order,
             rating: reviewData.rating,
             title: reviewData.title,
             content: reviewData.content,
@@ -101,9 +104,12 @@ export const useReviewStore = create<ReviewState>()(
             reviews: [...state.reviews, newReview],
             isLoading: false,
           }));
-        } catch (error: any) {
-          const errorMsg = error.response?.data?.message || "Không thể thêm đánh giá. Vui lòng thử lại.";
-          set({ error: errorMsg, isLoading: false });
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message ||
+            "Không thể thêm đánh giá. Vui lòng thử lại.";
+          set({ error: errorMessage, isLoading: false });
           throw error;
         }
       },
@@ -147,9 +153,12 @@ export const useReviewStore = create<ReviewState>()(
             ),
             isLoading: false,
           }));
-        } catch (error: any) {
-          const errorMsg = error.response?.data?.message || "Không thể cập nhật đánh giá. Vui lòng thử lại.";
-          set({ error: errorMsg, isLoading: false });
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message ||
+            "Không thể cập nhật đánh giá. Vui lòng thử lại.";
+          set({ error: errorMessage, isLoading: false });
           throw error;
         }
       },
@@ -157,20 +166,23 @@ export const useReviewStore = create<ReviewState>()(
       deleteReview: async (id) => {
         set({ isLoading: true, error: null });
         try {
-          const review = get().reviews.find(r => r.id === id);
+          const review = get().reviews.find((r) => r.id === id);
           if (!review) throw new Error("Review not found");
 
           await privateClient.delete(`/reviews/${id}`, {
-            params: { userId: review.user_id }
+            params: { userId: review.user_id },
           });
 
           set((state) => ({
             reviews: state.reviews.filter((review) => review.id !== id),
             isLoading: false,
           }));
-        } catch (error: any) {
-          const errorMsg = error.response?.data?.message || "Không thể xóa đánh giá. Vui lòng thử lại.";
-          set({ error: errorMsg, isLoading: false });
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message ||
+            "Không thể xóa đánh giá. Vui lòng thử lại.";
+          set({ error: errorMessage, isLoading: false });
           throw error;
         }
       },
@@ -183,36 +195,40 @@ export const useReviewStore = create<ReviewState>()(
         await get().updateReview(id, { is_approved: false });
       },
 
-
       fetchReviewsByProduct: async (product_id) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await privateClient.get(`/reviews/product/${product_id}`);
-          
-          const reviews: Review[] = response.data.map((r: any) => ({
-            id: r.id,
-            product_id: r.product.id,
-            user_id: r.user.id,
-            rating: r.rating,
-            title: r.title,
-            content: r.content,
-            is_approved: r.isApproved,
-            created_at: r.createdAt,
+          const response = await privateClient.get(
+            `/reviews/product/${product_id}`
+          );
+
+          const reviews: Review[] = response.data.map((Review: Review) => ({
+            id: Review.id,
+            product_id: Review.product?.id,
+            user_id: Review.user?.id,
+            rating: Review.rating,
+            title: Review.title,
+            content: Review.content,
+            is_approved: Review?.is_approved,
+            created_at: Review.created_at,
             user: {
-              id: r.user.id,
-              fullName: r.user.fullName,
-              email: r.user.email,
+              id: Review.user?.id,
+              fullName: Review.user?.fullName,
+              email: Review.user?.email,
             },
             product: {
-              id: r.product.id,
-              name: r.product.name,
-              slug: r.product.slug,
+              id: Review.product?.id,
+              name: Review.product?.name,
+              slug: Review.product?.slug,
             },
           }));
 
           set({ isLoading: false, reviews });
-        } catch (error: any) {
-          const errorMsg = error.response?.data?.message || "Không thể tải đánh giá. Vui lòng thử lại.";
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMsg =
+            axiosError?.response?.data?.message ||
+            "Không thể tải đánh giá. Vui lòng thử lại.";
           set({ error: errorMsg, isLoading: false });
         }
       },
@@ -250,7 +266,6 @@ export const useReviewStore = create<ReviewState>()(
         );
         return totalRating / productReviews.length;
       },
-
 
       setError: (error) => {
         set({ error });
