@@ -8,19 +8,18 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useReviewStore, Review } from "@/stores/reviewStore";
 import useAuthStore from "@/stores/useAuthStore";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale";
-
+import { formatDate } from "@/lib/utils";
 interface ReviewListProps {
   productId: number;
 }
 
 export default function ReviewList({ productId }: ReviewListProps) {
   const { authUser } = useAuthStore();
-  const { fetchReviewsByProduct, deleteReview, isLoading, reviews } = useReviewStore();
+  const { fetchReviewsByProduct, deleteReview, isLoading, reviews } =
+    useReviewStore();
 
-    useEffect(() => {
-        fetchReviewsByProduct(productId);
+  useEffect(() => {
+    fetchReviewsByProduct(productId);
   }, [productId]);
 
   const handleDelete = async (reviewId: number) => {
@@ -97,7 +96,8 @@ export default function ReviewList({ productId }: ReviewListProps) {
               {/* Avatar */}
               <Avatar className="w-10 h-10">
                 <AvatarFallback className="bg-primary text-white">
-                  {review.user?.fullName.split(" ")
+                  {review.user?.fullName
+                    .split(" ")
                     .map((n) => n[0])
                     .join("")
                     .toUpperCase()
@@ -115,10 +115,7 @@ export default function ReviewList({ productId }: ReviewListProps) {
                     <div className="flex items-center gap-2 mt-1">
                       {renderStars(review.rating)}
                       <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(new Date(review.created_at), {
-                          addSuffix: true,
-                          locale: vi,
-                        })}
+                        {formatDate(review.createdAt)}
                       </span>
                     </div>
                   </div>
