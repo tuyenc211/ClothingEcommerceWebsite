@@ -57,6 +57,9 @@ export default function ReviewsPage() {
     deliveredOrders.forEach((order) => {
       if (order.items && order.items.length > 0) {
         order.items.forEach((item) => {
+          // Skip if product data is missing
+          if (!item.product?.id) return;
+
           // Check if user has already reviewed this product for this order
           const hasReviewed = userReviews.some(
             (review) =>
