@@ -53,6 +53,7 @@ export default function ReviewsPage() {
     const deliveredOrders = orders.filter(
       (order) => order.status === "DELIVERED"
     );
+    console.log("Delivered Orders:", deliveredOrders);
 
     deliveredOrders.forEach((order) => {
       if (order.items && order.items.length > 0) {
