@@ -20,10 +20,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   onLoadMore,
   isLoading = false,
 }) => {
-  const handleAddToCart = (productId: number) => {
-    console.log("Adding to cart:", productId);
-    onAddToCart?.(productId);
-  };
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
