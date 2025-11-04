@@ -1,9 +1,11 @@
 package com.project.ClothingEcommerceWebsite.services.impl;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateReviewRequest;
+import com.project.ClothingEcommerceWebsite.models.Order;
 import com.project.ClothingEcommerceWebsite.models.Product;
 import com.project.ClothingEcommerceWebsite.models.Review;
 import com.project.ClothingEcommerceWebsite.models.User;
+import com.project.ClothingEcommerceWebsite.repositories.OrderRepository;
 import com.project.ClothingEcommerceWebsite.repositories.ProductRepository;
 import com.project.ClothingEcommerceWebsite.repositories.ReviewRepository;
 import com.project.ClothingEcommerceWebsite.repositories.UserRepository;
@@ -22,6 +24,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository reviewRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
 
     @Override
     @Transactional
@@ -30,6 +33,8 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+        Order order = orderRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new RuntimeException("Order not found"));
         if (!reviewRepository.hasDeliveredOrderForProduct(user.getId(), product.getId())) {
             throw new RuntimeException("Bạn chỉ có thể đánh giá sản phẩm đã mua và đã giao.");
         }
@@ -39,6 +44,7 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = Review.builder()
                 .user(user)
                 .product(product)
+                .order(order)
                 .rating(request.getRating())
                 .title(request.getTitle())
                 .content(request.getContent())
