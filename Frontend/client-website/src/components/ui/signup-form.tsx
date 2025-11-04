@@ -167,13 +167,8 @@ export function SignupForm({
               {...register("password", {
                 required: "Mật khẩu là bắt buộc",
                 minLength: {
-                  value: 8,
-                  message: "Mật khẩu phải có ít nhất 8 ký tự",
-                },
-                pattern: {
-                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                  message:
-                    "Mật khẩu phải có ít nhất 1 chữ hoa, 1 chữ thường và 1 số",
+                  value: 6,
+                  message: "Mật khẩu phải có ít nhất 6 ký tự",
                 },
               })}
             />

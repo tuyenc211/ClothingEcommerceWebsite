@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import privateClient from "@/lib/axios";
+import { useProductStore } from "./productStore";
 
 // ===== Types =====
 export type OrderStatus =
@@ -196,6 +197,10 @@ export const useOrderStore = create<OrderState>((set, get) => ({
             : s.currentOrder,
       }));
       get().applyFilters();
+      
+      // Fetch lại products để cập nhật inventory sau khi hủy đơn
+      const productStore = useProductStore.getState();
+      await productStore.fetchProducts();
     } catch (e) {
       console.error("Failed to cancel order:", e);
       throw e;

@@ -57,9 +57,15 @@ export default function CheckoutPage() {
     wards,
     isLoadingProvinces,
     isLoadingWards,
+    fetchProvinces,
     fetchWards,
     clearWards,
   } = useAddress();
+
+  // Fetch provinces on mount
+  useEffect(() => {
+    fetchProvinces();
+  }, [fetchProvinces]);
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
@@ -268,8 +274,6 @@ export default function CheckoutPage() {
       // Clear cart after successful order
       await clearCart();
       await fetchProducts() ;
-      // Redirect to order detail or orders list
-      router.push(`/`);
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =
