@@ -77,7 +77,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           <ProductItem
             key={product.id}
             {...product}
-            onAddToCart={handleAddToCart}
           />
         ))}
       </div>
