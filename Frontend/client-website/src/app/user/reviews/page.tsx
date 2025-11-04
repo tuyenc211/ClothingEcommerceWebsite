@@ -61,7 +61,7 @@ export default function ReviewsPage() {
           if (!item.product?.id) return;
 
           // Check if user has already reviewed this product for this order
-          const hasReviewed = userReviews.some(
+          const hasReviewed = reviews.some(
             (review) =>
               review.product?.id === item.product.id &&
               review.order?.id === order.id
