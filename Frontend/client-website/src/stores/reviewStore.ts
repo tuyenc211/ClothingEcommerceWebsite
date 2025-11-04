@@ -7,6 +7,7 @@ export interface Review {
   id: number;
   product_id: number;
   user_id: number;
+  order_id?: number;
   rating: number;
   title?: string;
   content?: string;
@@ -68,6 +69,7 @@ export const useReviewStore = create<ReviewState>()(
           const response = await privateClient.post("/reviews", {
             userId: reviewData.user_id,
             productId: reviewData.product_id,
+            orderId: reviewData.order_id,
             rating: reviewData.rating,
             title: reviewData.title,
             content: reviewData.content,
@@ -77,6 +79,7 @@ export const useReviewStore = create<ReviewState>()(
             id: response.data.id,
             product_id: response.data.product.id,
             user_id: response.data.user.id,
+            order_id: response.data.order?.id,
             rating: response.data.rating,
             title: response.data.title,
             content: response.data.content,
@@ -120,6 +123,7 @@ export const useReviewStore = create<ReviewState>()(
             id: response.data.id,
             product_id: response.data.product.id,
             user_id: response.data.user.id,
+            order_id: response.data.order?.id,
             rating: response.data.rating,
             title: response.data.title,
             content: response.data.content,

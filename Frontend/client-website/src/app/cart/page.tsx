@@ -125,22 +125,22 @@ export default function CartPage() {
         </div>
 
         {/* Main Content */}
-        {enrichedItems.length === 0 ? (
-        //   <Card className="text-center py-12">
-        //     <CardContent className="pt-6">
-        //       <ShoppingCart className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-        //       <h3 className="text-lg font-medium text-gray-900 mb-2">
-        //         Giỏ hàng trống
-        //       </h3>
-        //       <p className="text-gray-500 mb-6">
-        //         Bạn chưa có sản phẩm nào trong giỏ hàng
-        //       </p>
-        //       <Button asChild>
-        //         <Link href="/">Tiếp tục mua sắm</Link>
-        //       </Button>
-        //     </CardContent>
-        //   </Card>
-        // ) : isEnriching ? (
+        {items.length === 0 ? (
+          <Card className="text-center py-12">
+            <CardContent className="pt-6">
+              <ShoppingCart className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Giỏ hàng trống
+              </h3>
+              <p className="text-gray-500 mb-6">
+                Bạn chưa có sản phẩm nào trong giỏ hàng
+              </p>
+              <Button asChild>
+                <Link href="/">Tiếp tục mua sắm</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : isEnriching ? (
           <div className="flex items-center justify-center min-h-screen bg-white">
             <div className="flex flex-col items-center space-y-4">
               <div className="relative">

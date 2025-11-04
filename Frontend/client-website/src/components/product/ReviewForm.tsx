@@ -76,6 +76,7 @@ export default function ReviewForm({
       await addReview({
         user_id: authUser.id,
         product_id: productId,
+        order_id: orderId,
         rating,
         title: title.trim() || undefined,
         content: content.trim(),

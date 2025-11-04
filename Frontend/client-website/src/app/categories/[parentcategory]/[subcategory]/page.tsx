@@ -375,7 +375,7 @@ export default function SubCategoryPage() {
                           : "bg-white text-gray-700 border-gray-500 hover:bg-gray-100"
                       }`}
                     >
-                      {size.name}
+                      {size.code}
                     </button>
                   ))}
                 </div>

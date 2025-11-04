@@ -59,7 +59,7 @@ export default function ReviewsPage() {
         order.items.forEach((item) => {
           // Check if user has already reviewed this product for this order
           const hasReviewed = userReviews.some(
-            (review) => review.product_id === item.productId
+            (review) => review.product_id === item.productId && review.order_id === order.id
           );
 
           products.push({
