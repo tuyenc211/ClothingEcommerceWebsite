@@ -60,9 +60,10 @@ export function useAddress(initialEffectiveDate = "2025-07-01") {
         ...p,
         name: normalizeName(p.name),
       }));
+      console.log("✅ Provinces loaded:", cleaned.length);
       setProvinces(cleaned);
     } catch (error) {
-      console.error("Error fetching provinces:", error);
+      console.error("❌ Error fetching provinces:", error);
       setProvinces([]);
       setError("Không tải được danh sách tỉnh/thành");
     } finally {
@@ -98,7 +99,7 @@ export function useAddress(initialEffectiveDate = "2025-07-01") {
     // data
     provinces,
     wards,
-fetchProvinces,
+    fetchProvinces,
     isLoadingProvinces,
     isLoadingWards,
     error,
