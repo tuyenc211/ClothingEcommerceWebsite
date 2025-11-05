@@ -170,7 +170,7 @@ export const useUserStore = create<UserState>()(
             phone: userData.phone,
           });
 
-            set((state) => ({
+          set((state) => ({
             users: state.users.map((user) =>
               user.id === id
                 ? {
@@ -246,7 +246,7 @@ export const useUserStore = create<UserState>()(
 
           // Fetch lại toàn bộ users để đồng bộ với backend
           await get().fetchUsers();
-          
+
           console.log("✅ User status toggled and users refreshed");
           return true;
         } catch (error) {
