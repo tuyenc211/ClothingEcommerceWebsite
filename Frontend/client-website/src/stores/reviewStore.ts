@@ -37,7 +37,7 @@ interface ReviewState {
 
   // Review CRUD operations
   addReview: (
-    review: Omit<Review, "id" | "created_at" | "is_approved">
+    review: Omit<Review, "id" | "createdAt" | "is_approved">
   ) => Promise<void>;
   updateReview: (id: number, review: Partial<Review>) => Promise<void>;
   deleteReview: (id: number) => Promise<void>;

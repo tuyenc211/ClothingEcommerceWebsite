@@ -80,8 +80,13 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       const users = usersRes.data?.data || usersRes.data || [];
       const products = productsRes.data?.data || productsRes.data || [];
 
-      // Calculate total revenue from orders
-      const totalRevenue = orders.reduce(
+      // Filter only DELIVERED orders for revenue calculation
+      const deliveredOrders = orders.filter(
+        (order: Order) => order.status === "DELIVERED"
+      );
+
+      // Calculate total revenue from DELIVERED orders only
+      const totalRevenue = deliveredOrders.reduce(
         (sum: number, order: Order) => sum + (order.grandTotal || 0),
         0
       );
@@ -148,31 +153,41 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       const response = await privateClient.get("/orders");
       const orders = response.data?.data || response.data || [];
 
+      // Filter only DELIVERED orders for revenue calculation
+      const deliveredOrders = orders.filter(
+        (order: Order) => order.status === "DELIVERED"
+      );
+
       // Group orders by month and calculate revenue
       const monthlyRevenue = new Map<string, number>();
-      
-      orders.forEach((order: Order) => {
+
+      deliveredOrders.forEach((order: Order) => {
         if (order.createdAt && order.grandTotal) {
           const date = new Date(order.createdAt);
-          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`;
+          const monthKey = `${date.getFullYear()}-${String(
+            date.getMonth() + 1
+          ).padStart(2, "0")}-01`;
           const current = monthlyRevenue.get(monthKey) || 0;
           monthlyRevenue.set(monthKey, current + order.grandTotal);
         }
       });
 
       // Convert to array and sort by date
-      const sortedMonths = Array.from(monthlyRevenue.entries())
-        .sort(([a], [b]) => a.localeCompare(b));
+      const sortedMonths = Array.from(monthlyRevenue.entries()).sort(
+        ([a], [b]) => a.localeCompare(b)
+      );
 
       // Create revenue data with current and last month comparison
-      const revenueData: RevenueData[] = sortedMonths.map(([date, revenue], index) => {
-        const lastMonthRevenue = index > 0 ? sortedMonths[index - 1][1] : 0;
-        return {
-          date,
-          currentMonth: revenue,
-          lastMonth: lastMonthRevenue,
-        };
-      });
+      const revenueData: RevenueData[] = sortedMonths.map(
+        ([date, revenue], index) => {
+          const lastMonthRevenue = index > 0 ? sortedMonths[index - 1][1] : 0;
+          return {
+            date,
+            currentMonth: revenue,
+            lastMonth: lastMonthRevenue,
+          };
+        }
+      );
 
       set({ revenueData });
     } catch (error) {
