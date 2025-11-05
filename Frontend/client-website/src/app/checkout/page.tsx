@@ -68,12 +68,16 @@ export default function CheckoutPage() {
     clearWards,
   } = useAddress();
 
-  // Fetch provinces and user addresses on mount
+  // Fetch provinces on mount
   useEffect(() => {
     fetchProvinces();
+  }, [fetchProvinces]);
 
+  // Fetch user addresses when authUser changes
+  useEffect(() => {
     const loadAddresses = async () => {
       if (authUser?.id) {
+        console.log("🔍 Fetching addresses for user:", authUser.id);
         setIsLoadingAddresses(true);
         try {
           await fetchAddresses();
@@ -86,7 +90,7 @@ export default function CheckoutPage() {
     };
 
     loadAddresses();
-  }, [fetchProvinces, fetchAddresses, authUser?.id]);
+  }, [authUser?.id, fetchAddresses]);
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(

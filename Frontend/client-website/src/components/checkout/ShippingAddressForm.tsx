@@ -56,6 +56,13 @@ export default function ShippingAddressForm({
   onAddressSelect,
   onNewAddress,
 }: ShippingAddressFormProps) {
+  console.log("🏢 ShippingAddressForm - Provinces:", provinces.length);
+  console.log(
+    "🏢 ShippingAddressForm - isLoadingProvinces:",
+    isLoadingProvinces
+  );
+  console.log("🏢 ShippingAddressForm - isNewAddress:", isNewAddress);
+
   return (
     <div className="space-y-4">
       {/* Customer Information (Editable) */}
