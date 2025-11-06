@@ -2,14 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import {
-  Star,
-  Heart,
-  ShoppingCart,
-  Plus,
-  Minus,
-  CreditCard,
-} from "lucide-react";
+import { Heart, ShoppingCart, Plus, Minus, CreditCard } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
 import { useCartStore } from "@/stores/cartStore";
 import ProductImageGallery from "@/components/common/ThumnailGallery";
@@ -39,7 +32,7 @@ export default function ProductDetailPage() {
   // Stores
   const { getProduct } = useProductStore();
   const { addToCart, buyNow } = useCartStore();
-  const { fetchReviewsByProduct } = useReviewStore();
+  const { fetchReviewsByProduct, reviews } = useReviewStore();
   const product = useMemo(() => {
     if (typeof productId === "string") {
       const id = parseInt(productId, 10);
@@ -49,8 +42,14 @@ export default function ProductDetailPage() {
     }
     return undefined;
   }, [productId, getProduct]);
-  const reviews = product?.reviews || [];
   const orderId = parseInt(searchParams.get("orderId") || "0", 10);
+
+  // Fetch reviews when product loads
+  useEffect(() => {
+    if (product?.id) {
+      fetchReviewsByProduct(product.id);
+    }
+  }, [product?.id, fetchReviewsByProduct]);
 
   // Check if should open review tab
   useEffect(() => {
@@ -144,9 +143,8 @@ export default function ProductDetailPage() {
   };
 
   const averageRating =
-    product?.reviews && product.reviews.length > 0
-      ? product.reviews.reduce((sum, review) => sum + review.rating, 0) /
-        product.reviews.length
+    reviews && reviews.length > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
       : 0;
   const handleAddToCart = () => {
     if (!selectedSize) {
