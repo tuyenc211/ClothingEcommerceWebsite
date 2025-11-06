@@ -2,10 +2,11 @@
 
 import React, { useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { FreeMode, Navigation, Thumbs, Zoom } from "swiper/modules";
+import { FreeMode, Navigation, Thumbs } from "swiper/modules";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
+import Zoom from "react-medium-image-zoom";
+import "react-medium-image-zoom/dist/styles.css";
 // Import Swiper styles
 import "swiper/css";
 import "swiper/css/free-mode";
@@ -61,15 +62,17 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           {images.map((image, index) => (
             <SwiperSlide key={index}>
               <div className="swiper-zoom-container w-full h-full relative">
-                <Image
-                  src={image}
-                  alt={`${productName} - Image ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority={index === 0}
-                  unoptimized={image.includes("cloudinary")}
-                />
+                <Zoom>
+                  <Image
+                    src={image}
+                    alt={`${productName} - Image ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    priority={index === 0}
+                    unoptimized={image.includes("cloudinary")}
+                  />
+                </Zoom>
               </div>
             </SwiperSlide>
           ))}

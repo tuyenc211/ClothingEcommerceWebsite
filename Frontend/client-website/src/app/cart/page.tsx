@@ -37,6 +37,7 @@ export default function CartPage() {
     clearCart,
     fetchCartItems,
     createCart,
+    isLoading,
   } = useCartStore();
 
   const { authUser } = useAuthStore();
@@ -125,7 +126,7 @@ export default function CartPage() {
         </div>
 
         {/* Main Content */}
-        {isEnriching ? (
+        {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="flex flex-col items-center space-y-4">
               <div className="relative">
