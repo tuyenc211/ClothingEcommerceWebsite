@@ -35,9 +35,6 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         Order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new RuntimeException("Order not found"));
-        if (!reviewRepository.hasDeliveredOrderForProduct(user.getId(), product.getId())) {
-            throw new RuntimeException("Bạn chỉ có thể đánh giá sản phẩm đã mua và đã giao.");
-        }
         if (reviewRepository.existsByUserIdAndProductId(user.getId(), product.getId())) {
             throw new RuntimeException("Bạn đã đánh giá sản phẩm này rồi.");
         }
@@ -48,7 +45,6 @@ public class ReviewServiceImpl implements ReviewService {
                 .rating(request.getRating())
                 .title(request.getTitle())
                 .content(request.getContent())
-                .isApproved(false)
                 .createdAt(LocalDateTime.now())
                 .build();
         return reviewRepository.save(review);
@@ -64,7 +60,6 @@ public class ReviewServiceImpl implements ReviewService {
         review.setRating(request.getRating());
         review.setTitle(request.getTitle());
         review.setContent(request.getContent());
-        review.setIsApproved(false);
         return reviewRepository.save(review);
     }
 
@@ -79,17 +74,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<Review> getApprovedByProduct(Long productId) {
-        Pageable pageable = Pageable.unpaged();
-        return reviewRepository.findByProductIdAndIsApprovedTrue(productId, pageable)
-                .getContent();
-    }
-
-    @Override
-    public Review approve(Long reviewId, boolean approved) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found"));
-        review.setIsApproved(approved);
-        return reviewRepository.save(review);
+    public List<Review> getReviewByProduct(Long productId) {
+        return reviewRepository.findAllByProductId(productId);
     }
 }
