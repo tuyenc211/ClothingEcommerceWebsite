@@ -24,16 +24,7 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         {/* <TanstackQueryProvider > */}
         <TooltipProvider>{children}</TooltipProvider>
-        <Toaster
-          richColors={true}
-          toastOptions={{
-            style: {
-              borderRadius: "0px",
-              boxShadow:
-                "2px 2px 0px rgba(0,0,0,1), 5px 5px 0px rgba(120,120,120,1",
-            },
-          }}
-        />
+        <Toaster richColors={true} />
         {/* </TanstackQueryProvider> */}
       </body>
     </html>
