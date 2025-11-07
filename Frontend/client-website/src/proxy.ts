@@ -8,7 +8,8 @@ export function proxy(request: NextRequest) {
   const isAuthPage =
     pathname.startsWith("/user/login") ||
     pathname.startsWith("/user/signup") ||
-    pathname.startsWith("/user/forgot-password");
+    pathname.startsWith("/user/forgot-password") ||
+    pathname.startsWith("/user/authenticate");
   // Protected routes
   const protectedRoutes = [
     { path: "/user", requireAuth: true },

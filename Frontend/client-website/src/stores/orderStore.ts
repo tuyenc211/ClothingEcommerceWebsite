@@ -21,7 +21,6 @@ export interface OrderItem {
   variantId?: number;
   productName: string;
   sku: string;
-  attributesSnapshot?: Record<string, unknown>;
   unitPrice: number;
   quantity: number;
   lineTotal: number;
