@@ -2,10 +2,10 @@ server:
   port: 8088
 spring:
   datasource:
-    url: jdbc:mysql://root:MoEzVDSLeiMjdzSsLsXMovVLfBJPiiDu@shuttle.proxy.rlwy.net:58985/clothingshop
+    url: jdbc:mysql://root:WxxYnviAdTLJKHpsvBnPvMsxtIicyAGE@maglev.proxy.rlwy.net:12850/clothingshop
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    password: MoEzVDSLeiMjdzSsLsXMovVLfBJPiiDu
+    password: WxxYnviAdTLJKHpsvBnPvMsxtIicyAGE
   jpa:
     show-sql: no
     hibernate:
