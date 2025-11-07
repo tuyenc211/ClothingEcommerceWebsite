@@ -18,7 +18,7 @@ public class PaymentController {
     private final VNPayService vnPayService;
     private final OrderService orderService;
 
-    @Value("${vnpay.secret-key}")
+    @Value("${spring.vnpay.secret-key}")
     private String vnpaySecretKey;
 
     @PostMapping("/create")
