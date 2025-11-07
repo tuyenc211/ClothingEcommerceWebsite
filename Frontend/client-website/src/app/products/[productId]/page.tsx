@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Star, Heart, ShoppingCart, Plus, Minus } from "lucide-react";
+import { Heart, ShoppingCart, Plus, Minus, CreditCard } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
 import { useCartStore } from "@/stores/cartStore";
 import ProductImageGallery from "@/components/common/ThumnailGallery";
@@ -18,7 +18,6 @@ import {
   BreadcrumbList,
 } from "@/components/ui/breadcrumb";
 import { toast } from "react-toastify";
-import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { Button } from "@/components/ui/button";
 import { Rating, RatingButton } from "@/components/ui/shadcn-io/rating";
 import ReviewForm from "@/components/product/ReviewForm";
@@ -32,8 +31,8 @@ export default function ProductDetailPage() {
 
   // Stores
   const { getProduct } = useProductStore();
-  const { addToCart } = useCartStore();
-  const { fetchReviewsByProduct } = useReviewStore();
+  const { addToCart, buyNow } = useCartStore();
+  const { fetchReviewsByProduct, reviews } = useReviewStore();
   const product = useMemo(() => {
     if (typeof productId === "string") {
       const id = parseInt(productId, 10);
@@ -43,8 +42,14 @@ export default function ProductDetailPage() {
     }
     return undefined;
   }, [productId, getProduct]);
-  const reviews = product?.reviews || [];
-  const orderId =  parseInt(searchParams.get("orderId") || "0", 10);
+  const orderId = parseInt(searchParams.get("orderId") || "0", 10);
+
+  // Fetch reviews when product loads
+  useEffect(() => {
+    if (product?.id) {
+      fetchReviewsByProduct(product.id);
+    }
+  }, [product?.id, fetchReviewsByProduct]);
 
   // Check if should open review tab
   useEffect(() => {
@@ -138,9 +143,8 @@ export default function ProductDetailPage() {
   };
 
   const averageRating =
-    product?.reviews && product.reviews.length > 0
-      ? product.reviews.reduce((sum, review) => sum + review.rating, 0) /
-        product.reviews.length
+    reviews && reviews.length > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
       : 0;
   const handleAddToCart = () => {
     if (!selectedSize) {
@@ -169,6 +173,43 @@ export default function ProductDetailPage() {
 
     addToCart(selectedVariant, quantity);
     toast.success(`Đã thêm "${product.name}" vào giỏ hàng!`);
+  };
+
+  const handleBuyNow = async () => {
+    if (!selectedSize) {
+      toast.error("Vui lòng chọn kích cỡ");
+      return;
+    }
+    if (!selectedColor) {
+      toast.error("Vui lòng chọn màu sắc");
+      return;
+    }
+    if (!selectedVariant) {
+      toast.error("Phiên bản sản phẩm không khả dụng");
+      return;
+    }
+
+    // Check inventory
+    if (selectedQuantity && selectedQuantity < quantity) {
+      toast.error(`Chỉ còn ${selectedQuantity} sản phẩm`);
+      return;
+    }
+
+    if (!selectedQuantity || selectedQuantity === 0) {
+      toast.error("Sản phẩm đã hết hàng");
+      return;
+    }
+
+    try {
+      // Use buyNow function which clears cart and adds only this item
+      await buyNow(selectedVariant, quantity);
+
+      // Navigate to checkout immediately
+      router.push("/checkout");
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi mua hàng");
+      console.error("Buy now error:", error);
+    }
   };
 
   const renderStars = (rating: number) => {
@@ -365,6 +406,16 @@ export default function ProductDetailPage() {
                 <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span>Thêm vào giỏ hàng</span>
               </Button>
+
+              {/* Buy Now Button */}
+              <Button
+                onClick={handleBuyNow}
+                disabled={!selectedSize || !selectedColor}
+                className="w-full bg-red-600 text-white py-6 px-4 sm:px-6 rounded-sm font-medium hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 text-lg"
+              >
+                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>Mua ngay</span>
+              </Button>
             </div>
 
             {/* Product Details - RESPONSIVE */}
@@ -373,7 +424,11 @@ export default function ProductDetailPage() {
 
         {/* Tabs Section - Description & Reviews */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="flex items-start w-full grid-cols-2 mx-auto">
               <TabsTrigger value="description" className="text-sm sm:text-base">
                 Mô tả sản phẩm

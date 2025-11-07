@@ -45,6 +45,7 @@ interface CartState {
 
   // Cart item actions - using variants
   addToCart: (variant: ProductVariant, quantity?: number) => Promise<void>;
+  buyNow: (variant: ProductVariant, quantity?: number) => Promise<void>;
   removeFromCart: (itemId: number) => Promise<void>;
   updateQuantity: (itemId: number, quantity: number) => Promise<void>;
   // Coupon actions
@@ -164,6 +165,44 @@ export const useCartStore = create<CartState>()(
           console.error("❌ Add to cart error:", errorMessage);
         }
       },
+
+      buyNow: async (variant, quantity = 1) => {
+        // Lấy userId từ authStore
+        const userId = useAuthStore.getState().authUser?.id;
+        if (!userId) {
+          toast.error("Vui lòng đăng nhập để mua hàng");
+          throw new Error("User not authenticated");
+        }
+
+        // Khởi tạo cart nếu chưa có
+        if (!get().currentCart) {
+          get().createCart(userId);
+        }
+
+        set({ isLoading: true, error: null });
+        try {
+          // Clear cart first to ensure only this item is in cart
+          await get().clearCart();
+
+          // Add the single item to cart
+          await privateClient.post(
+            `/carts/${userId}/add?variantId=${variant.id}&quantity=${quantity}`
+          );
+
+          // Fetch updated cart items
+          await get().fetchCartItems(userId);
+
+          console.log("✅ Buy now item added to cart");
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMessage =
+            axiosError?.response?.data?.message || "Lỗi khi mua hàng";
+          set({ error: errorMessage, isLoading: false });
+          toast.error(errorMessage);
+          console.error("❌ Buy now error:", errorMessage);
+          throw error;
+        }
+      },
       removeFromCart: async (itemId) => {
         const userId = useAuthStore.getState().authUser?.id;
         if (!userId) {
@@ -264,12 +303,8 @@ export const useCartStore = create<CartState>()(
       },
 
       getCartSummary: (): CartSummary => {
-        const {
-          items,
-          appliedCoupon,
-          shippingFee,
-          freeShippingThreshold,
-        } = get();
+        const { items, appliedCoupon, shippingFee, freeShippingThreshold } =
+          get();
 
         const subtotal = items.reduce(
           (total, item) => total + (item.unitPrice || 0) * item.quantity,
