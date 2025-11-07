@@ -35,9 +35,6 @@ public class Review {
     @Lob
     private String content;
 
-    @Column(name = "is_approved", nullable = false)
-    private Boolean isApproved = false;
-
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

@@ -42,12 +42,6 @@ public class ReviewController {
 
     @GetMapping("/product/{productId}")
     public ResponseEntity<List<Review>> listByProduct(@PathVariable Long productId) {
-        return ResponseEntity.ok(reviewService.getApprovedByProduct(productId));
-    }
-
-    @PatchMapping("/{id}/approve")
-    public ResponseEntity<Review> approve(@PathVariable Long id,
-                                                  @RequestParam boolean approved) {
-        return ResponseEntity.ok(reviewService.approve(id, approved));
+        return ResponseEntity.ok(reviewService.getReviewByProduct(productId));
     }
 }

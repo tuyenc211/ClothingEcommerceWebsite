@@ -29,6 +29,14 @@ spring:
           auth: true
           starttls:
             enable: true
+  vnpay:
+    tmn-code: TROHKPHO
+    secret-key: QKX2FE5Z3B8TRU4QE1I9GQTI8E05OE2H
+    pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+    return-url: http://localhost:8080/api/payment/vn-pay-callback
+    version: 2.1.0
+    command: pay
+    order-type: other
 api:
   prefix: api/v1
 jwt:
