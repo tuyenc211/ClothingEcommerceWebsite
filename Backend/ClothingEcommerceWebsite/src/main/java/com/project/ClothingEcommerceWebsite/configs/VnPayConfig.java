@@ -8,24 +8,24 @@ import org.springframework.stereotype.Component;
 @Getter
 public class VnPayConfig {
 
-    @Value("${vnpay.tmn-code}")
+    @Value("${spring.vnpay.tmn-code}")
     private String tmnCode;
 
-    @Value("${vnpay.secret-key}")
+    @Value("${spring.vnpay.secret-key}")
     private String secretKey;
 
-    @Value("${vnpay.pay-url}")
+    @Value("${spring.vnpay.pay-url}")
     private String payUrl;
 
-    @Value("${vnpay.return-url}")
+    @Value("${spring.vnpay.return-url}")
     private String returnUrl;
 
-    @Value("${vnpay.version}")
+    @Value("${spring.vnpay.version}")
     private String version;
 
-    @Value("${vnpay.command}")
+    @Value("${spring.vnpay.command}")
     private String command;
 
-    @Value("${vnpay.order-type}")
+    @Value("${spring.vnpay.order-type}")
     private String orderType;
 }
