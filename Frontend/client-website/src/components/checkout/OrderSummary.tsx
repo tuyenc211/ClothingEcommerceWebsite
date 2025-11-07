@@ -16,6 +16,7 @@ interface OrderSummaryProps {
   activeCoupons: Coupon[];
   showCouponList: boolean;
   isSubmitting: boolean;
+  paymentMethod?: "COD" | "WALLET";
   onToggleCouponList: () => void;
   onApplyCoupon: (couponCode: string) => void;
   onRemoveCoupon: () => void;
@@ -30,6 +31,7 @@ export default function OrderSummary({
   activeCoupons,
   showCouponList,
   isSubmitting,
+  paymentMethod = "COD",
   onToggleCouponList,
   onApplyCoupon,
   onRemoveCoupon,
@@ -173,13 +175,17 @@ export default function OrderSummary({
         {summary.discount > 0 && (
           <div className="flex justify-between text-green-600">
             <span>Giảm giá:</span>
-            <span className="font-medium">-{formatPrice(summary.discount)}</span>
+            <span className="font-medium">
+              -{formatPrice(summary.discount)}
+            </span>
           </div>
         )}
         <div className="flex justify-between">
           <span className="text-gray-600">Phí vận chuyển:</span>
           <span className="font-medium">
-            {summary.shipping === 0 ? "Miễn phí" : formatPrice(summary.shipping)}
+            {summary.shipping === 0
+              ? "Miễn phí"
+              : formatPrice(summary.shipping)}
           </span>
         </div>
       </div>
