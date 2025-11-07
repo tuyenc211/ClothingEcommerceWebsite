@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore, CreateStaffData } from "@/stores/userStore";
+import { useForm } from "react-hook-form";
 import {
   Card,
   CardContent,
@@ -12,113 +12,66 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import CustomInput from "@/components/shared/CustomInput";
+import { Input } from "@/components/ui/input";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
-interface StaffFormData {
+type StaffFormData = {
   fullName: string;
   email: string;
-  phone: string;
+  phone?: string;
   password: string;
   confirmPassword: string;
-  isActive: boolean;
-}
+};
 
 export default function AddStaffPage() {
   const router = useRouter();
   const { createStaff, isLoading } = useUserStore();
 
-  const [formData, setFormData] = useState<StaffFormData>({
-    fullName: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-    isActive: true,
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<StaffFormData>({
+    defaultValues: {
+      fullName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+    },
+    mode: "onTouched",
   });
 
-  const [errors, setErrors] = useState<
-    Record<keyof StaffFormData, string | undefined>
-  >({} as Record<keyof StaffFormData, string | undefined>);
+  const passwordValue = watch("password");
 
-  const handleInputChange = (
-    field: keyof StaffFormData,
-    value: string | boolean
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: Record<keyof StaffFormData, string | undefined> =
-      {} as Record<keyof StaffFormData, string | undefined>;
-
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Họ và tên là bắt buộc";
-    } else if (formData.fullName.trim().length < 2) {
-      newErrors.fullName = "Họ và tên phải có ít nhất 2 ký tự";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email là bắt buộc";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Email không hợp lệ";
-    }
-
-    if (formData.phone && !/^[0-9+\-\s()]{10,15}$/.test(formData.phone)) {
-      newErrors.phone = "Số điện thoại không hợp lệ";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Mật khẩu là bắt buộc";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Xác nhận mật khẩu là bắt buộc";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) return;
-
+  const onSubmit = async (data: StaffFormData) => {
     try {
-      const staffData: CreateStaffData = {
-        fullName: formData.fullName.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim() || undefined,
-        password: formData.password,
+      const payload: CreateStaffData = {
+        fullName: data.fullName.trim(),
+        email: data.email.trim(),
+        phone: data.phone?.trim() || undefined,
+        password: data.password,
         role: "STAFF",
-        isActive: formData.isActive,
       };
 
-      const success = await createStaff(staffData);
-
-      if (success) {
+      const ok = await createStaff(payload);
+      if (ok) {
         toast.success("Tạo tài khoản nhân viên thành công");
         router.push("/users");
       } else {
         toast.error("Có lỗi xảy ra khi tạo tài khoản");
       }
-    } catch (error) {
-      console.error("Error creating staff:", error);
+    } catch (e) {
+      console.error(e);
       toast.error("Có lỗi xảy ra khi tạo tài khoản");
     }
   };
+
+  const ErrorText = ({ msg }: { msg?: string }) =>
+    msg ? <p className="text-sm text-red-600 mt-1">{msg}</p> : null;
 
   return (
     <div className="space-y-6">
@@ -137,9 +90,9 @@ export default function AddStaffPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="flex flex-col gap-6">
-          {/* Personal Information */}
+          {/* Thông tin cá nhân */}
           <Card>
             <CardHeader>
               <CardTitle>Thông tin cá nhân</CardTitle>
@@ -148,87 +101,116 @@ export default function AddStaffPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <CustomInput
-                label="Họ và tên"
-                name="fullName"
-                value={formData.fullName}
-                onChange={(e) => handleInputChange("fullName", e.target.value)}
-                placeholder="Ví dụ: Nguyễn Văn A"
-                error={errors.fullName}
-                required
-                maxLength={100}
-              />
+              <div>
+                <Label htmlFor="fullName">Họ và tên</Label>
+                <Input
+                  id="fullName"
+                  placeholder="Ví dụ: Nguyễn Văn A"
+                  maxLength={100}
+                  {...register("fullName", {
+                    required: "Họ và tên là bắt buộc",
+                    minLength: {
+                      value: 2,
+                      message: "Họ và tên phải có ít nhất 2 ký tự",
+                    },
+                    setValueAs: (v) =>
+                      typeof v === "string" ? v.trimStart() : v,
+                  })}
+                />
+                <ErrorText msg={errors.fullName?.message} />
+              </div>
 
-              <CustomInput
-                label="Email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                placeholder="nhanvien@company.com"
-                error={errors.email}
-                required
-                maxLength={255}
-              />
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="nhanvien@company.com"
+                  maxLength={255}
+                  {...register("email", {
+                    required: "Email là bắt buộc",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Email không hợp lệ",
+                    },
+                    setValueAs: (v) => (typeof v === "string" ? v.trim() : v),
+                  })}
+                />
+                <ErrorText msg={errors.email?.message} />
+              </div>
 
-              <CustomInput
-                label="Số điện thoại"
-                name="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-                placeholder="0901234567"
-                error={errors.phone}
-                maxLength={15}
-              />
+              <div>
+                <Label htmlFor="phone">Số điện thoại (tuỳ chọn)</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="0901234567"
+                  maxLength={15}
+                  {...register("phone", {
+                    pattern: {
+                      value: /^[0-9+\-\s()]{10,15}$/,
+                      message: "Số điện thoại không hợp lệ",
+                    },
+                    setValueAs: (v) => (typeof v === "string" ? v.trim() : v),
+                  })}
+                />
+                <ErrorText msg={errors.phone?.message} />
+              </div>
             </CardContent>
           </Card>
 
-          {/* Account Information */}
+          {/* Thông tin tài khoản */}
           <Card>
             <CardHeader>
               <CardTitle>Thông tin tài khoản</CardTitle>
-              <CardDescription>
-                Cấu hình quyền hạn và trạng thái tài khoản
-              </CardDescription>
+              <CardDescription>Mật khẩu & xác nhận</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <CustomInput
-                label="Mật khẩu"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => handleInputChange("password", e.target.value)}
-                placeholder="Mật khẩu tối thiểu 6 ký tự"
-                error={errors.password}
-                required
-                maxLength={50}
-              />
+              <div>
+                <Label htmlFor="password">Mật khẩu</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Mật khẩu tối thiểu 6 ký tự"
+                  maxLength={50}
+                  {...register("password", {
+                    required: "Mật khẩu là bắt buộc",
+                    minLength: {
+                      value: 6,
+                      message: "Mật khẩu phải có ít nhất 6 ký tự",
+                    },
+                  })}
+                />
+                <ErrorText msg={errors.password?.message} />
+              </div>
+
+              <div>
+                <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Nhập lại mật khẩu"
+                  maxLength={50}
+                  {...register("confirmPassword", {
+                    required: "Xác nhận mật khẩu là bắt buộc",
+                    validate: (v) =>
+                      v === passwordValue || "Mật khẩu xác nhận không khớp",
+                  })}
+                />
+                <ErrorText msg={errors.confirmPassword?.message} />
+              </div>
+
               <div className="space-y-2">
                 <Label>Vai trò</Label>
                 <div className="rounded-md border border-input bg-muted px-3 py-2">
                   <p className="text-sm font-medium">Nhân viên (Staff)</p>
                 </div>
               </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="isActive"
-                  checked={formData.isActive}
-                  onCheckedChange={(checked) =>
-                    handleInputChange("isActive", checked)
-                  }
-                />
-                <Label htmlFor="isActive">Tài khoản hoạt động</Label>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Tài khoản không hoạt động sẽ không thể đăng nhập
-              </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Submit Button */}
+        {/* Submit */}
         <div className="flex justify-end space-x-4 pt-6">
           <Button type="button" variant="outline" asChild>
             <Link href="/users">Hủy</Link>

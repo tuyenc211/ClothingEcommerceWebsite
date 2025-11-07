@@ -142,13 +142,6 @@ export default function ReviewList({ productId }: ReviewListProps) {
                 <p className="text-gray-700 mt-2 whitespace-pre-wrap">
                   {review.content}
                 </p>
-
-                {/* Approval status (for debugging) */}
-                {!review.is_approved && authUser?.id === review.user_id && (
-                  <p className="text-xs text-amber-600 mt-2">
-                    Đánh giá đang chờ phê duyệt
-                  </p>
-                )}
               </div>
             </div>
           </CardContent>
