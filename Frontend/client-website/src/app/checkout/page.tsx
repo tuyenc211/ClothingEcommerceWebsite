@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Breadcrumb,
@@ -28,6 +28,7 @@ import OrderSummary from "@/components/checkout/OrderSummary";
 import { EnrichedCartItem } from "@/types/cart";
 import { PaymentMethod, useOrderStore } from "@/stores/orderStore";
 import { AxiosError } from "axios";
+import { createVNPayPayment } from "@/services/paymentService";
 
 interface ShippingFormData {
   fullName: string;
@@ -41,6 +42,7 @@ interface ShippingFormData {
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { authUser, fetchAddresses } = useAuthStore();
 
   const {
@@ -100,6 +102,7 @@ export default function CheckoutPage() {
   const [showCouponList, setShowCouponList] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const [formData, setFormData] = useState<ShippingFormData>({
     fullName: "",
@@ -168,10 +171,37 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (items.length === 0) {
-      toast.error("Giỏ hàng trống");
-      router.push("/cart");
+      // Don't redirect if coming back from payment
+      const paymentStatus = searchParams?.get("status");
+      if (!paymentStatus) {
+        toast.error("Giỏ hàng trống");
+        router.push("/cart");
+      }
     }
-  }, [items, router]);
+  }, [items, router, searchParams]);
+
+  // Handle VNPay payment callback
+  useEffect(() => {
+    const paymentStatus = searchParams?.get("status");
+
+    if (paymentStatus === "success") {
+      setIsProcessingPayment(true);
+      toast.success(
+        "Thanh toán VNPay thành công! Đơn hàng của bạn đã được xác nhận."
+      );
+      // Redirect to orders page after 2 seconds
+      setTimeout(() => {
+        router.push("/user/orders");
+      }, 2000);
+    } else if (paymentStatus === "fail") {
+      toast.error(
+        "Thanh toán VNPay thất bại. Vui lòng thử lại hoặc chọn phương thức khác."
+      );
+      // Remove status from URL to allow user to retry
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [searchParams, router]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -290,28 +320,76 @@ export default function CheckoutPage() {
 
       console.log("Creating order:", orderRequest);
 
-      // Call backend API
+      // Call backend API to create order
       const order = await useOrderStore
         .getState()
         .createOrder(authUser.id, orderRequest);
 
       console.log("Order created successfully:", order);
-      toast.success(`Đặt hàng thành công! Mã đơn hàng: ${order.code}`);
 
-      // Clear cart after successful order
-      await clearCart();
-      await fetchProducts();
+      // Handle payment method
+      if (paymentMethod === "WALLET") {
+        // VNPay payment - redirect to payment gateway
+        try {
+          toast.info("Đang chuyển đến trang thanh toán VNPay...");
+
+          // Create VNPay payment URL with order details
+          const paymentUrl = await createVNPayPayment(
+            order.grandTotal,
+            order.id.toString()
+          );
+
+          // Clear cart before redirect (order is already created)
+          await clearCart();
+          await fetchProducts();
+
+          // Redirect to VNPay payment gateway
+          window.location.href = paymentUrl;
+        } catch (paymentError) {
+          console.error("VNPay payment error:", paymentError);
+          toast.error("Không thể tạo thanh toán VNPay. Vui lòng thử lại.");
+        }
+      } else {
+        // COD payment - complete order immediately
+        toast.success(`Đặt hàng thành công! Mã đơn hàng: ${order.code}`);
+
+        // Clear cart after successful order
+        await clearCart();
+        await fetchProducts();
+
+        // Redirect to order success page
+        router.push(`/user/orders/${order.id}`);
+      }
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =
-        axiosError?.response?.data?.message || "Lỗi khi tải danh sách danh mục";
-      console.error(errorMessage);
+        axiosError?.response?.data?.message ||
+        "Lỗi khi đặt hàng. Vui lòng thử lại.";
+      console.error("Order creation error:", errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (items.length === 0) {
+  // Show processing payment screen when returning from VNPay
+  if (isProcessingPayment) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            Thanh toán thành công!
+          </h2>
+          <p className="text-gray-600">
+            Đang chuyển đến trang đơn hàng của bạn...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (items.length === 0 && !searchParams?.get("status")) {
     return null;
   }
 
@@ -425,6 +503,7 @@ export default function CheckoutPage() {
                   activeCoupons={coupons}
                   showCouponList={showCouponList}
                   isSubmitting={isSubmitting}
+                  paymentMethod={paymentMethod}
                   onToggleCouponList={() => setShowCouponList(!showCouponList)}
                   onApplyCoupon={handleApplyCoupon}
                   onRemoveCoupon={handleRemoveCoupon}
