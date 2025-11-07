@@ -144,9 +144,19 @@ export const useUserStore = create<UserState>()(
             fullName: staffData.fullName,
             phone: staffData.phone,
             isActive: staffData.isActive ?? true,
-            roleIds: [2],
-          });         
+            roleIds: [1],
+          });
+
+          const newUser = response.data?.data || response.data;
+
+          // Add new user to store
+          set((state) => ({
+            users: [newUser, ...state.users],
+            isLoading: false,
+          }));
+
           toast.success("Tạo tài khoản nhân viên thành công!");
+          console.log("✅ Staff created:", newUser);
           return true;
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
