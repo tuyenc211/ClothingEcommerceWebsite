@@ -35,9 +35,6 @@ public class OrderItem {
     private String productName;
     private String sku;
 
-    @Column(columnDefinition = "json")
-    private String attributesSnapshot;
-
     private Double unitPrice;
     private Integer quantity;
     private Double lineTotal;
