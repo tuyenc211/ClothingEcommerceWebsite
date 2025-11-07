@@ -2,10 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  eslint: {
-    // 🚀 Cho phép build dù có lỗi ESLint
-    ignoreDuringBuilds: true,
-  },
   images: {
     remotePatterns: [
       {
