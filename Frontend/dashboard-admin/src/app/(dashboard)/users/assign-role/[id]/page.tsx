@@ -40,14 +40,14 @@ interface RoleOption {
 
 const availableRoles: RoleOption[] = [
   {
-    id: 2,
+    id: 1,
     name: "Staff",
     description: "Nhân viên - có quyền quản lý sản phẩm và đơn hàng",
     icon: Users,
     color: "bg-blue-500",
   },
   {
-    id: 3,
+    id: 2,
     name: "Customer",
     description: "Khách hàng - chỉ có quyền mua hàng",
     icon: UserIcon,
@@ -60,7 +60,6 @@ export default function AssignRolePage() {
   const params = useParams();
   const id = Number(params?.id);
   const { getUserById, assignRoles, isLoading } = useUserStore();
-
   const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 

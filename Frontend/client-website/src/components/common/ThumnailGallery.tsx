@@ -5,6 +5,8 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode, Navigation, Thumbs } from "swiper/modules";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Zoom from "react-medium-image-zoom";
+import "src/lib/styles.css";
 // Import Swiper styles
 import "swiper/css";
 import "swiper/css/free-mode";
@@ -24,7 +26,6 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 }) => {
   const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [hovering, setHovering] = useState(false);
   if (!images || images.length === 0) {
     return (
       <div className="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
@@ -60,15 +61,17 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           {images.map((image, index) => (
             <SwiperSlide key={index}>
               <div className="swiper-zoom-container w-full h-full relative">
-                <Image
-                  src={image}
-                  alt={`${productName} - Image ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority={index === 0}
-                  unoptimized={image.includes("cloudinary")}
-                />
+                <Zoom>
+                  <Image
+                    src={image}
+                    alt={`${productName} - Image ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    priority={index === 0}
+                    unoptimized={image.includes("cloudinary")}
+                  />
+                </Zoom>
               </div>
             </SwiperSlide>
           ))}

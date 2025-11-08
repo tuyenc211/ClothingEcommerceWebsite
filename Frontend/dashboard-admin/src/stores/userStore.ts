@@ -296,8 +296,6 @@ export const useUserStore = create<UserState>()(
             ),
             isLoading: false,
           }));
-
-          toast.success("Cập nhật vai trò thành công!");
           return true;
         } catch (error) {
           let errorMessage = "Đã xảy ra lỗi khi thay đổi vai trò";

@@ -19,13 +19,11 @@ import {
   ShoppingCart,
   Users,
   Palette,
-  FolderOpen,
   ClipboardList,
   Gift,
   LogOut,
   Menu,
   X,
-  Plus,
   List,
   Warehouse,
   Ruler,
@@ -38,6 +36,7 @@ interface SidebarItem {
   href?: string;
   icon: React.ElementType;
   children?: SidebarItem[];
+  requireRole?: "ADMIN" | "STAFF";
 }
 const sidebarItems: SidebarItem[] = [
   {
@@ -48,26 +47,17 @@ const sidebarItems: SidebarItem[] = [
   {
     title: "Quản lý tài khoản",
     icon: Users,
-      href: "/users",},
+    href: "/users",
+    requireRole: "ADMIN",
+  },
   {
     title: "Quản lý danh mục",
     icon: ShoppingCart,
     children: [
       {
-        title: "Thêm danh mục chính",
-        href: "/categories/add",
-        icon: FolderOpen,
-      },
-
-      {
         title: "Danh sách danh mục chính",
         href: "/categories",
         icon: List,
-      },
-      {
-        title: "Thêm danh mục con",
-        href: "/subcategories/add",
-        icon: FolderOpen,
       },
       {
         title: "Danh sách danh mục con",
@@ -78,18 +68,17 @@ const sidebarItems: SidebarItem[] = [
   },
   {
     title: "Quản lý sản phẩm",
-      href: "/list-product",
+    href: "/list-product",
     icon: ShoppingCart,
   },
   {
     title: "Quản lý màu sắc",
-      href: "/colors",
+    href: "/colors",
     icon: Palette,
-
   },
   {
     title: "Quản lý kích thước",
-      href: "/sizes",
+    href: "/sizes",
     icon: Ruler,
   },
   {
@@ -99,7 +88,7 @@ const sidebarItems: SidebarItem[] = [
   },
   {
     title: "Quản lý mã giảm giá",
-      href: "/coupon-list",
+    href: "/coupon-list",
     icon: Gift,
   },
   {
@@ -121,7 +110,17 @@ function Sidebar({
   className,
   handleLogout,
 }: Omit<SidebarProps, "onCollapse">) {
+  const { isAdmin } = useAuthStore();
   const [openItems, setOpenItems] = useState<string[]>([]);
+
+  const filteredSidebarItems = sidebarItems.filter((item) => {
+    if (!item.requireRole) {
+      return true;
+    }
+    if (item.requireRole === "ADMIN") {
+      return isAdmin();
+    }
+  });
   const toggleItem = (title: string) => {
     setOpenItems((prev) =>
       prev.includes(title)
@@ -205,7 +204,7 @@ function Sidebar({
         </div>
         <div className="px-3">
           <div className="space-y-1">
-            {sidebarItems.map((item) => renderSidebarItem(item))}
+            {filteredSidebarItems.map((item) => renderSidebarItem(item))}
             <Button
               variant="ghost"
               className={cn(
