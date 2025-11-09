@@ -20,7 +20,7 @@ import { Rating, RatingButton } from "@/components/ui/shadcn-io/rating";
 
 interface ReviewFormProps {
   productId: number;
-  orderId?: number; // Optional orderId to track per-order reviews
+  orderId?: number;
   onSuccess?: () => void;
 }
 
@@ -33,7 +33,7 @@ export default function ReviewForm({
   const { addReview, isLoading, reviews } = useReviewStore();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [rating, setRating] = useState(0);        
+  const [rating, setRating] = useState(0);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [hasReviewed, setHasReviewed] = useState(false);
@@ -41,15 +41,19 @@ export default function ReviewForm({
   // Check if user has already reviewed this product for this order
   useEffect(() => {
     if (orderId) {
-      // If orderId is provided, check localStorage for per-order review
-      const reviewKey = `review_${orderId}_${productId}`;
-      const hasReviewedOrder = localStorage.getItem(reviewKey) === 'true';
-      setHasReviewed(hasReviewedOrder);
+      const hasReviewed = reviews.some(
+        (review) =>
+          review.product_id === productId &&
+          review.user_id === authUser?.id &&
+          review.order_id === orderId
+      );
+      setHasReviewed(hasReviewed);
     } else {
       // Fallback: check if user has reviewed this product at all
       if (authUser && reviews) {
         const userReview = reviews.find(
-          (review) => review.product_id === productId && review.user_id === authUser.id
+          (review) =>
+            review.product_id === productId && review.user_id === authUser.id
         );
         setHasReviewed(!!userReview);
       }
@@ -81,13 +85,6 @@ export default function ReviewForm({
         title: title.trim() || undefined,
         content: content.trim(),
       });
-
-      // Save to localStorage if orderId is provided
-      if (orderId) {
-        const reviewKey = `review_${orderId}_${productId}`;
-        localStorage.setItem(reviewKey, 'true');
-      }
-      
       toast.success("Đánh giá của bạn đã được gửi thành công!");
       setIsOpen(false);
       resetForm();
@@ -135,11 +132,7 @@ export default function ReviewForm({
               Đánh giá <span className="text-red-500">*</span>
             </Label>
 
-            <Rating
-              value={rating}
-              onValueChange={setRating}
-              className="gap-1"
-            >
+            <Rating value={rating} onValueChange={setRating} className="gap-1">
               {Array.from({ length: 5 }).map((_, i) => (
                 <RatingButton key={i} size={32} className="text-yellow-400" />
               ))}

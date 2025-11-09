@@ -206,6 +206,7 @@ export const useReviewStore = create<ReviewState>()(
             id: Review.id,
             product_id: Review.product?.id,
             user_id: Review.user?.id,
+            order_id: Review.order?.id,
             rating: Review.rating,
             title: Review.title,
             content: Review.content,
