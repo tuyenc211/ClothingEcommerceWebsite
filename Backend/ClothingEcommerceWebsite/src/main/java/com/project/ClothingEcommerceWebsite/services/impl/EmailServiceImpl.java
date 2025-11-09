@@ -7,6 +7,7 @@ import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -33,6 +34,7 @@ public class EmailServiceImpl implements EmailService {
         sendEmailSendGrid(title, toEmail, htmlContent);
     }
 
+    @Async
     private void sendEmailSendGrid(String subject, String toEmail, String htmlContent) {
         Email from = new Email(fromEmail);
         Email to = new Email(toEmail);
