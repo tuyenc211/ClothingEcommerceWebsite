@@ -166,6 +166,7 @@ export default function UserProfilePage() {
                   <Label htmlFor="phoneNumber">Số Điện Thoại</Label>
                   <Input
                     id="phoneNumber"
+                    type="number"
                     {...register("phoneNumber")}
                     disabled={!isEditing}
                     className={!isEditing ? "bg-gray-50" : ""}

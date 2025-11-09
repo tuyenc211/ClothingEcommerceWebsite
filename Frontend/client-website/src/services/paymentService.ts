@@ -9,6 +9,11 @@ export interface CreateVNPayPaymentResponse {
   paymentUrl: string;
 }
 
+export interface VNPayCallbackResponse {
+  status: "success" | "error";
+  message: string;
+}
+
 /**
  * Create VNPay payment URL
  * @param amount - Payment amount in VND
@@ -38,8 +43,25 @@ export const createVNPayPayment = async (
 };
 
 /**
+ * Handle VNPay callback from payment gateway
+ * @param params - All VNPay callback parameters
+ * @returns Response from backend after processing payment
+ */
+export const handleVNPayCallback = async (params: string): Promise<void> => {
+  try {
+    await privateClient.get("/payment/vn-pay-callback", {
+      params: params,
+    });
+  } catch (error) {
+    console.error("Error handling VNPay callback:", error);
+    throw error;
+  }
+};
+
+/**
  * Payment service for handling VNPay integration
  */
 export const paymentService = {
   createVNPayPayment,
+  handleVNPayCallback,
 };

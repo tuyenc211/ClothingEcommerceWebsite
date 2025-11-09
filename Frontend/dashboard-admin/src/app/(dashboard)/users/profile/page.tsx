@@ -199,7 +199,7 @@ export default function ProfilePage() {
                 <Label htmlFor="phone">Số điện thoại</Label>
                 <Input
                   id="phone"
-                  type="tel"
+                  type="number"
                   value={profileData.phone}
                   onChange={(e) =>
                     setProfileData({ ...profileData, phone: e.target.value })

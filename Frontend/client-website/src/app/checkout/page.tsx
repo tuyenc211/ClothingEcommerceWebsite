@@ -344,7 +344,7 @@ export default function CheckoutPage() {
           await fetchProducts();
 
           // Redirect to VNPay payment gateway
-          window.open(paymentUrl, "_blank");
+          window.location.href = paymentUrl;
         } catch (paymentError) {
           console.error("VNPay payment error:", paymentError);
           toast.error("Không thể tạo thanh toán VNPay. Vui lòng thử lại.");
