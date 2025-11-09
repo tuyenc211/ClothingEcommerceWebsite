@@ -77,4 +77,9 @@ public class ReviewServiceImpl implements ReviewService {
     public List<Review> getReviewByProduct(Long productId) {
         return reviewRepository.findAllByProductId(productId);
     }
+
+    @Override
+    public List<Review> getReviewByUser(Long userId) {
+        return reviewRepository.findAllByUserId(userId);
+    }
 }

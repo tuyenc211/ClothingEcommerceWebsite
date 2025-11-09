@@ -44,4 +44,9 @@ public class ReviewController {
     public ResponseEntity<List<Review>> listByProduct(@PathVariable Long productId) {
         return ResponseEntity.ok(reviewService.getReviewByProduct(productId));
     }
+
+    @GetMapping("user/userId}")
+    public ResponseEntity<List<Review>> listByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(reviewService.getReviewByUser(userId));
+    }
 }
