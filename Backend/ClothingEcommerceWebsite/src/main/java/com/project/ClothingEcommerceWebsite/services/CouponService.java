@@ -2,6 +2,8 @@ package com.project.ClothingEcommerceWebsite.services;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateCouponRequest;
 import com.project.ClothingEcommerceWebsite.models.Coupon;
+import com.project.ClothingEcommerceWebsite.models.ProductImage;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
