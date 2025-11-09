@@ -12,4 +12,5 @@ public interface OrderService {
     List<Order> getOrdersByUser(Long userId);
     void cancelOrder(Long userId, Long orderId);
     Order updateOrderStatus(Long orderId, String status);
+    Order updatePaymentStatus(Long orderId, String status);
 }

@@ -178,6 +178,16 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.save(order);
     }
 
+    @Override
+    public Order updatePaymentStatus(Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        Enums.PaymentStatus newStatus = Enums.PaymentStatus.valueOf(status.toUpperCase());
+        order.setPaymentStatus(newStatus);
+        orderRepository.save(order);
+        return order;
+    }
+
     private boolean isValidTransition(Enums.OrderStatus current, Enums.OrderStatus next) {
         return switch (current) {
             case NEW -> next == Enums.OrderStatus.CONFIRMED || next == Enums.OrderStatus.CANCELLED;

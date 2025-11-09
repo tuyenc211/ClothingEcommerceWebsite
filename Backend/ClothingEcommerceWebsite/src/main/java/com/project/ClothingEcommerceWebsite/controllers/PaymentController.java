@@ -44,10 +44,10 @@ public class PaymentController {
             String orderId = allParams.get("vnp_TxnRef");
             Long neworderId = Long.parseLong(orderId);
             if ("00".equals(responseCode)) {
-                orderService.updateOrderStatus(neworderId, "PAID");
+                orderService.updatePaymentStatus(neworderId, "PAID");
                 response.sendRedirect("http://localhost:3000/checkout?status=success");
             } else {
-                orderService.updateOrderStatus(neworderId, "FAILED");
+                orderService.updatePaymentStatus(neworderId, "FAILED");
                 response.sendRedirect("http://localhost:3000/checkout?status=fail");
             }
 
