@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, ImageIcon, Save, X } from "lucide-react";
 import Link from "next/link";
 import { useCouponStore, Coupon } from "@/stores/couponStore";
 import { toast } from "sonner";
+import Image from "next/image";
 
 type FormValues = {
   code: string; // VARCHAR(50) NOT NULL UNIQUE
@@ -33,7 +34,10 @@ export default function EditCouponPage() {
   const { getCouponById, updateCoupon, validateCouponCode } = useCouponStore();
 
   const [initialLoading, setInitialLoading] = useState(true);
-
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [removeCurrentImage, setRemoveCurrentImage] = useState(false);
   const {
     register,
     handleSubmit,
@@ -53,7 +57,7 @@ export default function EditCouponPage() {
         const formatDateForInput = (dateString?: string) => {
           if (!dateString) return "";
           const date = new Date(dateString);
-          return date.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
+          return date.toISOString().slice(0, 16);
         };
 
         reset({
@@ -68,6 +72,9 @@ export default function EditCouponPage() {
           endsAt: formatDateForInput(coupon.endsAt),
           isActive: coupon.isActive,
         });
+        if (coupon.imageUrl) {
+          setCurrentImageUrl(coupon.imageUrl);
+        }
       } else {
         toast.error("Không tìm thấy mã giảm giá");
         router.push("/coupon-list");
@@ -77,7 +84,28 @@ export default function EditCouponPage() {
 
     loadCoupon();
   }, [couponId, getCouponById, router, reset]);
-
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      setRemoveCurrentImage(true);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  const handleRemoveNewImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    setRemoveCurrentImage(false);
+  };
+  const handleRemoveCurrentImage = () => {
+    setCurrentImageUrl(null);
+    setRemoveCurrentImage(true);
+    toast.info("Ảnh sẽ bị xóa khi bạn lưu thay đổi");
+  };
   const onSubmit = async (data: FormValues) => {
     // Validate coupon code uniqueness (excluding current coupon)
     if (!validateCouponCode(data.code, couponId)) {
@@ -108,7 +136,7 @@ export default function EditCouponPage() {
         isActive: data.isActive,
       };
 
-      updateCoupon(couponId, couponData);
+      updateCoupon(couponId, couponData, selectedImage || undefined);
       toast.success("Cập nhật mã giảm giá thành công!");
       router.push("/coupon-list");
     } catch (error) {
@@ -124,10 +152,11 @@ export default function EditCouponPage() {
       </div>
     );
   }
-
+  const displayImage =
+    imagePreview ||
+    (currentImageUrl && !removeCurrentImage ? currentImageUrl : null);
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
           <Link href="/coupon-list">
@@ -197,13 +226,18 @@ export default function EditCouponPage() {
                   {...register("value", {
                     required: "Giá trị giảm không được để trống",
                     min: { value: 0, message: "Giá trị phải lớn hơn 0" },
-                    max: { value: 100, message: "Giá trị không được vượt quá 100%" },
+                    max: {
+                      value: 100,
+                      message: "Giá trị không được vượt quá 100%",
+                    },
                   })}
                   placeholder="VD: 10"
                   className={errors.value ? "border-red-500" : ""}
                   disabled={isSubmitting}
                 />
-                <p className="text-xs text-muted-foreground">Nhập giá trị từ 0-100 (phần trăm)</p>
+                <p className="text-xs text-muted-foreground">
+                  Nhập giá trị từ 0-100 (phần trăm)
+                </p>
                 {errors.value && (
                   <p className="text-sm text-red-500">{errors.value.message}</p>
                 )}
@@ -293,6 +327,53 @@ export default function EditCouponPage() {
                 rows={3}
                 disabled={isSubmitting}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Hình ảnh mã giảm giá</Label>
+              <div className="flex items-start gap-4">
+                {/* Image Preview/Display */}
+                {displayImage ? (
+                  <div className="relative w-48 h-48 border-2 border-dashed rounded-lg overflow-hidden">
+                    <Image
+                      src={displayImage}
+                      alt="Coupon Image"
+                      fill
+                      className="object-cover"
+                      unoptimized={displayImage.includes("cloudinary")}
+                    />
+                    <button
+                      type="button"
+                      onClick={
+                        imagePreview
+                          ? handleRemoveNewImage
+                          : handleRemoveCurrentImage
+                      }
+                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      title={imagePreview ? "Hủy ảnh mới" : "Xóa ảnh hiện tại"}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    {imagePreview && (
+                      <div className="absolute bottom-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                        Ảnh mới
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <label className="w-48 h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
+                    <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-500">Chọn ảnh</span>
+                    <span className="text-xs text-gray-400 mt-1">Max 5MB</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                      disabled={isSubmitting}
+                    />
+                  </label>
+                )}
+              </div>
             </div>
 
             {/* Is Active */}
