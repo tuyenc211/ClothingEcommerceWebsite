@@ -143,8 +143,7 @@ export const useUserStore = create<UserState>()(
             password: staffData.password,
             fullName: staffData.fullName,
             phone: staffData.phone,
-            isActive: staffData.isActive ?? true,
-            roleIds: [1],
+            roleIds: 1,
           });
 
           const newUser = response.data?.data || response.data;

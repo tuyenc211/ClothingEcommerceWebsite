@@ -234,8 +234,43 @@ export const useReviewStore = create<ReviewState>()(
       },
 
       fetchReviewsByUser: async (user_id) => {
-        const { reviews } = get();
-        return reviews.filter((review) => review.user_id === user_id);
+        set({ isLoading: true, error: null });
+        try {
+          const response = await privateClient.get(`/reviews/user/${user_id}`);
+          const userReviews: Review[] = response.data.map((review: Review) => ({
+            id: review.id,
+            product_id: review.product?.id,
+            user_id: review.user?.id,
+            order_id: review.order?.id,
+            rating: review.rating,
+            title: review.title,
+            content: review.content,
+            is_approved: review.is_approved,
+            createdAt: review.createdAt,
+            user: {
+              id: review.user?.id,
+              fullName: review.user?.fullName,
+              email: review.user?.email,
+            },
+            product: {
+              id: review.product?.id,
+              name: review.product?.name,
+              slug: review.product?.slug,
+            },
+            order: review.order,
+          }));
+
+          set({ isLoading: false });
+          return userReviews;
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const errorMsg =
+            axiosError?.response?.data?.message ||
+            "Không thể tải đánh giá của người dùng.";
+          set({ error: errorMsg, isLoading: false });
+          console.error("❌ Fetch user reviews error:", errorMsg);
+          return [];
+        }
       },
 
       getApprovedReviews: () => {

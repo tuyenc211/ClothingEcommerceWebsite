@@ -1,5 +1,15 @@
 "use client";
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import useAuthStore from "@/stores/useAuthStore";
@@ -29,6 +39,7 @@ import {
   Ruler,
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 // import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 interface SidebarItem {
@@ -103,12 +114,16 @@ interface SidebarProps {
   onCollapse: (collapsed: boolean) => void;
   className?: string;
   handleLogout: () => void;
+  showLogoutDialog: boolean;
+  setShowLogoutDialog: (showLogoutDialog: boolean) => void;
 }
 
 function Sidebar({
   collapsed,
   className,
   handleLogout,
+  showLogoutDialog,
+  setShowLogoutDialog,
 }: Omit<SidebarProps, "onCollapse">) {
   const { isAdmin } = useAuthStore();
   const [openItems, setOpenItems] = useState<string[]>([]);
@@ -205,18 +220,42 @@ function Sidebar({
         <div className="px-3">
           <div className="space-y-1">
             {filteredSidebarItems.map((item) => renderSidebarItem(item))}
-            <Button
-              variant="ghost"
-              className={cn(
-                "w-full",
-                collapsed && "justify-center",
-                " justify-start text-left text-white hover:text-red-400"
-              )}
-              onClick={handleLogout}
+            <AlertDialog
+              open={showLogoutDialog}
+              onOpenChange={setShowLogoutDialog}
             >
-              <LogOut className="mr-2 h-4 w-4" />
-              {!collapsed && <span>Đăng xuất</span>}
-            </Button>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-full",
+                    collapsed && "justify-center",
+                    " justify-start text-left text-white hover:text-red-400"
+                  )}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {!collapsed && <span>Đăng xuất</span>}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Xác nhận đăng xuất</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Bạn có chắc chắn muốn đăng xuất khỏi hệ thống quản trị
+                    không?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Hủy</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleLogout}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Đăng xuất
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>
@@ -231,16 +270,19 @@ export default function DashboardLayout({
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const { authUser, logout } = useAuthStore();
   const router = useRouter();
 
   const handleLogout = async () => {
     try {
       await logout();
-      window.location.href = "/login";
+      setShowLogoutDialog(false); // Đóng dialog
+      router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
-      window.location.href = "/login";
+      setShowLogoutDialog(false); // Đóng dialog dù có lỗi
+      toast.error("Đăng xuất thất bại");
     }
   };
 
@@ -259,6 +301,8 @@ export default function DashboardLayout({
             collapsed={collapsed}
             className="text-white"
             handleLogout={handleLogout}
+            showLogoutDialog={showLogoutDialog}
+            setShowLogoutDialog={setShowLogoutDialog}
           />
         </ScrollArea>
       </div>
@@ -274,6 +318,8 @@ export default function DashboardLayout({
               collapsed={false}
               className="text-white"
               handleLogout={handleLogout}
+              showLogoutDialog={showLogoutDialog}
+              setShowLogoutDialog={setShowLogoutDialog}
             />
           </ScrollArea>
         </SheetContent>
@@ -341,15 +387,41 @@ export default function DashboardLayout({
                     <DropdownMenuItem>Xem hồ sơ</DropdownMenuItem>
                   </Link>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start text-left text-red-600 hover:text-red-400"
-                      onClick={handleLogout}
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <AlertDialog
+                      open={showLogoutDialog}
+                      onOpenChange={setShowLogoutDialog}
                     >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Đăng xuất
-                    </Button>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start text-left text-red-600 hover:text-red-400"
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Đăng xuất
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Xác nhận đăng xuất
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Bạn có chắc chắn muốn đăng xuất khỏi hệ thống quản
+                            trị không?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Hủy</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleLogout}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Đăng xuất
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

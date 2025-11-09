@@ -92,9 +92,9 @@ export default function UsersManagementPage() {
           const roleName = role.name.toLowerCase();
           switch (selectedRole.name) {
             case "CUSTOMER":
-              return roleName === "CUSTOMER";
+              return roleName === "customer";
             case "STAFF":
-              return roleName === "STAFF";
+              return roleName === "staff";
             default:
               return false;
           }
@@ -280,7 +280,7 @@ export default function UsersManagementPage() {
                   Tất cả ({users.length})
                 </Button>
                 <Button
-                  onClick={() => setSelectedRole({ id: 3, name: "CUSTOMER" })}
+                  onClick={() => setSelectedRole({ id: 2, name: "CUSTOMER" })}
                   variant={
                     selectedRole !== "all" && selectedRole.name === "CUSTOMER"
                       ? "default"
@@ -293,7 +293,7 @@ export default function UsersManagementPage() {
                   Khách hàng ({stats.totalCustomers})
                 </Button>
                 <Button
-                  onClick={() => setSelectedRole({ id: 2, name: "STAFF" })}
+                  onClick={() => setSelectedRole({ id: 1, name: "STAFF" })}
                   variant={
                     selectedRole !== "all" && selectedRole.name === "STAFF"
                       ? "default"

@@ -6,7 +6,7 @@ import { FreeMode, Navigation, Thumbs } from "swiper/modules";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Zoom from "react-medium-image-zoom";
-import "src/lib/styles.css";
+import "react-medium-image-zoom/dist/styles.css";
 // Import Swiper styles
 import "swiper/css";
 import "swiper/css/free-mode";
