@@ -1,6 +1,16 @@
 "use client";
-
-import { ReactNode } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { ReactNode, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -15,6 +25,7 @@ import {
   MapPin,
   Star,
 } from "lucide-react";
+import { toast } from "sonner";
 interface UserLayoutProps {
   children: ReactNode;
 }
@@ -46,15 +57,15 @@ export default function UserLayout({ children }: UserLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { authUser, logout } = useAuthStore();
-
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const handleLogout = async () => {
     try {
       await logout();
-      // Redirect về trang chủ sau khi logout thành công
+      setShowLogoutDialog(false);
       router.push("/");
     } catch {
-      // Vẫn redirect về home dù logout API fail
-      router.push("/");
+      setShowLogoutDialog(false);
+      toast.error("Đăng xuất thất bại");
     }
   };
   return (
@@ -118,14 +129,37 @@ export default function UserLayout({ children }: UserLayoutProps) {
 
               {/* Logout Button */}
               <div className="mt-6 pt-6 border-t">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                  onClick={handleLogout}
+                <AlertDialog
+                  open={showLogoutDialog}
+                  onOpenChange={setShowLogoutDialog}
                 >
-                  <LogOut className="h-5 w-5 mr-3" />
-                  Đăng Xuất
-                </Button>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <LogOut className="h-5 w-5 mr-3" />
+                      Đăng Xuất
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Xác nhận đăng xuất</AlertDialogTitle>
+                    </AlertDialogHeader>
+                    <AlertDialogDescription>
+                      Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này?
+                    </AlertDialogDescription>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Hủy</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleLogout}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Đăng Xuất
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           </div>
