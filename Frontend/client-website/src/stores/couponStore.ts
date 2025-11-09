@@ -16,6 +16,7 @@ export interface Coupon {
   startsAt?: string;
   endsAt?: string;
   isActive: boolean;
+  imageUrl?: string;
 }
 
 interface CouponStore {
