@@ -33,7 +33,8 @@ spring:
     tmn-code: M5O0LLB4
     secret-key: 9QPZCMNLUCBBFWPEWYVOENQM7LCKE6ND
     pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-    return-url: http://localhost:3000/payment/vn-pay-callback
+    return-url: http://localhost:8088/api/v1/payment/vn-pay-callback
+#    return-url: http://clothingecommercewebsite.onrender.com/api/v1/payment/vn-pay-callback
     version: 2.1.0
     command: pay
     order-type: other

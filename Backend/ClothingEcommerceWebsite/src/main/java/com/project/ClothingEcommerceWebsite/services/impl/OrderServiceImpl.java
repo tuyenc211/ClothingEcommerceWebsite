@@ -38,21 +38,24 @@ public class OrderServiceImpl implements OrderService {
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Cart is empty");
         }
-
         double subtotal = cartItems.stream()
                 .mapToDouble(i -> i.getUnitPrice() * i.getQuantity())
                 .sum();
-
         double shippingFee = 30000.0;
         double grandTotal = subtotal + shippingFee;
-
+        Enums.PaymentStatus paymentStatus;
+        if(request.getPaymentMethod().equals("COD")) {
+            paymentStatus = Enums.PaymentStatus.PAID;
+        } else {
+            paymentStatus = Enums.PaymentStatus.UNPAID;
+        }
         // Tạo đơn hàng
         Order order = Order.builder()
                 .user(user)
                 .code("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .status(Enums.OrderStatus.NEW)
                 .paymentMethod(request.getPaymentMethod())
-                .paymentStatus(Enums.PaymentStatus.UNPAID)
+                .paymentStatus(paymentStatus)
                 .subtotal(subtotal)
                 .discountTotal(0.0)
                 .shippingFee(shippingFee)
@@ -184,6 +187,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         Enums.PaymentStatus newStatus = Enums.PaymentStatus.valueOf(status.toUpperCase());
         order.setPaymentStatus(newStatus);
+        order.setPaidAt(LocalDateTime.now());
         orderRepository.save(order);
         return order;
     }

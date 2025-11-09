@@ -45,10 +45,12 @@ public class PaymentController {
             Long neworderId = Long.parseLong(orderId);
             if ("00".equals(responseCode)) {
                 orderService.updatePaymentStatus(neworderId, "PAID");
-                response.sendRedirect("http://localhost:3000/checkout?status=success");
+                // response.sendRedirect("http://localhost:3000/checkout?status=success");
+                response.sendRedirect("http://clothing-ecommerce-website-client.vercel.app/checkout?status=success");
             } else {
                 orderService.updatePaymentStatus(neworderId, "FAILED");
-                response.sendRedirect("http://localhost:3000/checkout?status=fail");
+                // response.sendRedirect("http://localhost:3000/checkout?status=fail");
+                response.sendRedirect("http://clothing-ecommerce-website-client.vercel.app/checkout?status=success");
             }
 
         } catch (Exception e) {
