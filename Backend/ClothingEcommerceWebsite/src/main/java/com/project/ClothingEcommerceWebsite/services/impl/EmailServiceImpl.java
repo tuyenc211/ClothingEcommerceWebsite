@@ -1,46 +1,54 @@
 package com.project.ClothingEcommerceWebsite.services.impl;
 
 import com.project.ClothingEcommerceWebsite.services.EmailService;
+import com.sendgrid.*;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
-    private final JavaMailSender mailSender;
+    @Value("${spring.sendgrid.from-email}")
+    private String fromEmail;
+
+    private final SendGrid sendGrid;
 
     @Override
     public void sendResetPasswordEmail(String title, String toEmail, String resetLink) {
         String htmlContent = buildEmailTemplate(title, "đặt lại mật khẩu", resetLink, "Đặt lại mật khẩu");
-        sendHtmlEmail(title, toEmail, htmlContent);
+        sendEmailSendGrid(title, toEmail, htmlContent);
     }
 
     @Override
     public void sendConfirmEmail(String title, String toEmail, String confirmLink) {
         String htmlContent = buildEmailTemplate(title, "xác thực email", confirmLink, "Xác thực ngay");
-        sendHtmlEmail(title, toEmail, htmlContent);
+        sendEmailSendGrid(title, toEmail, htmlContent);
     }
 
-    private void sendHtmlEmail(String subject, String toEmail, String htmlContent) {
+    private void sendEmailSendGrid(String subject, String toEmail, String htmlContent) {
+        Email from = new Email(fromEmail);
+        Email to = new Email(toEmail);
+        Content content = new Content("text/html", htmlContent);
+        Mail mail = new Mail(from, subject, to, content);
+
+        Request request = new Request();
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
 
-            helper.setTo(toEmail);
-            helper.setFrom("oganiboss11@gmail.com");
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Lỗi khi gửi email: " + e.getMessage(), e);
+            Response response = sendGrid.api(request);
+            System.out.println("SendGrid response status: " + response.getStatusCode());
+        } catch (IOException ex) {
+            throw new RuntimeException("Lỗi khi gửi email qua SendGrid: " + ex.getMessage(), ex);
         }
     }
 
