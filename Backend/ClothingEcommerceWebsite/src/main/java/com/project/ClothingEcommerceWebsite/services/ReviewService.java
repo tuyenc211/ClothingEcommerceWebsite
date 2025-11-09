@@ -9,6 +9,7 @@ public interface ReviewService {
     Review createReview(Long userId, CreateReviewRequest request);
     Review updateReview(Long userId, Long reviewId, CreateReviewRequest request);
     void deleteReview(Long userId, Long reviewId);
-
     List<Review> getReviewByProduct(Long productId);
+    List<Review> getReviewByUser(Long userId);
+
 }
