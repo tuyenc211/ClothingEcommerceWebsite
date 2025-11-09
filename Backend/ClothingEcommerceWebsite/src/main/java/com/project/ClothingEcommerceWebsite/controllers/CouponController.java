@@ -4,12 +4,16 @@ import com.project.ClothingEcommerceWebsite.dtos.request.CreateCategoryRequest;
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateCouponRequest;
 import com.project.ClothingEcommerceWebsite.models.Category;
 import com.project.ClothingEcommerceWebsite.models.Coupon;
+import com.project.ClothingEcommerceWebsite.models.ProductImage;
 import com.project.ClothingEcommerceWebsite.services.CouponService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("${api.prefix}/coupons")

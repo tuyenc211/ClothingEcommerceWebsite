@@ -23,7 +23,6 @@ import java.util.Map;
 public class ProductController {
 
     private final ProductService productService;
-    private final CloudinaryService cloudinaryService;
     private final ProductImageService productImageService;
 
     @PostMapping("")
