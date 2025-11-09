@@ -1,11 +1,34 @@
+import {useCouponStore} from "@/stores/couponStore";
+import {useEffect, useMemo} from "react";
+import {banner} from "@/data/banner";
+
 export default function OfferBanner() {
+    const { coupons, fetchCoupons  } = useCouponStore();
+    useEffect(() => {
+        // Fetch coupons khi component mount
+        fetchCoupons();
+    }, [fetchCoupons]);
+
+    // Lấy các coupon active có ảnh
+    const couponBanners = useMemo(() => {
+        return coupons
+            .filter((coupon) => coupon.imageUrl) // Chỉ lấy coupon có ảnh
+            .map((coupon) => ({
+                id: coupon.id,
+                image: coupon.imageUrl,
+                title: coupon.name,
+                description: coupon.description || "",
+                code: coupon.code,
+                value: coupon.value,
+            }));
+    }, [coupons]);
   return (
     <section className="relative h-[300px] md:h-[500px] lg:h-[600px]  md:max-w-7xl max-w-xl w-[90%]  mx-auto overflow-hidden rounded-xl my-10">
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url(/images/Banners/OfferBanner.jpg)`,
+          backgroundImage: `${couponBanners.at(0)?.image ? `url(${couponBanners.at(0)?.image})` : `url(/images/Banners/OfferBanner.jpg)`}`,
         }}
       />
 

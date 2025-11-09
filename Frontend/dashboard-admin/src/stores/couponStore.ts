@@ -17,6 +17,7 @@ export interface Coupon {
   startsAt?: string;
   endsAt?: string;
   isActive: boolean;
+    imageUrl?: string;
 }
 
 export interface CouponRedemption {
@@ -42,9 +43,9 @@ interface CouponStore {
   fetchCoupons: () => Promise<void>;
   getCouponById: (id: number) => Promise<Coupon>;
   addCoupon: (
-    couponData: Omit<Coupon, "id" | "createdAt" | "updatedAt">
+    couponData: Omit<Coupon, "id" | "createdAt" | "updatedAt">, image?: File
   ) => Promise<void>;
-  updateCoupon: (id: number, couponData: Partial<Coupon>) => Promise<void>;
+  updateCoupon: (id: number, couponData: Partial<Coupon>,image?: File) => Promise<void>;
   deleteCoupon: (id: number) => Promise<void>;
 
   searchCoupons: (query: string) => Coupon[];
@@ -115,10 +116,31 @@ export const useCouponStore = create<CouponStore>()(
         }
       },
 
-      addCoupon: async (couponData) => {
+      addCoupon: async (couponData,image) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await privateClient.post("/coupons", couponData);
+            const formData = new FormData();
+            formData.append("code", couponData.code);
+            formData.append("name", couponData.name);
+            if (couponData.description) formData.append("description", couponData.description);
+            formData.append("value", couponData.value.toString());
+            if (couponData.maxUses) formData.append("maxUses", couponData.maxUses.toString());
+            if (couponData.maxUsesPerUser) formData.append("maxUsesPerUser", couponData.maxUsesPerUser.toString());
+            if (couponData.minOrderTotal) formData.append("minOrderTotal", couponData.minOrderTotal.toString());
+            if (couponData.startsAt) formData.append("startsAt", couponData.startsAt);
+            if (couponData.endsAt) formData.append("endsAt", couponData.endsAt);
+            formData.append("isActive", couponData.isActive.toString());
+
+            // Append image if provided
+            if (image) {
+                formData.append("image", image);
+            }
+
+            const response = await privateClient.post("/coupons", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
           const newCoupon = response.data.data || response.data;
 
           set((state) => ({
@@ -145,13 +167,37 @@ export const useCouponStore = create<CouponStore>()(
         }
       },
 
-      updateCoupon: async (id: number, couponData) => {
+      updateCoupon: async (id: number, couponData,image) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await privateClient.put(
-            `/coupons/${id}`,
-            couponData
-          );
+            const formData = new FormData();
+
+            // Append all coupon fields
+            if (couponData.code) formData.append("code", couponData.code);
+            if (couponData.name) formData.append("name", couponData.name);
+            if (couponData.description !== undefined) formData.append("description", couponData.description);
+            if (couponData.value !== undefined) formData.append("value", couponData.value.toString());
+            if (couponData.maxUses !== undefined) formData.append("maxUses", couponData.maxUses.toString());
+            if (couponData.maxUsesPerUser !== undefined) formData.append("maxUsesPerUser", couponData.maxUsesPerUser.toString());
+            if (couponData.minOrderTotal !== undefined) formData.append("minOrderTotal", couponData.minOrderTotal.toString());
+            if (couponData.startsAt !== undefined) formData.append("startsAt", couponData.startsAt);
+            if (couponData.endsAt !== undefined) formData.append("endsAt", couponData.endsAt);
+            if (couponData.isActive !== undefined) formData.append("isActive", couponData.isActive.toString());
+
+            // Append image if provided
+            if (image) {
+                formData.append("image", image);
+            }
+
+            const response = await privateClient.put(
+                `/coupons/${id}`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
           const updatedCoupon = response.data.data || response.data;
 
           set((state) => ({

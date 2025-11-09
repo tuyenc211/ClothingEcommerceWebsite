@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Save } from "lucide-react";
+import {ArrowLeft, ImageIcon, Save, X} from "lucide-react";
 import { toast } from "sonner";
 import { useCouponStore, Coupon } from "@/stores/couponStore";
+import {useState} from "react";
+import Image from "next/image";
 
 type FormValues = {
   code: string; // VARCHAR(50) NOT NULL UNIQUE
@@ -28,6 +30,8 @@ type FormValues = {
 
 export default function AddCouponPage() {
   const router = useRouter();
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
   const { addCoupon, validateCouponCode } = useCouponStore();
 
   const {
@@ -52,7 +56,23 @@ export default function AddCouponPage() {
   });
 
   const isActive = watch("isActive");
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedImage(file);
 
+            // Create preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    const handleRemoveImage = () => {
+        setSelectedImage(null);
+        setImagePreview(null);
+    };
   const onSubmit = async (data: FormValues) => {
     // Validate coupon code uniqueness
     if (!validateCouponCode(data.code)) {
@@ -83,7 +103,7 @@ export default function AddCouponPage() {
         isActive: data.isActive,
       };
 
-      addCoupon(couponData);
+      addCoupon(couponData, selectedImage || undefined);
       toast.success("Thêm mã giảm giá thành công!");
       router.push("/coupon-list");
     } catch (error) {
@@ -261,7 +281,43 @@ export default function AddCouponPage() {
                 disabled={isSubmitting}
               />
             </div>
+              <div className="space-y-2">
+                  <Label>Hình ảnh mã giảm giá</Label>
+                  <div className="flex items-start gap-4">
+                      {/* Image Preview */}
+                      {imagePreview ? (
+                          <div className="relative w-48 h-48 border-2 border-dashed rounded-lg overflow-hidden">
+                              <Image
+                                  src={imagePreview}
+                                  alt="Preview"
+                                  fill
+                                  className="object-cover"
+                              />
+                              <button
+                                  type="button"
+                                  onClick={handleRemoveImage}
+                                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                              >
+                                  <X className="w-4 h-4" />
+                              </button>
+                          </div>
+                      ) : (
+                          <label className="w-48 h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
+                              <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
+                              <span className="text-sm text-gray-500">Chọn ảnh</span>
+                              <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleImageChange}
+                                  className="hidden"
+                                  disabled={isSubmitting}
+                              />
+                          </label>
+                      )}
 
+                      {/* Upload Instructions */}
+                  </div>
+              </div>
             {/* Is Active */}
             <div className="flex items-center space-x-2">
               <Switch
