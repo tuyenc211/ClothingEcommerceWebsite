@@ -55,6 +55,8 @@ import { Role, User } from "@/stores/useAuthStore";
 import EditUserModal from "@/components/shared/EditUserModal";
 import Link from "next/link";
 import { RoleGuard } from "@/components/auth/RoleGuard";
+import { usePagination } from "@/lib/usePagination";
+import PaginationBar from "@/components/shared/PaginationBar";
 
 export default function UsersManagementPage() {
   const {
@@ -104,6 +106,26 @@ export default function UsersManagementPage() {
 
     setFilteredUsers(filtered);
   }, [selectedRole, users]);
+
+  // Pagination calculation
+  const {
+    currentPage,
+    setPage,
+    totalPages,
+    startIndex,
+    endIndex,
+    pageNumbers,
+    slice,
+  } = usePagination({
+    totalItems: filteredUsers.length,
+    itemsPerPage: 10,
+    showPages: 5,
+  });
+  const paginatedUsers = slice(filteredUsers);
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [selectedRole]);
 
   // Handler
 
@@ -338,7 +360,7 @@ export default function UsersManagementPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user) => (
+                {paginatedUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
                       <div className="font-medium">{user.id}</div>
@@ -446,6 +468,23 @@ export default function UsersManagementPage() {
             </Table>
           </CardContent>
         </Card>
+
+        {/* Pagination */}
+        <PaginationBar
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageNumbers={pageNumbers}
+          onPageChange={setPage}
+        />
+
+        {/* Results info */}
+        {filteredUsers.length > 0 && (
+          <div className="mt-4 text-center text-sm text-gray-500">
+            Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredUsers.length)}{" "}
+            trong số {filteredUsers.length} tài khoản
+          </div>
+        )}
+
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <AlertDialogContent>

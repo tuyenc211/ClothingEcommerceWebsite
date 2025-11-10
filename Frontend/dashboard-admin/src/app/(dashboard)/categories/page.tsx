@@ -22,19 +22,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { toast } from "sonner";
 
 export default function CategoriesPage() {
-  const {
-    deleteCategory,
-    categories,
-    fetchCategories,
-    isLoading,
-    error,
-  } = useCategoryStore();
+  const { deleteCategory, categories, fetchCategories, isLoading, error } =
+    useCategoryStore();
 
   useEffect(() => {
     fetchCategories();
@@ -49,6 +52,8 @@ export default function CategoriesPage() {
     categoryId: null,
     categoryName: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const rootCategories = categories.filter((category) => !category.parentId);
 
@@ -90,6 +95,36 @@ export default function CategoriesPage() {
       </div>
     );
   }
+
+  // Pagination calculation
+  const totalPages = Math.ceil(rootCategories.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedCategories = rootCategories.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = [];
+    const showPages = 5;
+    const half = Math.floor(showPages / 2);
+
+    let start = Math.max(1, currentPage - half);
+    const end = Math.min(totalPages, start + showPages - 1);
+
+    if (end - start < showPages - 1) {
+      start = Math.max(1, end - showPages + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  };
 
   return (
     <div className="space-y-6">
@@ -134,7 +169,7 @@ export default function CategoriesPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                rootCategories.map((category) => (
+                paginatedCategories.map((category) => (
                   <TableRow key={category.id}>
                     <TableCell className="font-medium">{category.id}</TableCell>
                     <TableCell>{category.name}</TableCell>
@@ -171,6 +206,56 @@ export default function CategoriesPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              {/* Previous Button */}
+              {currentPage > 1 && (
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className="cursor-pointer"
+                  />
+                </PaginationItem>
+              )}
+
+              {/* Page Numbers */}
+              {getPageNumbers().map((pageNum) => (
+                <PaginationItem key={pageNum}>
+                  <PaginationLink
+                    onClick={() => handlePageChange(pageNum)}
+                    isActive={pageNum === currentPage}
+                    className="cursor-pointer"
+                  >
+                    {pageNum}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              {/* Next Button */}
+              {currentPage < totalPages && (
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    className="cursor-pointer"
+                  />
+                </PaginationItem>
+              )}
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
+      {/* Results info */}
+      {rootCategories.length > 0 && (
+        <div className="mt-4 text-center text-sm text-gray-500">
+          Hiển thị {startIndex + 1}-{Math.min(endIndex, rootCategories.length)}{" "}
+          trong số {rootCategories.length} danh mục chính
+        </div>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog
