@@ -20,6 +20,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Plus, Edit, Trash2, Ruler } from "lucide-react";
 import Link from "next/link";
 
@@ -34,6 +42,8 @@ export default function SizeListPage() {
     sizeId: null,
     sizeName: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const handleDeleteClick = (id: number, name: string) => {
     setDeleteModal({
@@ -77,6 +87,39 @@ export default function SizeListPage() {
       </div>
     );
   }
+
+  // Sort sizes by sortOrder
+  const sortedSizes = [...sizes].sort((a, b) => a.sortOrder - b.sortOrder);
+
+  // Pagination calculation
+  const totalPages = Math.ceil(sortedSizes.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSizes = sortedSizes.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = [];
+    const showPages = 5;
+    const half = Math.floor(showPages / 2);
+
+    let start = Math.max(1, currentPage - half);
+    const end = Math.min(totalPages, start + showPages - 1);
+
+    if (end - start < showPages - 1) {
+      start = Math.max(1, end - showPages + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  };
 
   return (
     <div className="space-y-6">
@@ -139,48 +182,94 @@ export default function SizeListPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  sizes
-                    .sort((a, b) => a.sortOrder - b.sortOrder)
-                    .map((size) => (
-                      <TableRow key={size.id}>
-                        <TableCell>
-                          <Badge variant="outline" className="font-mono">
-                            {size.code}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {size.name}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">{size.sortOrder}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end space-x-2">
-                            <Button variant="outline" size="sm" asChild>
-                              <Link href={`/sizes/edit/${size.id}`}>
-                                <Edit className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleDeleteClick(size.id, size.name)
-                              }
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                  paginatedSizes.map((size) => (
+                    <TableRow key={size.id}>
+                      <TableCell>
+                        <Badge variant="outline" className="font-mono">
+                          {size.code}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-medium">{size.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{size.sortOrder}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end space-x-2">
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/sizes/edit/${size.id}`}>
+                              <Edit className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              handleDeleteClick(size.id, size.name)
+                            }
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
               </TableBody>
             </Table>
           </div>
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              {/* Previous Button */}
+              {currentPage > 1 && (
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className="cursor-pointer"
+                  />
+                </PaginationItem>
+              )}
+
+              {/* Page Numbers */}
+              {getPageNumbers().map((pageNum) => (
+                <PaginationItem key={pageNum}>
+                  <PaginationLink
+                    onClick={() => handlePageChange(pageNum)}
+                    isActive={pageNum === currentPage}
+                    className="cursor-pointer"
+                  >
+                    {pageNum}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              {/* Next Button */}
+              {currentPage < totalPages && (
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    className="cursor-pointer"
+                  />
+                </PaginationItem>
+              )}
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
+      {/* Results info */}
+      {sizes.length > 0 && (
+        <div className="mt-4 text-center text-sm text-gray-500">
+          Hiển thị {startIndex + 1}-{Math.min(endIndex, sortedSizes.length)}{" "}
+          trong số {sortedSizes.length} kích thước
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       <CustomModal

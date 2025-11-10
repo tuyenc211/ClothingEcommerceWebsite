@@ -20,6 +20,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Plus, Edit, Trash2, Palette } from "lucide-react";
 import Link from "next/link";
 
@@ -35,6 +43,8 @@ export default function ColorListPage() {
     colorId: null,
     colorName: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const handleDeleteClick = (id: number, name: string) => {
     setDeleteModal({
       open: true,
@@ -77,6 +87,36 @@ export default function ColorListPage() {
       </div>
     );
   }
+
+  // Pagination calculation
+  const totalPages = Math.ceil(colors.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedColors = colors.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = [];
+    const showPages = 5;
+    const half = Math.floor(showPages / 2);
+
+    let start = Math.max(1, currentPage - half);
+    const end = Math.min(totalPages, start + showPages - 1);
+
+    if (end - start < showPages - 1) {
+      start = Math.max(1, end - showPages + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  };
 
   return (
     <div className="space-y-6">
@@ -137,7 +177,7 @@ export default function ColorListPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  colors.map((color) => (
+                  paginatedColors.map((color) => (
                     <TableRow key={color.id}>
                       <TableCell>
                         <div className="flex items-center space-x-2">
@@ -192,6 +232,56 @@ export default function ColorListPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              {/* Previous Button */}
+              {currentPage > 1 && (
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className="cursor-pointer"
+                  />
+                </PaginationItem>
+              )}
+
+              {/* Page Numbers */}
+              {getPageNumbers().map((pageNum) => (
+                <PaginationItem key={pageNum}>
+                  <PaginationLink
+                    onClick={() => handlePageChange(pageNum)}
+                    isActive={pageNum === currentPage}
+                    className="cursor-pointer"
+                  >
+                    {pageNum}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              {/* Next Button */}
+              {currentPage < totalPages && (
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    className="cursor-pointer"
+                  />
+                </PaginationItem>
+              )}
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
+      {/* Results info */}
+      {colors.length > 0 && (
+        <div className="mt-4 text-center text-sm text-gray-500">
+          Hiển thị {startIndex + 1}-{Math.min(endIndex, colors.length)} trong số{" "}
+          {colors.length} màu sắc
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       <CustomModal

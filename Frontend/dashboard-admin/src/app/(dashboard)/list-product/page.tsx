@@ -29,7 +29,9 @@ import { useCategoryStore } from "@/stores/categoryStore";
 import { Edit, Trash2, MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import {formatCurrency} from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { usePagination } from "@/lib/usePagination";
+import PaginationBar from "@/components/shared/PaginationBar";
 
 export default function ProductListPage() {
   const { products, fetchProducts, deleteProduct } = useProductStore();
@@ -57,8 +59,20 @@ export default function ProductListPage() {
       // Error already handled by store with toast
     }
   };
-
-  // Format currency VND
+  const {
+    currentPage,
+    setPage,
+    totalPages,
+    startIndex,
+    endIndex,
+    pageNumbers,
+    slice,
+  } = usePagination({
+    totalItems: products.length,
+    itemsPerPage: 10,
+    showPages: 5,
+  });
+  const paginatedProducts = slice(products);
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -97,7 +111,7 @@ export default function ProductListPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((product, index) => {
+              {paginatedProducts.map((product, index) => {
                 const category = categories.find(
                   (c) => c.id === product.category.id
                 );
@@ -181,6 +195,19 @@ export default function ProductListPage() {
           )}
         </CardContent>
       </Card>
+      <PaginationBar
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageNumbers={pageNumbers}
+        onPageChange={setPage}
+      />
+      {/* Results info */}
+      {products.length > 0 && (
+        <div className="mt-4 text-center text-sm text-gray-500">
+          Hiển thị {startIndex + 1}-{Math.min(endIndex, products.length)} trong
+          số {products.length} sản phẩm
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       <CustomModal
