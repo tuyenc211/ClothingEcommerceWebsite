@@ -7,6 +7,7 @@ import com.project.ClothingEcommerceWebsite.models.Coupon;
 import com.project.ClothingEcommerceWebsite.models.ProductImage;
 import com.project.ClothingEcommerceWebsite.services.CouponService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,8 +21,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CouponController {
     private final CouponService couponService;
-    @PostMapping("")
-    public ResponseEntity<?> createCoupon(@Valid @RequestBody CreateCouponRequest request) {
+    @PostMapping(value = "",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createCoupon(@Valid @ModelAttribute CreateCouponRequest request) {
         Coupon coupon = couponService.createCoupon(request);
         return ResponseEntity.ok(coupon);
     }
@@ -44,6 +45,7 @@ public class CouponController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCoupon(@PathVariable Long id) {
-        return ResponseEntity.ok(deleteCoupon(id));
+        couponService.deleteCoupon(id);
+        return ResponseEntity.ok("");
     }
 }
