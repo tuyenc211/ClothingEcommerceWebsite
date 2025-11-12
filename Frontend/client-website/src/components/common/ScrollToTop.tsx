@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ChevronUp } from "lucide-react";
-import { Component } from "../button-rotate";
+import { Component } from "../ui/button-rotate";
 export default function ScrollToTopAndContactButton() {
   const [isVisible, setIsVisible] = useState(false);
 

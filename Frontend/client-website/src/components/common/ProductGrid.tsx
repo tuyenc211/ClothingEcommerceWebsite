@@ -60,10 +60,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             </h2>
           )}
           <div className="h-[2px] bg-gradient-to-r from-[#EEEEEE] to-[#111111] flex-1" />
-
-          {/* {subtitle && (
-              <p className="text-gray-600 max-w-2xl mx-auto">{subtitle}</p>
-            )} */}
         </div>
       )}
 
