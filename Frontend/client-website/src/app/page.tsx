@@ -14,6 +14,7 @@ export default function Home() {
   const { fetchProducts } = useProductStore();
   const {fetchColors} = useColorStore();
   const {fetchSizes} = useSizeStore();
+
   useEffect(() => {
     fetchProducts()
     fetchColors();
