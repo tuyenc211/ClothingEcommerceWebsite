@@ -5,7 +5,6 @@ interface ProductGridProps {
   products: ProductItemProps[];
   title?: string;
   subtitle?: string;
-  onAddToCart?: (productId: number) => void;
   showLoadMore?: boolean;
   onLoadMore?: () => void;
   isLoading?: boolean;
@@ -15,7 +14,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   products,
   title,
   subtitle,
-  onAddToCart,
   showLoadMore = false,
   onLoadMore,
   isLoading = false,

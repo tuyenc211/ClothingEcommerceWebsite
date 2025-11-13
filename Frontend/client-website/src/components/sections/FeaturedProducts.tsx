@@ -50,8 +50,6 @@ const FeaturedProducts: React.FC = () => {
         <ProductGrid
           products={displayedProducts}
           title="Sản Phẩm Nổi Bật"
-          onAddToCart={handleAddToCart}
-          //   onQuickView={handleQuickView}
           showLoadMore={displayCount < allProducts.length}
           onLoadMore={handleLoadMore}
           isLoading={isLoading}
