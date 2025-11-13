@@ -1,11 +1,11 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/stores/productStore";
 import { formatPrice } from "@/lib/utils";
 import { Rating, RatingButton } from "../ui/shadcn-io/rating";
 import { toast } from "sonner";
-import {useReviewStore} from "@/stores/reviewStore";
+import { useReviewStore } from "@/stores/reviewStore";
 export interface ProductItemProps {
   id: number;
   name: string;
@@ -21,23 +21,12 @@ export interface ProductItemProps {
 export const convertProductToItemProps = (
   product: Product
 ): ProductItemProps => {
-    const { fetchReviewsByProduct, reviews } = useReviewStore();
-    useEffect(() => {
-        if (product?.id) {
-            fetchReviewsByProduct(product.id);
-        }
-    }, [product?.id, fetchReviewsByProduct]);
-    return {
+  return {
     id: product.id,
     name: product.name,
     slug: product.slug,
     basePrice: product.basePrice,
     images: product.images?.sort((a, b) => a.position - b.position) || [],
-    rating:
-        reviews && reviews.length > 0
-            ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
-            : 0,
-    reviewCount:reviews?.length || 0,
   };
 };
 
@@ -118,7 +107,6 @@ const ProductItem: React.FC<ProductItemProps> = ({
             </svg>
           </button>
         </div>
-
       </div>
       {/* Product Info */}
       <div className="p-4 text-center">
@@ -134,13 +122,13 @@ const ProductItem: React.FC<ProductItemProps> = ({
           </span>
         </div>
 
-        {/* Rating */}
+        {/* Rating
         <div className="flex items-center justify-center gap-1">
           <div className="flex text-yellow-400 text-sm">
             {renderStars(rating)}
           </div>
           <span className="text-xs text-gray-500">({reviewCount} Reviews)</span>
-        </div>
+        </div> */}
       </div>
     </div>
   );
