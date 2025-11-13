@@ -3,28 +3,21 @@
 import { SignupForm } from "@/components/ui/signup-form";
 import { useRouter } from "next/navigation";
 import useAuthStore from "@/stores/useAuthStore";
-
+import { SignUpData } from "@/types";
 export default function SignupPage() {
   const router = useRouter();
   const { signup, isSigningUp } = useAuthStore();
 
-  const handleSignup = async (data: {
-    fullName: string;
-    email: string;
-    password: string;
-    phoneNumber: string;
-  }) => {
+  const handleSignup = async (data: SignUpData) => {
     try {
       await signup({
         fullName: data.fullName,
         email: data.email,
         password: data.password,
-        phoneNumber: data.phoneNumber, // map phoneNumber -> phone cho API
+        phone: data.phone,
       });
-      // Sau khi đăng ký thành công, chuyển về trang user hoặc login
-        router.push("/user/login");
+      router.push("/user/login");
     } catch (error) {
-      // Error đã được xử lý trong store (toast)
       console.error("Signup failed:", error);
     }
   };

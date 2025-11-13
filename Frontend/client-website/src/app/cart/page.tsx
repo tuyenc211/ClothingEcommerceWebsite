@@ -48,14 +48,6 @@ export default function CartPage() {
   const summary = getCartSummary();
   const router = useRouter();
 
-  // Fetch cart items when user logs in
-  useEffect(() => {
-    if (authUser?.id) {
-      createCart(authUser.id);
-      fetchCartItems(authUser.id);
-    }
-  }, [authUser?.id, fetchCartItems, createCart]);
-
   // Enrich cart items with full product, color, and size info
   const enrichedItems: EnrichedCartItem[] = useMemo(() => {
     return items

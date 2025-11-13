@@ -7,16 +7,9 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, Loader2, User, Phone } from "lucide-react";
 import Link from "next/link";
-
-type SignupFormData = {
-  fullName: string;
-  email: string;
-  password: string;
-  phoneNumber: string;
-};
-
+import { SignUpData } from "@/types";
 interface SignupFormProps extends React.ComponentProps<"form"> {
-  handleSignup?: (data: SignupFormData) => Promise<void>;
+  handleSignup?: (data: SignUpData) => Promise<void>;
   onGoogleSignup?: () => Promise<void>;
   onFacebookSignup?: () => Promise<void>;
   isLoading?: boolean;
@@ -35,13 +28,10 @@ export function SignupForm({
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting },
-  } = useForm<SignupFormData>();
+  } = useForm<SignUpData>();
 
-  const password = watch("password");
-
-  const handleFormSubmit = async (data: SignupFormData) => {
+  const handleFormSubmit = async (data: SignUpData) => {
     if (handleSignup) {
       await handleSignup(data);
     }
@@ -121,19 +111,16 @@ export function SignupForm({
 
         {/* Phone Number Field */}
         <div className="grid gap-3">
-          <Label htmlFor="phoneNumber">Số điện thoại</Label>
+          <Label htmlFor="phone">Số điện thoại</Label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Phone className="w-4 h-4 text-muted-foreground" />
             </div>
             <Input
-              id="phoneNumber"
+              id="phone"
               type="tel"
-              className={cn(
-                "pl-10",
-                errors.phoneNumber && "border-destructive"
-              )}
-              {...register("phoneNumber", {
+              className={cn("pl-10", errors.phone && "border-destructive")}
+              {...register("phone", {
                 required: "Số điện thoại là bắt buộc",
                 pattern: {
                   value: /^[0-9]{10,11}$/,
@@ -142,10 +129,8 @@ export function SignupForm({
               })}
             />
           </div>
-          {errors.phoneNumber && (
-            <p className="text-sm text-destructive">
-              {errors.phoneNumber.message}
-            </p>
+          {errors.phone && (
+            <p className="text-sm text-destructive">{errors.phone.message}</p>
           )}
         </div>
 

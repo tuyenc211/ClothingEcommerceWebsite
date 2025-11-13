@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/stores/productStore";
 import { formatPrice } from "@/lib/utils";
 import { Rating, RatingButton } from "../ui/shadcn-io/rating";
 import { toast } from "sonner";
+import {useReviewStore} from "@/stores/reviewStore";
 export interface ProductItemProps {
   id: number;
   name: string;
@@ -20,18 +21,23 @@ export interface ProductItemProps {
 export const convertProductToItemProps = (
   product: Product
 ): ProductItemProps => {
-  return {
+    const { fetchReviewsByProduct, reviews } = useReviewStore();
+    useEffect(() => {
+        if (product?.id) {
+            fetchReviewsByProduct(product.id);
+        }
+    }, [product?.id, fetchReviewsByProduct]);
+    return {
     id: product.id,
     name: product.name,
     slug: product.slug,
     basePrice: product.basePrice,
     images: product.images?.sort((a, b) => a.position - b.position) || [],
     rating:
-      product?.reviews && product.reviews.length > 0
-        ? product.reviews.reduce((sum, review) => sum + review.rating, 0) /
-          product.reviews.length
-        : 0,
-    reviewCount: product.reviews?.length || 0,
+        reviews && reviews.length > 0
+            ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+            : 0,
+    reviewCount:reviews?.length || 0,
   };
 };
 
@@ -113,23 +119,6 @@ const ProductItem: React.FC<ProductItemProps> = ({
           </button>
         </div>
 
-        {/* Image Navigation Dots */}
-        {/* {imageUrls.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-            {imageUrls.map((_, index) => (
-              <button
-                key={index}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setCurrentImageIndex(index);
-                }}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentImageIndex ? "bg-white" : "bg-white/50"
-                }`}
-              />
-            ))}
-          </div>
-        )} */}
       </div>
       {/* Product Info */}
       <div className="p-4 text-center">

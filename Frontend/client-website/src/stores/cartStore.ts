@@ -358,6 +358,10 @@ export const useCartStore = create<CartState>()(
       },
 
       getTotalItems: () => {
+        const authUser = useAuthStore.getState().authUser;
+        if (!authUser?.id) {
+          return 0;
+        }
         return get().items.reduce((total, item) => total + item.quantity, 0);
       },
 
