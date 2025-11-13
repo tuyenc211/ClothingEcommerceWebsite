@@ -5,7 +5,6 @@ interface ProductGridProps {
   products: ProductItemProps[];
   title?: string;
   subtitle?: string;
-  onAddToCart?: (productId: number) => void;
   showLoadMore?: boolean;
   onLoadMore?: () => void;
   isLoading?: boolean;
@@ -15,7 +14,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   products,
   title,
   subtitle,
-  onAddToCart,
   showLoadMore = false,
   onLoadMore,
   isLoading = false,
@@ -60,10 +58,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             </h2>
           )}
           <div className="h-[2px] bg-gradient-to-r from-[#EEEEEE] to-[#111111] flex-1" />
-
-          {/* {subtitle && (
-              <p className="text-gray-600 max-w-2xl mx-auto">{subtitle}</p>
-            )} */}
         </div>
       )}
 

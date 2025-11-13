@@ -179,7 +179,9 @@ const useAuthStore = create<AuthStore>()(
           const response = await privateClient.get("/auth/confirm", {
             params: { token },
           });
-          toast.success("Xác thực email thành công! Bạn có thể đăng nhập ngay.");
+          toast.success(
+            "Xác thực email thành công! Bạn có thể đăng nhập ngay."
+          );
           return response.data;
         } catch (error: unknown) {
           const axiosError = error as AxiosError<{ message: string }>;

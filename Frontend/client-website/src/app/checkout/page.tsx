@@ -55,7 +55,7 @@ export default function CheckoutPage() {
   } = useCartStore();
   const { getProduct, fetchProducts } = useProductStore();
 
-  const { getActiveCoupons, fetchCoupons, coupons } = useCouponStore();
+  const { getActiveCoupons, fetchCoupons} = useCouponStore();
   useEffect(() => {
     fetchCoupons();
   }, [fetchCoupons]);
@@ -114,7 +114,7 @@ export default function CheckoutPage() {
     provinceCode: "",
   });
 
-  // const activeCoupons = getActiveCoupons();
+  const activeCoupons = getActiveCoupons();
   const summary = getCartSummary();
 
   const enrichedItems: EnrichedCartItem[] = useMemo(() => {
@@ -269,7 +269,7 @@ export default function CheckoutPage() {
   };
 
   const handleApplyCoupon = (couponCode: string) => {
-    const coupon = coupons.find((c) => c.code === couponCode);
+    const coupon = activeCoupons.find((c) => c.code === couponCode);
     if (coupon) {
       const success = applyCoupon(coupon);
       if (success) {
@@ -500,7 +500,7 @@ export default function CheckoutPage() {
                   items={enrichedItems}
                   summary={summary}
                   appliedCoupon={appliedCoupon}
-                  activeCoupons={coupons}
+                  activeCoupons={activeCoupons}
                   showCouponList={showCouponList}
                   isSubmitting={isSubmitting}
                   paymentMethod={paymentMethod}

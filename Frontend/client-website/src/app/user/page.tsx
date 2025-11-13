@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import UserLayout from "@/components/layouts/UserLayout";
 import useAuthStore from "@/stores/useAuthStore";
 import { Button } from "@/components/ui/button";
@@ -13,61 +11,57 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Save, Lock, Eye, EyeOff } from "lucide-react";
 
-const profileSchema = z.object({
-  fullName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
-  email: z.string().email("Email không hợp lệ"),
-  phoneNumber: z.string().min(10, "Số điện thoại phải có ít nhất 10 số"),
-});
+type ProfileForm = {
+  fullName: string;
+  email: string;
+  phone?: string;
+};
 
-const passwordSchema = z
-  .object({
-    currentPassword: z.string().min(1, "Vui lòng nhập mật khẩu hiện tại"),
-    newPassword: z.string().min(6, "Mật khẩu mới phải có ít nhất 6 ký tự"),
-    confirmPassword: z.string().min(1, "Vui lòng xác nhận mật khẩu"),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
-    path: ["confirmPassword"],
-  });
-
-type ProfileForm = z.infer<typeof profileSchema>;
-type PasswordForm = z.infer<typeof passwordSchema>;
+type PasswordForm = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
 
 export default function UserProfilePage() {
   const { authUser, updateProfile, changePassword } = useAuthStore();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-
-  // Password visibility states
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Profile form
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting: isSaving },
     reset,
+    setValue,
   } = useForm<ProfileForm>({
-    resolver: zodResolver(profileSchema),
     defaultValues: {
       fullName: authUser?.fullName || "",
       email: authUser?.email || "",
-      phoneNumber: authUser?.phone || "",
+      phone: authUser?.phone ?? "",
     },
   });
 
-  // Password form
+  useEffect(() => {
+    if (authUser) {
+      reset({
+        fullName: authUser.fullName || "",
+        email: authUser.email || "",
+        phone: authUser.phone ?? "",
+      });
+    }
+  }, [authUser, reset]);
+
   const {
     register: registerPassword,
     handleSubmit: handlePasswordSubmit,
-    formState: { errors: passwordErrors },
+    formState: { errors: passwordErrors, isSubmitting: isChangingPassword },
     reset: resetPassword,
+    watch,
   } = useForm<PasswordForm>({
-    resolver: zodResolver(passwordSchema),
     defaultValues: {
       currentPassword: "",
       newPassword: "",
@@ -75,39 +69,39 @@ export default function UserProfilePage() {
     },
   });
 
+  const newPasswordValue = watch("newPassword");
+
   const onSubmit = async (data: ProfileForm) => {
-    setIsSaving(true);
     try {
       await updateProfile({
-        fullName: data.fullName,
-        phone: data.phoneNumber,
+        fullName: data.fullName.trim(),
+        phone: data.phone?.trim(),
       });
-
+      toast.success("Cập nhật thông tin thành công");
       setIsEditing(false);
-    } catch (error) {
+      // đồng bộ name ở header hiển thị
+      setValue("fullName", data.fullName.trim());
+    } catch {
       toast.error("Cập nhật thông tin thất bại");
-    } finally {
-      setIsSaving(false);
     }
   };
 
   const onPasswordSubmit = async (data: PasswordForm) => {
-    setIsChangingPassword(true);
     try {
       await changePassword(data.currentPassword, data.newPassword);
-
+      toast.success("Đổi mật khẩu thành công");
       resetPassword();
     } catch (error) {
       console.error("Change password error:", error);
-    } finally {
-      setIsChangingPassword(false);
+      toast.error("Đổi mật khẩu thất bại");
     }
   };
 
   const handleCancel = () => {
-    reset();
+    reset(); // quay về defaultValues hiện tại
     setIsEditing(false);
   };
+
   return (
     <UserLayout>
       <div className="space-y-6">
@@ -135,9 +129,11 @@ export default function UserProfilePage() {
                   <Label htmlFor="fullName">Họ và Tên</Label>
                   <Input
                     id="fullName"
-                    {...register("fullName")}
                     disabled={!isEditing}
                     className={!isEditing ? "bg-gray-50" : ""}
+                    {...register("fullName", {
+                      required: "Họ tên là bắt buộc",
+                    })}
                   />
                   {errors.fullName && (
                     <p className="text-sm text-red-600 mt-1">
@@ -151,29 +147,38 @@ export default function UserProfilePage() {
                   <Input
                     id="email"
                     type="email"
-                    {...register("email")}
                     disabled
-                    className={!isEditing ? "bg-gray-50" : ""}
+                    className="bg-gray-50"
+                    {...register("email")}
                   />
-                  {errors.email && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {errors.email.message}
-                    </p>
-                  )}
+                  {/* thường không cần validate vì field disabled */}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Số Điện Thoại</Label>
+                  <Label htmlFor="phone">Số Điện Thoại</Label>
                   <Input
-                    id="phoneNumber"
-                    type="number"
-                    {...register("phoneNumber")}
+                    id="phone"
+                    type="tel" // quan trọng: không dùng number
                     disabled={!isEditing}
                     className={!isEditing ? "bg-gray-50" : ""}
+                    placeholder="Ví dụ: 0912345678 hoặc +84912345678"
+                    {...register("phone", {
+                      required: "Số điện thoại là bắt buộc",
+                      validate: (v) => {
+                        const val = (v ?? "").trim();
+                        const ok =
+                          /^(0\d{9,10})$/.test(val) ||
+                          /^\+84\d{9,10}$/.test(val);
+                        return (
+                          ok || "Số điện thoại không hợp lệ (0… hoặc +84…)"
+                        );
+                      },
+                      setValueAs: (v) => (v ?? "").trim(),
+                    })}
                   />
-                  {errors.phoneNumber && (
+                  {errors.phone && (
                     <p className="text-sm text-red-600 mt-1">
-                      {errors.phoneNumber.message}
+                      {errors.phone.message}
                     </p>
                   )}
                 </div>
@@ -182,7 +187,9 @@ export default function UserProfilePage() {
               {/* Action Buttons */}
               <div className="flex justify-end space-x-3">
                 {!isEditing ? (
-                  <Button onClick={() => setIsEditing(true)}>Chỉnh Sửa</Button>
+                  <Button type="button" onClick={() => setIsEditing(true)}>
+                    Chỉnh Sửa
+                  </Button>
                 ) : (
                   <>
                     <Button
@@ -224,17 +231,17 @@ export default function UserProfilePage() {
                     <Input
                       id="currentPassword"
                       type={showCurrentPassword ? "text" : "password"}
-                      {...registerPassword("currentPassword")}
                       placeholder="Nhập mật khẩu hiện tại"
+                      {...registerPassword("currentPassword", {
+                        required: "Vui lòng nhập mật khẩu hiện tại",
+                      })}
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                      onClick={() =>
-                        setShowCurrentPassword(!showCurrentPassword)
-                      }
+                      onClick={() => setShowCurrentPassword((s) => !s)}
                     >
                       {showCurrentPassword ? (
                         <EyeOff className="h-4 w-4 text-gray-500" />
@@ -257,15 +264,21 @@ export default function UserProfilePage() {
                     <Input
                       id="newPassword"
                       type={showNewPassword ? "text" : "password"}
-                      {...registerPassword("newPassword")}
                       placeholder="Nhập mật khẩu mới"
+                      {...registerPassword("newPassword", {
+                        required: "Vui lòng nhập mật khẩu mới",
+                        minLength: {
+                          value: 6,
+                          message: "Mật khẩu mới phải có ít nhất 6 ký tự",
+                        },
+                      })}
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      onClick={() => setShowNewPassword((s) => !s)}
                     >
                       {showNewPassword ? (
                         <EyeOff className="h-4 w-4 text-gray-500" />
@@ -288,17 +301,20 @@ export default function UserProfilePage() {
                     <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
-                      {...registerPassword("confirmPassword")}
                       placeholder="Xác nhận mật khẩu mới"
+                      {...registerPassword("confirmPassword", {
+                        required: "Vui lòng xác nhận mật khẩu",
+                        validate: (v) =>
+                          v === newPasswordValue ||
+                          "Mật khẩu xác nhận không khớp",
+                      })}
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
+                      onClick={() => setShowConfirmPassword((s) => !s)}
                     >
                       {showConfirmPassword ? (
                         <EyeOff className="h-4 w-4 text-gray-500" />

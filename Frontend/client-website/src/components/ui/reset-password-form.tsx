@@ -119,11 +119,6 @@ export function ResetPasswordForm({
                   value: 6,
                   message: "Mật khẩu phải có ít nhất 6 ký tự",
                 },
-                pattern: {
-                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                  message:
-                    "Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường và 1 số",
-                },
               })}
             />
             <button
