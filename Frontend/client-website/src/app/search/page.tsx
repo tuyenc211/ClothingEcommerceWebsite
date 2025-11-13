@@ -154,7 +154,6 @@ export default function SearchPage() {
         {!isLoading && products.length > 0 && (
           <ProductGrid
             products={displayedProducts}
-            onAddToCart={handleAddToCart}
             showLoadMore={displayCount < products.length}
             onLoadMore={handleLoadMore}
             isLoading={isLoadingMore}

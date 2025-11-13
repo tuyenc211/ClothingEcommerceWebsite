@@ -2,17 +2,21 @@
 
 import React, { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { useProductStore } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
-import { useCartStore } from "@/stores/cartStore";
 import ProductGrid from "@/components/common/ProductGrid";
 import { convertProductToItemProps } from "@/components/common/ProductItem";
 import { formatPrice } from "@/lib/utils";
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbSeparator
+} from "@/components/ui/breadcrumb";
 
-// Filter interface
 interface Filters {
   priceRange: [number, number];
   colorIds: number[];
@@ -22,7 +26,7 @@ interface Filters {
 }
 
 export default function SubCategoryPage() {
-  const { parentcategory, subcategory } = useParams();
+  const { subcategory } = useParams();
   const [displayCount, setDisplayCount] = useState(12);
   const [isLoading, setIsLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -32,8 +36,6 @@ export default function SubCategoryPage() {
   const { getCategoryBySlug } = useCategoryStore();
   const { colors } = useColorStore();
   const { sizes } = useSizeStore();
-  const { addToCart } = useCartStore();
-
   // Filters state
   const [filters, setFilters] = useState<Filters>({
     priceRange: [0, 5000000],
@@ -42,15 +44,6 @@ export default function SubCategoryPage() {
     sortBy: "newest",
     sortOrder: "desc",
   });
-
-  // Get parent and sub category from slugs
-  const parentCategory = useMemo(() => {
-    if (typeof parentcategory === "string") {
-      return getCategoryBySlug(parentcategory);
-    }
-    return null;
-  }, [parentcategory, getCategoryBySlug]);
-
   const subCategory = useMemo(() => {
     if (typeof subcategory === "string") {
       return getCategoryBySlug(subcategory);
@@ -75,20 +68,9 @@ export default function SubCategoryPage() {
     // Apply price range filter (using base_price or variant prices)
     filtered = filtered.filter((product) => {
       // Check if product base price is in range
-      if (
-        product.basePrice >= filters.priceRange[0] &&
-        product.basePrice <= filters.priceRange[1]
-      ) {
-        return true;
-      }
-      // Or check if any variant price is in range
-      if (product.variants && product.variants.length > 0) {
-        return product.variants.some(
-          (v) =>
-            v.price >= filters.priceRange[0] && v.price <= filters.priceRange[1]
-        );
-      }
-      return false;
+      return product.basePrice >= filters.priceRange[0] &&
+          product.basePrice <= filters.priceRange[1];
+
     });
 
     // Apply color filter (check variants)
@@ -134,8 +116,6 @@ export default function SubCategoryPage() {
 
     return filtered;
   }, [getPublishedProducts, subCategory, filters]);
-
-  // Convert to ProductItemProps format and apply display limit
   const displayedProducts = useMemo(() => {
     return filteredProducts
       .slice(0, displayCount)
@@ -170,21 +150,6 @@ export default function SubCategoryPage() {
       setIsLoading(false);
     }, 1000);
   };
-
-  // Handle add to cart
-  const handleAddToCart = (productId: number) => {
-    const product = filteredProducts.find((p) => p.id === productId);
-    if (!product || !product.variants || product.variants.length === 0) {
-      alert("Sản phẩm không có biến thể!");
-      return;
-    }
-
-    // Use first available variant
-    const firstVariant = product.variants[0];
-    addToCart(firstVariant, 1);
-    alert(`Đã thêm "${product.name}" vào giỏ hàng!`);
-  };
-
   const handleColorFilter = (colorId: number) => {
     setFilters((prev) => ({
       ...prev,
@@ -229,7 +194,7 @@ export default function SubCategoryPage() {
   };
 
   // Price range options
-  const priceRanges = [
+ const priceRanges = [
     { label: "Tất cả giá", value: [0, 5000000] as [number, number] },
     { label: formatPrice(500000), value: [0, 500000] as [number, number] },
     {
@@ -245,63 +210,26 @@ export default function SubCategoryPage() {
       value: [2000000, 5000000] as [number, number],
     },
   ];
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <nav className="flex" aria-label="Breadcrumb">
-            <ol className="inline-flex items-center space-x-1 md:space-x-3">
-              <li className="inline-flex items-center">
-                <Link href="/" className="text-gray-500 hover:text-gray-700">
-                  Trang chủ
-                </Link>
-              </li>
-              {parentCategory && (
-                <li>
-                  <div className="flex items-center">
-                    <svg
-                      className="w-6 h-6 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <Link
-                      href={`/categories/${parentCategory.slug}`}
-                      className="text-gray-500 hover:text-gray-700 ml-1 md:ml-2"
-                    >
-                      {parentCategory.name}
-                    </Link>
-                  </div>
-                </li>
-              )}
-              <li>
-                <div className="flex items-center">
-                  <svg
-                    className="w-6 h-6 text-gray-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-gray-500 ml-1 md:ml-2">
-                    {categoryTitle}
-                  </span>
-                </div>
-              </li>
-            </ol>
-          </nav>
-        </div>
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
+              {/* Breadcrumb using shadcn/ui */}
+              <Breadcrumb className="hidden sm:block">
+                  <BreadcrumbList>
+                      <BreadcrumbItem>
+                          <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                          {categoryTitle}
+                      </BreadcrumbItem>
+                  </BreadcrumbList>
+              </Breadcrumb>
+
+              {/* Back button */}
+          </div>
       </div>
 
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -445,7 +373,6 @@ export default function SubCategoryPage() {
             {/* Products Grid */}
             <ProductGrid
               products={displayedProducts}
-              onAddToCart={handleAddToCart}
               showLoadMore={displayCount < filteredProducts.length}
               onLoadMore={handleLoadMore}
               isLoading={isLoading}
