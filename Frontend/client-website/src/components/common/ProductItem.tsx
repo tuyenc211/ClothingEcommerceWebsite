@@ -5,7 +5,6 @@ import { Product } from "@/stores/productStore";
 import { formatPrice } from "@/lib/utils";
 import { Rating, RatingButton } from "../ui/shadcn-io/rating";
 import { toast } from "sonner";
-import { useReviewStore } from "@/stores/reviewStore";
 export interface ProductItemProps {
   id: number;
   name: string;
@@ -35,8 +34,6 @@ const ProductItem: React.FC<ProductItemProps> = ({
   name,
   basePrice,
   images = [],
-  rating = 0,
-  reviewCount = 0,
   isHovered: isHoveredFromParent,
   isFocused = false,
 }) => {

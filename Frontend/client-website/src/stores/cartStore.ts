@@ -378,7 +378,6 @@ export const useCartStore = create<CartState>()(
       partialize: (state) => ({
         currentCart: state.currentCart,
         items: state.items,
-        appliedCoupon: state.appliedCoupon,
       }),
     }
   )

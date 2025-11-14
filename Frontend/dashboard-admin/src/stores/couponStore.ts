@@ -17,7 +17,7 @@ export interface Coupon {
   startsAt?: string;
   endsAt?: string;
   isActive: boolean;
-    imageUrl?: string;
+  imageUrl?: string;
 }
 
 export interface CouponRedemption {
@@ -43,9 +43,14 @@ interface CouponStore {
   fetchCoupons: () => Promise<void>;
   getCouponById: (id: number) => Promise<Coupon>;
   addCoupon: (
-    couponData: Omit<Coupon, "id" | "createdAt" | "updatedAt">, image?: File
+    couponData: Omit<Coupon, "id" | "createdAt" | "updatedAt">,
+    image?: File
   ) => Promise<void>;
-  updateCoupon: (id: number, couponData: Partial<Coupon>,image?: File) => Promise<void>;
+  updateCoupon: (
+    id: number,
+    couponData: Partial<Coupon>,
+    image?: File
+  ) => Promise<void>;
   deleteCoupon: (id: number) => Promise<void>;
 
   searchCoupons: (query: string) => Coupon[];
@@ -116,32 +121,25 @@ export const useCouponStore = create<CouponStore>()(
         }
       },
 
-      addCoupon: async (couponData,image) => {
+      addCoupon: async (couponData, image) => {
         set({ isLoading: true, error: null });
         try {
+          const respone = await privateClient.post("/coupons", couponData);
+          const newCoupon = respone.data.data || respone.data;
+          const CouponId = newCoupon.id;
+          if (image && CouponId) {
             const formData = new FormData();
-            formData.append("code", couponData.code);
-            formData.append("name", couponData.name);
-            if (couponData.description) formData.append("description", couponData.description);
-            formData.append("value", couponData.value.toString());
-            if (couponData.maxUses) formData.append("maxUses", couponData.maxUses.toString());
-            if (couponData.maxUsesPerUser) formData.append("maxUsesPerUser", couponData.maxUsesPerUser.toString());
-            if (couponData.minOrderTotal) formData.append("minOrderTotal", couponData.minOrderTotal.toString());
-            if (couponData.startsAt) formData.append("startsAt", couponData.startsAt);
-            if (couponData.endsAt) formData.append("endsAt", couponData.endsAt);
-            formData.append("isActive", couponData.isActive.toString());
-
-            // Append image if provided
-            if (image) {
-                formData.append("image", image);
-            }
-
-            const response = await privateClient.post("/coupons", formData, {
+            formData.append("image", image);
+            await privateClient.post(
+              `/coupons/${CouponId}/upload-image`,
+              formData,
+              {
                 headers: {
-                    "Content-Type": "multipart/form-data",
+                  "Content-Type": "multipart/form-data",
                 },
-            });
-          const newCoupon = response.data.data || response.data;
+              }
+            );
+          }
 
           set((state) => ({
             coupons: [newCoupon, ...state.coupons].sort((a, b) => {
@@ -167,52 +165,26 @@ export const useCouponStore = create<CouponStore>()(
         }
       },
 
-      updateCoupon: async (id: number, couponData,image) => {
+      updateCoupon: async (id: number, couponData, image) => {
         set({ isLoading: true, error: null });
         try {
-            const formData = new FormData();
-
-            // Append all coupon fields
-            if (couponData.code) formData.append("code", couponData.code);
-            if (couponData.name) formData.append("name", couponData.name);
-            if (couponData.description !== undefined) formData.append("description", couponData.description);
-            if (couponData.value !== undefined) formData.append("value", couponData.value.toString());
-            if (couponData.maxUses !== undefined) formData.append("maxUses", couponData.maxUses.toString());
-            if (couponData.maxUsesPerUser !== undefined) formData.append("maxUsesPerUser", couponData.maxUsesPerUser.toString());
-            if (couponData.minOrderTotal !== undefined) formData.append("minOrderTotal", couponData.minOrderTotal.toString());
-            if (couponData.startsAt !== undefined) formData.append("startsAt", couponData.startsAt);
-            if (couponData.endsAt !== undefined) formData.append("endsAt", couponData.endsAt);
-            if (couponData.isActive !== undefined) formData.append("isActive", couponData.isActive.toString());
-
-            // Append image if provided
-            if (image) {
-                formData.append("image", image);
-            }
-
-            const response = await privateClient.put(
-                `/coupons/${id}`,
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
-            );
+          const response = await privateClient.put(
+            `/coupons/${id}`,
+            couponData
+          );
           const updatedCoupon = response.data.data || response.data;
 
-          set((state) => ({
-            coupons: state.coupons
-              .map((coupon) => (coupon.id === id ? updatedCoupon : coupon))
-              .sort((a, b) => {
-                if (!a.startsAt || !b.startsAt) return 0;
-                return (
-                  new Date(b.startsAt).getTime() -
-                  new Date(a.startsAt).getTime()
-                );
-              }),
-            error: null,
-          }));
+          // Bước 2: Upload ảnh mới nếu có
+          if (image) {
+            const formData = new FormData();
+            formData.append("file", image);
 
+            await privateClient.post(`/coupons/${id}/upload-image`, formData, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            });
+          }
           toast.success("Cập nhật mã giảm giá thành công");
           console.log("✅ Coupon updated:", updatedCoupon);
         } catch (error) {
