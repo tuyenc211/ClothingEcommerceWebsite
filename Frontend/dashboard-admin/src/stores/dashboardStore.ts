@@ -29,8 +29,7 @@ export interface RecentOrder {
 
 export interface RevenueData {
   date: string;
-  currentMonth: number;
-  lastMonth: number;
+  revenue: number;
 }
 
 interface DashboardState {
@@ -153,7 +152,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       const response = await privateClient.get("/orders");
       const orders = response.data?.data || response.data || [];
 
-      // Filter only DELIVERED orders for revenue calculation
       const deliveredOrders = orders.filter(
         (order: Order) => order.status === "DELIVERED"
       );
@@ -177,16 +175,12 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         ([a], [b]) => a.localeCompare(b)
       );
 
-      // Create revenue data with current and last month comparison
+      // Create simplified revenue data - mỗi tháng chỉ có một giá trị doanh thu
       const revenueData: RevenueData[] = sortedMonths.map(
-        ([date, revenue], index) => {
-          const lastMonthRevenue = index > 0 ? sortedMonths[index - 1][1] : 0;
-          return {
-            date,
-            currentMonth: revenue,
-            lastMonth: lastMonthRevenue,
-          };
-        }
+        ([date, revenue]) => ({
+          date,
+          revenue, // Đơn giản hóa
+        })
       );
 
       set({ revenueData });
@@ -195,6 +189,5 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       set({ error: "Failed to fetch revenue data" });
     }
   },
-
   clearError: () => set({ error: null }),
 }));
