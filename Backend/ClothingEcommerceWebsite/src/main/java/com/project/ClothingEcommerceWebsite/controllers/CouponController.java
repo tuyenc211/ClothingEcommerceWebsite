@@ -21,10 +21,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CouponController {
     private final CouponService couponService;
-    @PostMapping(value = "",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping("")
     public ResponseEntity<?> createCoupon(@Valid @ModelAttribute CreateCouponRequest request) {
         Coupon coupon = couponService.createCoupon(request);
         return ResponseEntity.ok(coupon);
+    }
+
+    @PostMapping("/{couponId}/upload-image")
+    public ResponseEntity<?> uploadImages(
+            @PathVariable Long couponId,
+            @RequestParam("file") MultipartFile file
+    ) {
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "No files provided"));
+        }
+
+        String imageUrl = couponService.uploadAndSaveImages(file, couponId);
+        return ResponseEntity.ok(Map.of(
+                "message", "Image uploaded successfully",
+                "url", imageUrl
+        ));
     }
 
     @GetMapping("/{id}")
