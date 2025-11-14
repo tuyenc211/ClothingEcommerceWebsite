@@ -31,7 +31,7 @@ spring:
             enable: true
   sendgrid:
     api-key: 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
-    from-email: hoductuyenqp@gmail.com.
+    from-email: hoductuyenqp@gmail.com
   vnpay:
     tmn-code: M5O0LLB4
     secret-key: 9QPZCMNLUCBBFWPEWYVOENQM7LCKE6ND
