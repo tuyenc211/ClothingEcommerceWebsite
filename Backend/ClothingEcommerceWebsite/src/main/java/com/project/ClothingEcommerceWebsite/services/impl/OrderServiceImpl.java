@@ -133,6 +133,9 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Cannot cancel order that is already " + order.getStatus());
         }
         order.setStatus(Enums.OrderStatus.CANCELLED);
+        if(order.getPaymentMethod().equals(Enums.PaymentMethod.WALLET)) {
+            order.setPaymentStatus(Enums.PaymentStatus.REFUNDED);
+        }
         order.setCancelledAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
@@ -168,6 +171,9 @@ public class OrderServiceImpl implements OrderService {
             case SHIPPED, DELIVERED -> order.setPaidAt(LocalDateTime.now());
             case CANCELLED -> {
                 order.setCancelledAt(LocalDateTime.now());
+                if(order.getPaymentMethod().equals(Enums.PaymentMethod.WALLET)) {
+                    order.setPaymentStatus(Enums.PaymentStatus.REFUNDED);
+                }
                 List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
                 for (OrderItem item : orderItems) {
                     ProductVariant variant = item.getVariant();

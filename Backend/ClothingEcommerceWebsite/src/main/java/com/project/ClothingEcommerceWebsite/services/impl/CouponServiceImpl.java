@@ -6,6 +6,7 @@ import com.project.ClothingEcommerceWebsite.models.Product;
 import com.project.ClothingEcommerceWebsite.models.ProductImage;
 import com.project.ClothingEcommerceWebsite.repositories.CouponRepository;
 import com.project.ClothingEcommerceWebsite.services.CouponService;
+import com.project.ClothingEcommerceWebsite.utils.CloudinaryUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,11 +22,6 @@ public class CouponServiceImpl implements CouponService {
     private final CloudinaryService cloudinaryService;
     @Override
     public Coupon createCoupon(CreateCouponRequest request) {
-        String imageUrl = null;
-
-        if (request.getImage() != null && !request.getImage().isEmpty()) {
-            imageUrl = cloudinaryService.uploadImage(request.getImage());
-        }
         Coupon coupon = Coupon.builder()
                 .code(request.getCode())
                 .name(request.getName())
@@ -37,7 +33,7 @@ public class CouponServiceImpl implements CouponService {
                 .startsAt(request.getStartsAt())
                 .endsAt(request.getEndsAt())
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
-                .imageUrl(imageUrl)
+                .imageUrl(null)
                 .build();
         couponRepository.save(coupon);
         return coupon;
@@ -58,16 +54,14 @@ public class CouponServiceImpl implements CouponService {
     public Coupon updateCoupon(Long id, CreateCouponRequest updatedCoupon) {
         Coupon coupon = couponRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Coupon not found"));
-
-        // Nếu có ảnh mới -> xóa ảnh cũ và upload mới
-        if (updatedCoupon.getImage() != null && !updatedCoupon.getImage().isEmpty()) {
-            if (coupon.getImageUrl() != null) {
-                cloudinaryService.deleteImage(coupon.getImageUrl());
+        String keepImageUrl = updatedCoupon.getKeepImageUrl();
+        if (!keepImageUrl.contains(coupon.getImageUrl())) {
+            try {
+                cloudinaryService.deleteImage(CloudinaryUtil.extractPublicIdFromUrl(coupon.getImageUrl()));
+            } catch (Exception e) {
+                System.err.println("Warning: Could not delete image: " + e.getMessage());
             }
-            String imageUrl = cloudinaryService.uploadImage(updatedCoupon.getImage());
-            coupon.setImageUrl(imageUrl);
         }
-
         coupon.setName(updatedCoupon.getName());
         coupon.setDescription(updatedCoupon.getDescription());
         coupon.setValue(updatedCoupon.getValue());
@@ -91,5 +85,15 @@ public class CouponServiceImpl implements CouponService {
         }
 
         couponRepository.delete(coupon);
+    }
+
+    @Override
+    public String uploadAndSaveImages(MultipartFile file, Long couponId) {
+        Coupon coupon = couponRepository.findById(couponId)
+                .orElseThrow(() -> new RuntimeException("Coupon not found"));
+        String imageUrl = cloudinaryService.uploadImage(file);
+        coupon.setImageUrl(imageUrl);
+        couponRepository.save(coupon);
+        return imageUrl;
     }
 }
