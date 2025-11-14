@@ -150,18 +150,18 @@ export default function AddProductPage() {
 
       if (isEdit && params?.id) {
         const keepImageUrls = imagePreviews
-          .filter(img => img.isExisting)
-          .map(img => img.image_url);
-        
+          .filter((img) => img.isExisting)
+          .map((img) => img.image_url);
+
         const newImageFiles = data.images || [];
-      
+
         await updateProduct(
           Number(params.id),
           productData,
           data.sizes,
           data.colors,
-          newImageFiles,   
-          keepImageUrls  
+          newImageFiles,
+          keepImageUrls
         );
       } else {
         await addProductWithVariants(
@@ -284,6 +284,10 @@ export default function AddProductPage() {
                   {...register("basePrice", {
                     required: "Giá gốc sản phẩm là bắt buộc",
                     valueAsNumber: true,
+                    min: {
+                      value: 0,
+                      message: "Giá gốc phải lớn hơn hoặc bằng 0",
+                    },
                   })}
                   placeholder="Điền giá gốc sản phẩm"
                   className={errors.basePrice ? "border-destructive" : ""}
