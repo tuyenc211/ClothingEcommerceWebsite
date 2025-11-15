@@ -67,7 +67,7 @@ export function RevenueChart() {
     // Chuyển đổi dữ liệu để phù hợp với Bar Chart
     return revenueData.slice(-monthsToShow).map((item) => ({
       date: item.date,
-      revenue: item.currentMonth, // Sử dụng doanh thu tháng hiện tại
+      revenue: item.revenue
     }));
   }, [timeRange, revenueData]);
 

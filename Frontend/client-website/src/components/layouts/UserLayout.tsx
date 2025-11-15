@@ -48,7 +48,7 @@ const sidebarItems = [
   },
   {
     href: "/user/reviews",
-    label: "Đánh Giá Của Tôi",
+    label: "Đánh Giá Sản Phẩm",
     icon: Star,
   },
 ];
