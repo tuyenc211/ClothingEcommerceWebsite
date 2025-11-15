@@ -103,7 +103,7 @@ export default function AddCouponPage() {
         isActive: data.isActive,
       };
 
-      addCoupon(couponData, selectedImage || undefined);
+      await addCoupon(couponData, selectedImage || undefined);
       toast.success("Thêm mã giảm giá thành công!");
       router.push("/coupon-list");
     } catch (error) {
