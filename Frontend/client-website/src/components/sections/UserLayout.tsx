@@ -74,7 +74,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <Link href="/" className="hover:text-gray-900 flex items-center">
+            <Link href="/public" className="hover:text-gray-900 flex items-center">
               <Home className="h-4 w-4 mr-1" />
               Trang chủ
             </Link>

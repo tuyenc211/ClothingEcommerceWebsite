@@ -118,7 +118,7 @@ export default function Header() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link href="/" className="text-2xl font-bold">
+              <Link href="/public" className="text-2xl font-bold">
                 <Logo />
               </Link>
             </div>
@@ -129,7 +129,7 @@ export default function Header() {
                 <NavigationMenuList>
                   {/* Trang chủ */}
                   <NavigationMenuItem className="px-2">
-                    <Link href="/">
+                    <Link href="/public">
                       <NavigationMenuLink asChild>
                         <span className="uppercase font-bold">Trang chủ</span>
                       </NavigationMenuLink>
@@ -230,7 +230,7 @@ export default function Header() {
           {isMenuOpen && (
             <div className="md:hidden py-4 border-t">
               <Link
-                href="/"
+                href="/public"
                 className="block py-2 text-gray-700 hover:text-blue-600"
                 onClick={() => setIsMenuOpen(false)}
               >

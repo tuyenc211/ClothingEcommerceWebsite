@@ -32,7 +32,6 @@ export const createVNPayPayment = async (
     );
     return response.data.paymentUrl;
   } catch (error) {
-    console.error("Error creating VNPay payment:", error);
     throw error;
   }
 };

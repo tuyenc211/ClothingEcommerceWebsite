@@ -8,7 +8,7 @@ import { CancelOrderDialog } from "@/components/common/CancelOrderDialog";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, XCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import UserLayout from "@/components/layouts/UserLayout";
+import UserLayout from "@/components/sections/UserLayout";
 import { OrderStatus } from "@/stores/orderStore";
 import { toast } from "sonner";
 import useAuthStore from "@/stores/useAuthStore";

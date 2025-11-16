@@ -39,21 +39,9 @@ interface ReviewState {
   addReview: (
     review: Omit<Review, "id" | "createdAt" | "is_approved">
   ) => Promise<void>;
-  updateReview: (id: number, review: Partial<Review>) => Promise<void>;
   deleteReview: (id: number) => Promise<void>;
-  approveReview: (id: number) => Promise<void>;
-  rejectReview: (id: number) => Promise<void>;
-
-  // Fetching methods
   fetchReviewsByProduct: (product_id: number) => Promise<void>;
   fetchReviewsByUser: (user_id: number) => Promise<Review[]>;
-  // Filtering and searching
-  getApprovedReviews: () => Review[];
-  getPendingReviews: () => Review[];
-  getReviewsByRating: (rating: number) => Review[];
-
-  // Statistics
-  getAverageRating: (product_id: number) => number;
   setError: (error: string | null) => void;
   clearError: () => void;
 }
@@ -113,56 +101,6 @@ export const useReviewStore = create<ReviewState>()(
           throw error;
         }
       },
-
-      updateReview: async (id, reviewData) => {
-        set({ isLoading: true, error: null });
-        try {
-          const response = await privateClient.put(`/reviews/${id}`, {
-            userId: reviewData.user_id,
-            productId: reviewData.product_id,
-            rating: reviewData.rating,
-            title: reviewData.title,
-            content: reviewData.content,
-          });
-
-          const updatedReview: Review = {
-            id: response.data.id,
-            product_id: response.data.product.id,
-            user_id: response.data.user.id,
-            order_id: response.data.order?.id,
-            rating: response.data.rating,
-            title: response.data.title,
-            content: response.data.content,
-            is_approved: response.data.is_approved,
-            createdAt: response.data.createdAt,
-            user: {
-              id: response.data.user.id,
-              fullName: response.data.user.fullName,
-              email: response.data.user.email,
-            },
-            product: {
-              id: response.data.product.id,
-              name: response.data.product.name,
-              slug: response.data.product.slug,
-            },
-          };
-
-          set((state) => ({
-            reviews: state.reviews.map((review) =>
-              review.id === id ? updatedReview : review
-            ),
-            isLoading: false,
-          }));
-        } catch (error) {
-          const axiosError = error as AxiosError<{ message: string }>;
-          const errorMessage =
-            axiosError?.response?.data?.message ||
-            "Không thể cập nhật đánh giá. Vui lòng thử lại.";
-          set({ error: errorMessage, isLoading: false });
-          throw error;
-        }
-      },
-
       deleteReview: async (id) => {
         set({ isLoading: true, error: null });
         try {
@@ -186,15 +124,6 @@ export const useReviewStore = create<ReviewState>()(
           throw error;
         }
       },
-
-      approveReview: async (id) => {
-        await get().updateReview(id, { is_approved: true });
-      },
-
-      rejectReview: async (id) => {
-        await get().updateReview(id, { is_approved: false });
-      },
-
       fetchReviewsByProduct: async (product_id) => {
         set({ isLoading: true, error: null });
         try {
@@ -273,37 +202,7 @@ export const useReviewStore = create<ReviewState>()(
           return [];
         }
       },
-
-      getApprovedReviews: () => {
-        const { reviews } = get();
-        return reviews.filter((review) => review.is_approved);
-      },
-
-      getPendingReviews: () => {
-        const { reviews } = get();
-        return reviews.filter((review) => !review.is_approved);
-      },
-
-      getReviewsByRating: (rating) => {
-        const { reviews } = get();
-        return reviews.filter((review) => review.rating === rating);
-      },
-      getAverageRating: (product_id) => {
-        const { reviews } = get();
-        const productReviews = reviews.filter(
-          (review) => review.product_id === product_id && review.is_approved
-        );
-
-        if (productReviews.length === 0) return 0;
-
-        const totalRating = productReviews.reduce(
-          (sum, review) => sum + review.rating,
-          0
-        );
-        return totalRating / productReviews.length;
-      },
-
-      setError: (error) => {
+        setError: (error) => {
         set({ error });
       },
 

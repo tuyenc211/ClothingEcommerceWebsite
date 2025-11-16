@@ -21,9 +21,9 @@ import { useCouponStore } from "@/stores/couponStore";
 import useAuthStore from "@/stores/useAuthStore";
 import { useAddress } from "@/hooks/useAddress";
 
-import ShippingAddressForm from "@/components/checkout/ShippingAddressForm";
-import PaymentMethodSelector from "@/components/checkout/PaymentMethodSelector";
-import OrderSummary from "@/components/checkout/OrderSummary";
+import ShippingAddressForm from "@/app/checkout/_component/ShippingAddressForm";
+import PaymentMethodSelector from "@/app/checkout/_component/PaymentMethodSelector";
+import OrderSummary from "@/app/checkout/_component/OrderSummary";
 
 import { EnrichedCartItem } from "@/types/cart";
 import { PaymentMethod, useOrderStore } from "@/stores/orderStore";

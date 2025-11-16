@@ -23,7 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import CustomModal from "@/components/shared/CustomModal";
+import CustomModal from "@/components/common/CustomModal";
 import { useProductStore } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { Edit, Trash2, MoreHorizontal, Plus } from "lucide-react";
@@ -31,7 +31,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatCurrency } from "@/lib/utils";
 import { usePagination } from "@/lib/usePagination";
-import PaginationBar from "@/components/shared/PaginationBar";
+import PaginationBar from "@/components/common/PaginationBar";
 
 export default function ProductListPage() {
   const { products, fetchProducts, deleteProduct } = useProductStore();

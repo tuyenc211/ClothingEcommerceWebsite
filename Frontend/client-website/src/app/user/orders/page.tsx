@@ -11,7 +11,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import UserLayout from "@/components/layouts/UserLayout";
+import UserLayout from "@/components/sections/UserLayout";
 import useAuthStore from "@/stores/useAuthStore";
 export default function OrdersPage() {
   const {

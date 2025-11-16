@@ -63,8 +63,6 @@ interface ProductState {
   getProduct: (id: number) => Product | undefined;
   getProductBySku: (sku: string) => Product | undefined;
   getProductBySlug: (slug: string) => Product | undefined;
-
-  // Product search and filtering
   searchProducts: (query: string) => Product[];
   getPublishedProducts: () => Product[];
   setError: (error: string | null) => void;

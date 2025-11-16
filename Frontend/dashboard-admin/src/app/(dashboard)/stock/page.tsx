@@ -41,7 +41,7 @@ import { useCategoryStore } from "@/stores/categoryStore";
 import { useInventoryStore } from "@/stores/inventoryStore";
 import { formatCurrency } from "@/lib/utils";
 import { RoleGuard } from "@/components/auth/RoleGuard";
-import StatCard from "@/components/shared/StatCard";
+import StatCard from "@/components/common/StatCard";
 
 export default function InventoryOverviewPage() {
   const { products, fetchProducts } = useProductStore();
