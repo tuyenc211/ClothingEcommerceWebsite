@@ -52,11 +52,11 @@ import {
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { Role, User } from "@/stores/useAuthStore";
-import EditUserModal from "@/components/shared/EditUserModal";
+import EditUserModal from "@/components/common/EditUserModal";
 import Link from "next/link";
 import { RoleGuard } from "@/components/auth/RoleGuard";
 import { usePagination } from "@/lib/usePagination";
-import PaginationBar from "@/components/shared/PaginationBar";
+import PaginationBar from "@/components/common/PaginationBar";
 
 export default function UsersManagementPage() {
   const {

@@ -19,10 +19,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, ShoppingCart, Users, Package } from "lucide-react";
-import { RevenueChart } from "@/components/shared/RevenueChart";
+import { RevenueChart } from "@/components/common/RevenueChart";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { formatCurrency } from "@/lib/utils";
-import StatCard from "@/components/shared/StatCard";
+import StatCard from "@/components/common/StatCard";
 
 function getStatusBadgeVariant(status: string) {
   switch (status.toUpperCase()) {

@@ -1,8 +1,7 @@
 import { create } from "zustand";
 import privateClient from "@/lib/axios";
 import { Product, useProductStore } from "./productStore";
-
-// ===== Types =====
+import {toast} from "sonner";
 export type OrderStatus =
   | "NEW"
   | "CONFIRMED"
@@ -76,30 +75,12 @@ export interface Order {
   shipments?: Shipment[];
   statusHistory?: OrderStatusHistory[];
 }
-
-export interface OrderFilters {
-  status?: OrderStatus;
-  paymentMethod?: PaymentMethod;
-  customerName?: string; // nếu BE có trả về
-  startDate?: string;
-  endDate?: string;
-}
-
 interface OrderState {
-  // Data
   orders: Order[];
-  filteredOrders: Order[];
   currentOrder: Order | null;
-
-  // Loading
   isLoading: boolean;
   isUpdating: boolean;
-
-  // Filters & search
-  filters: OrderFilters;
   searchTerm: string;
-
-  // Pagination
   currentPage: number;
   itemsPerPage: number;
 
@@ -108,32 +89,19 @@ interface OrderState {
   fetchOrderById: (orderId: number) => Promise<void>;
   createOrder: (userId: number, req: CreateOrderRequest) => Promise<Order>;
   cancelOrder: (userId: number, orderId: number) => Promise<void>;
-
-  // Filters/search
-  setFilters: (filters: Partial<OrderFilters>) => void;
-  setSearchTerm: (term: string) => void;
-  clearFilters: () => void;
-  applyFilters: () => void;
-
-  // Pagination
   setPage: (page: number) => void;
   setItemsPerPage: (items: number) => void;
 
-  // Utils
   getOrdersByStatus: (status: OrderStatus) => Order[];
   getOrdersByDateRange: (start: string, end: string) => Order[];
-  getTotalRevenue: () => number;
-  exportOrders: () => void;
 }
 
 export const useOrderStore = create<OrderState>((set, get) => ({
   // Initial state
   orders: [],
-  filteredOrders: [],
   currentOrder: null,
   isLoading: false,
   isUpdating: false,
-  filters: {},
   searchTerm: "",
   currentPage: 1,
   itemsPerPage: 10,
@@ -144,10 +112,9 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     try {
       const res = await privateClient.get(`/orders/user/${userId}`);
       set({ orders: res.data });
-      get().applyFilters();
     } catch (e) {
       console.error("Failed to fetch user orders:", e);
-      set({ orders: [], filteredOrders: [] });
+      toast.error("Không thể tải đơn hàng của bạn. Vui lòng thử lại sau.");
     } finally {
       set({ isLoading: false });
     }
@@ -172,7 +139,6 @@ export const useOrderStore = create<OrderState>((set, get) => ({
       const res = await privateClient.post(`/orders/${userId}`, request);
       const newOrder = res.data;
       set((s) => ({ orders: [newOrder, ...s.orders], currentOrder: newOrder }));
-      get().applyFilters();
       return newOrder;
     } catch (e) {
       console.error("Failed to create order:", e);
@@ -195,9 +161,6 @@ export const useOrderStore = create<OrderState>((set, get) => ({
             ? ({ ...s.currentOrder, status: "CANCELLED" } as Order)
             : s.currentOrder,
       }));
-      get().applyFilters();
-
-      // Fetch lại products để cập nhật inventory sau khi hủy đơn
       const productStore = useProductStore.getState();
       await productStore.fetchProducts();
     } catch (e) {
@@ -206,69 +169,6 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     } finally {
       set({ isUpdating: false });
     }
-  },
-
-  // ===== Filters/Search/Pagination/Utils =====
-  setFilters: (filters) => {
-    set((state) => ({ filters: { ...state.filters, ...filters } }));
-    get().applyFilters();
-  },
-
-  setSearchTerm: (term) => {
-    set({ searchTerm: term });
-    get().applyFilters();
-  },
-
-  clearFilters: () => {
-    set({ filters: {}, searchTerm: "", currentPage: 1 });
-    get().applyFilters();
-  },
-
-  applyFilters: () => {
-    const { orders, filters, searchTerm } = get();
-    let filtered = [...orders];
-
-    if (searchTerm) {
-      filtered = filtered.filter((order) =>
-        order.code?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (filters.status) {
-      filtered = filtered.filter((order) => order.status === filters.status);
-    }
-
-    if (filters.paymentMethod) {
-      filtered = filtered.filter(
-        (order) => order.paymentMethod === filters.paymentMethod
-      );
-    }
-
-    // Date range (ưu tiên createdAt, fallback placedAt/updatedAt)
-    if (filters.startDate || filters.endDate) {
-      const start = filters.startDate
-        ? new Date(filters.startDate).getTime()
-        : 0;
-      const end = filters.endDate
-        ? new Date(filters.endDate).getTime()
-        : Date.now();
-
-      filtered = filtered.filter((order) => {
-        const t = new Date(
-          order.createdAt || order.placedAt || order.updatedAt || 0
-        ).getTime();
-        return t >= start && t <= end;
-      });
-    }
-
-    // Newest first
-    filtered.sort(
-      (a, b) =>
-        new Date(b.createdAt || b.placedAt || b.updatedAt || 0).getTime() -
-        new Date(a.createdAt || a.placedAt || a.updatedAt || 0).getTime()
-    );
-
-    set({ filteredOrders: filtered, currentPage: 1 });
   },
 
   setPage: (page) => set({ currentPage: page }),
@@ -286,16 +186,5 @@ export const useOrderStore = create<OrderState>((set, get) => ({
       ).getTime();
       return t >= s && t <= e;
     });
-  },
-
-  getTotalRevenue: () =>
-    get()
-      .orders.filter((o) => o.status === "DELIVERED")
-      .reduce((sum, o) => sum + o.grandTotal, 0),
-
-  exportOrders: () => {
-    const { filteredOrders } = get();
-    console.log("Exporting orders:", filteredOrders);
-    // TODO: CSV export
   },
 }));

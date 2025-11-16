@@ -5,22 +5,16 @@ import { AxiosError } from "axios";
 
 export interface Size {
   id: number;
-  code: string; // VARCHAR(50) NOT NULL UNIQUE
-  name: string; // VARCHAR(100) NOT NULL
-  sortOrder: number; // INT NOT NULL DEFAULT 0
+  code: string;
+  name: string;
+  sortOrder: number;
 }
 
 interface SizeState {
   sizes: Size[];
   isLoading: boolean;
   error: string | null;
-
-  // API Actions
   fetchSizes: () => Promise<void>;
-
-  // Local Actions
-  getSize: (id: number) => Size | undefined;
-  getSizes: () => Size[];
   clearError: () => void;
 }
 
@@ -53,15 +47,6 @@ export const useSizeStore = create<SizeState>()(
           console.error("❌ Fetch sizes error:", errorMessage);
           // Client-website không cần toast error vì có thể là chức năng không quan trọng
         }
-      },
-
-      // Local Actions
-      getSize: (id) => {
-        return get().sizes.find((s) => s.id === id);
-      },
-
-      getSizes: () => {
-        return get().sizes;
       },
 
       clearError: () => set({ error: null }),

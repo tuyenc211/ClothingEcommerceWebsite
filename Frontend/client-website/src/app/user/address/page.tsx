@@ -35,7 +35,7 @@ import { MapPin, Plus, Edit2, Trash2, Star, Check } from "lucide-react";
 import useAuthStore, { Address } from "@/stores/useAuthStore";
 import { useAddress } from "@/hooks/useAddress";
 import { toast } from "sonner";
-import UserLayout from "@/components/layouts/UserLayout";
+import UserLayout from "@/components/sections/UserLayout";
 
 interface AddressFormData {
   line: string;

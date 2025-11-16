@@ -20,8 +20,8 @@ import {
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import { Rating, RatingButton } from "@/components/ui/shadcn-io/rating";
-import ReviewForm from "@/components/product/ReviewForm";
-import ReviewList from "@/components/product/ReviewList";
+import ReviewForm from "@/app/user/reviews/_component/ReviewForm";
+import ReviewList from "@/app/user/reviews/_component/ReviewList";
 import { useReviewStore } from "@/stores/reviewStore";
 
 export default function ProductDetailPage() {

@@ -3,7 +3,6 @@ import { persist } from "zustand/middleware";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
-// Category interface matching database schema
 export interface Category {
   id: number;
   parentId?: Category;
