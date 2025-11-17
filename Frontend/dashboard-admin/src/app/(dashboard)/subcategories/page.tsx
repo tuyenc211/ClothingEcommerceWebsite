@@ -69,7 +69,6 @@ export default function SubcategoriesPage() {
   const handleDeleteConfirm = () => {
     if (deleteDialog.categoryId) {
       deleteCategory(deleteDialog.categoryId);
-      toast.success("Xóa danh mục con thành công!");
       setDeleteDialog({ open: false, categoryId: null, categoryName: "" });
     }
   };

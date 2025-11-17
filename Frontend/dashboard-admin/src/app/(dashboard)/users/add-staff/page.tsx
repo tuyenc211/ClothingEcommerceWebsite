@@ -212,17 +212,17 @@ export default function AddStaffPage() {
 
         {/* Submit */}
         <div className="flex justify-end space-x-4 pt-6">
-          <Button type="button" variant="outline" asChild>
+          <Button type="button" variant="outline" asChild className="hover:bg-gray-700 hover:text-white">
             <Link href="/users">Hủy</Link>
           </Button>
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading} className="hover:bg-gray-800-700 hover:border-gray-800 hover:text-white">
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Đang tạo...
               </>
             ) : (
-              "Tạo tài khoản"
+              "Lưu"
             )}
           </Button>
         </div>

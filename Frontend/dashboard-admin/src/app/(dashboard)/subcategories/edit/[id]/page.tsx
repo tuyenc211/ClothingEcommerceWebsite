@@ -65,7 +65,10 @@ export default function EditSubcategoryPage() {
     if (!formData.name.trim()) {
       newErrors.name = "Tên danh mục con không được để trống";
     }
-
+      const nameRegex = /^[a-zA-Z0-9\sÀ-ỹ]+$/;
+      if (formData.name && !nameRegex.test(formData.name)) {
+          newErrors.name = "Tên chỉ được chứa chữ, số và khoảng trắng (không có ký tự đặc biệt)";
+      }
     if (!formData.parentId) {
       newErrors.parentId = "Vui lòng chọn danh mục cha";
     }
@@ -84,14 +87,12 @@ export default function EditSubcategoryPage() {
     setLoading(true);
 
     try {
-      updateCategory(categoryId, {
+      await updateCategory(categoryId, {
         name: formData.name.trim(),
         slug: formData.name.trim().toLowerCase().replace(/\s+/g, "-"),
         parentId: formData.parentId!,
         isActive: formData.isActive,
       });
-
-      toast.success("Cập nhật danh mục con thành công!");
       router.push("/subcategories");
     } catch (error) {
       toast.error("Có lỗi xảy ra khi cập nhật danh mục con");

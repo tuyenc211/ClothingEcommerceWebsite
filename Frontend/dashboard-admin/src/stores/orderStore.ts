@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import privateClient from "@/lib/axios";
+import {toast} from "sonner";
 
 // ===== Types =====
 export type OrderStatus =
@@ -278,6 +279,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
                         : s.currentOrder,
             }));
             get().applyFilters();
+            toast.success("Cập nhật trạng thái đơn hàng thành công");
         } catch (e) {
             console.error("Failed to update order status:", e);
             throw e;

@@ -68,7 +68,6 @@ export default function CategoriesPage() {
   const handleDeleteConfirm = () => {
     if (deleteDialog.categoryId) {
       deleteCategory(deleteDialog.categoryId);
-      toast.success("Xóa danh mục thành công!");
       setDeleteDialog({ open: false, categoryId: null, categoryName: "" });
     }
   };

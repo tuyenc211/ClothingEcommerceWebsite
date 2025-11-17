@@ -68,7 +68,10 @@ export default function EditCategoryPage() {
     if (!formData.name.trim()) {
       newErrors.name = "Tên danh mục không được để trống";
     }
-
+      const nameRegex = /^[a-zA-Z0-9\sÀ-ỹ]+$/;
+      if (formData.name && !nameRegex.test(formData.name)) {
+          newErrors.name = "Tên chỉ được chứa chữ, số và khoảng trắng (không có ký tự đặc biệt)";
+      }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
