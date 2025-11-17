@@ -129,7 +129,7 @@ export default function Header() {
                 <NavigationMenuList>
                   {/* Trang chủ */}
                   <NavigationMenuItem className="px-2">
-                    <Link href="/public">
+                    <Link href="/">
                       <NavigationMenuLink asChild>
                         <span className="uppercase font-bold">Trang chủ</span>
                       </NavigationMenuLink>
@@ -285,9 +285,9 @@ export default function Header() {
           {/* Mobile Search */}
           {isSearchOpen && (
             <div className="md:hidden py-4 border-t bg-gray-50">
-              <SearchBar 
-                isMobile={true} 
-                onClose={() => setIsSearchOpen(false)} 
+              <SearchBar
+                isMobile={true}
+                onClose={() => setIsSearchOpen(false)}
               />
             </div>
           )}
