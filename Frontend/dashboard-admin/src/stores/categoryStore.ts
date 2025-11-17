@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import privateClient from "@/lib/axios";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import { useProductStore } from "./productStore";
 // Category interface matching database schema
 export interface Category {
   id: number;
@@ -29,8 +30,6 @@ interface CategoryState {
   }) => Promise<void>;
   updateCategory: (id: number, category: Partial<Category>) => Promise<void>;
   deleteCategory: (id: number) => Promise<void>;
-
-  // Local Actions
   getCategory: (id: number) => Category | undefined;
   clearError: () => void;
 }
@@ -125,6 +124,24 @@ export const useCategoryStore = create<CategoryState>()(
       },
 
       deleteCategory: async (id) => {
+        const productsInCategory = useProductStore
+          .getState()
+          .products.filter((product) => product.category?.id === id);
+
+        if (productsInCategory.length > 0) {
+          toast.error("Không thể xóa danh mục đang chứa sản phẩm");
+          return;
+        }
+
+        // ✅ Check có subcategories không
+        const hasSubcategories = get().categories.some(
+          (cat) => cat.parentId === id
+        );
+
+        if (hasSubcategories) {
+          toast.error("Không thể xóa danh mục đang có danh mục con");
+          return;
+        }
         set({ isLoading: true, error: null });
         try {
           await privateClient.delete(`/categories/${id}`);

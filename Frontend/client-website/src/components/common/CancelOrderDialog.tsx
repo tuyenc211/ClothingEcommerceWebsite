@@ -66,20 +66,8 @@ export function CancelOrderDialog({
               Bạn có chắc chắn muốn hủy đơn hàng <strong>#{orderCode}</strong>{" "}
               không?
             </p>
-            <p>Hành động này không thể hoàn tác.</p>
-
             {/* Refund Warning */}
-            {showRefundWarning && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <p className="text-sm text-amber-800 font-medium">
-                  ⚠️ Lưu ý hoàn tiền
-                </p>
-                <p className="text-xs text-amber-700 mt-1">
-                  Đơn hàng này đã được thanh toán online. Sau khi hủy, hệ thống
-                  sẽ tự động khởi tạo quy trình hoàn tiền cho khách hàng.
-                </p>
-              </div>
-            )}
+
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

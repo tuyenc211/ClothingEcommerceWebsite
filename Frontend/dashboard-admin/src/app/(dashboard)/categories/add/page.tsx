@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { useCategoryStore } from "@/stores/categoryStore";
@@ -31,7 +30,10 @@ export default function AddCategoryPage() {
     if (!formData.name.trim()) {
       newErrors.name = "Tên danh mục không được để trống";
     }
-
+      const nameRegex = /^[a-zA-Z0-9\sÀ-ỹ]+$/;
+      if (formData.name && !nameRegex.test(formData.name)) {
+          newErrors.name = "Tên chỉ được chứa chữ, số và khoảng trắng (không có ký tự đặc biệt)";
+      }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };

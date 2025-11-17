@@ -211,7 +211,7 @@ export default function ProductDetailPage() {
       console.error("Buy now error:", error);
     }
   };
-
+  const isOutOfStock = !selectedQuantity || selectedQuantity === 0;
   const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
     return (
@@ -400,21 +400,25 @@ export default function ProductDetailPage() {
             <div className="space-y-3 sm:space-y-4 pt-4 ">
               <Button
                 onClick={handleAddToCart}
-                disabled={!selectedSize || !selectedColor}
+                disabled={!selectedSize || !selectedColor || isOutOfStock}
                 className="w-full bg-gray-900 text-white py-6 px-4 sm:px-6 rounded-sm font-medium hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 text-lg"
               >
                 <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Thêm vào giỏ hàng</span>
+                <span>
+                  {isOutOfStock ? "Sản phẩm hết hàng" : "Thêm vào giỏ hàng"}
+                </span>
               </Button>
 
               {/* Buy Now Button */}
               <Button
                 onClick={handleBuyNow}
-                disabled={!selectedSize || !selectedColor}
+                disabled={!selectedSize || !selectedColor || isOutOfStock}
                 className="w-full bg-red-600 text-white py-6 px-4 sm:px-6 rounded-sm font-medium hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 text-lg"
               >
                 <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Mua ngay</span>
+                <span>
+                  {isOutOfStock ? "Sản phẩm đã hết hàng" : "Mua ngay"}
+                </span>
               </Button>
             </div>
 
