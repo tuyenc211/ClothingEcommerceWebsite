@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/pagination";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useCategoryStore } from "@/stores/categoryStore";
+import { Category, useCategoryStore } from "@/stores/categoryStore";
 import { toast } from "sonner";
 
 export default function SubcategoriesPage() {
@@ -56,7 +56,9 @@ export default function SubcategoriesPage() {
   }, [fetchCategories]);
 
   // Chỉ lấy danh mục con (có parentId)
-  const subcategories = categories.filter((category) => category.parentId);
+  const subcategories = categories.filter(
+    (category) => category.parentId !== undefined && category.parentId !== null
+  );
 
   const handleDeleteClick = (id: number, name: string) => {
     setDeleteDialog({
@@ -78,10 +80,9 @@ export default function SubcategoriesPage() {
   };
 
   // Lấy tên danh mục cha
-  const getParentCategoryName = (parentId?: number) => {
-    if (!parentId) return "-";
-    const parentCategory = getCategory(parentId);
-    return parentCategory?.name || "-";
+  const getParentCategoryName = (parentId?: Category) => {
+    if (!parent) return "-";
+    return parentId?.name || "-";
   };
 
   // Pagination calculation
