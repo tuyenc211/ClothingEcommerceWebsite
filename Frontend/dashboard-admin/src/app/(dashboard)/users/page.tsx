@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +50,7 @@ import {
   Ban,
   CheckCircle,
   Loader2,
+  Search,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { Role, User } from "@/stores/useAuthStore";
@@ -74,7 +76,7 @@ export default function UsersManagementPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingUserName, setDeletingUserName] = useState("");
   const [togglingUserId, setTogglingUserId] = useState<number | null>(null);
-
+  const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
@@ -83,11 +85,18 @@ export default function UsersManagementPage() {
     setFilteredUsers(users);
   }, [users]);
 
-  // Lọc users dựa trên search term và role
   useEffect(() => {
     let filtered = users;
-
-    // Lọc theo role
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (user) =>
+          user.fullName.toLowerCase().includes(term) ||
+          user.email.toLowerCase().includes(term) ||
+          (user.phone && user.phone.includes(term)) ||
+          user.roles?.some((role) => role.name.toLowerCase().includes(term))
+      );
+    }
     if (selectedRole !== "all") {
       filtered = filtered.filter((user) =>
         user.roles?.some((role) => {
@@ -105,9 +114,7 @@ export default function UsersManagementPage() {
     }
 
     setFilteredUsers(filtered);
-  }, [selectedRole, users]);
-
-  // Pagination calculation
+  }, [selectedRole, users, searchTerm]);
   const {
     currentPage,
     setPage,
@@ -122,12 +129,9 @@ export default function UsersManagementPage() {
     showPages: 5,
   });
   const paginatedUsers = slice(filteredUsers);
-  // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [selectedRole]);
-
-  // Handler
+  }, [selectedRole, setPage, searchTerm]);
 
   const handleUpdateUser = async (userId: number, userData: Partial<User>) => {
     const success = await updateUser(userId, userData);
@@ -277,20 +281,12 @@ export default function UsersManagementPage() {
               </p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Quản trị viên
-              </CardTitle>
-              <Shield className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-          </Card>
         </div>
 
         {/* Filter Buttons */}
         <Card className="py-2">
           <CardContent className="p-3">
-            <div className="space-y-4">
+            <div className="space-y-4 flex items-center justify-between">
               <div className="flex flex-wrap gap-2">
                 <Button
                   onClick={() => setSelectedRole("all")}
@@ -327,6 +323,15 @@ export default function UsersManagementPage() {
                   <UserCheck className="h-4 w-4" />
                   Nhân viên ({stats.totalStaff})
                 </Button>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  className="pl-10"
+                  placeholder="Tìm kiếm tài khoản"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
             </div>
           </CardContent>

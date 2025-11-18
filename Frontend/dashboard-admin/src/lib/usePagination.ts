@@ -19,7 +19,6 @@ export function usePagination({
 
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 
-  // Nếu totalItems đổi làm currentPage vượt quá totalPages -> kéo về trang cuối
   useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(totalPages);
     if (currentPage < 1) setCurrentPage(1);

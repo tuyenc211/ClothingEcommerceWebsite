@@ -29,10 +29,13 @@ export default function EditSubcategoryPage() {
   const router = useRouter();
   const params = useParams();
   const categoryId = parseInt(params.id as string);
-  const { getCategory, updateCategory,categories,fetchCategories } = useCategoryStore();
-  const parentCategories = categories.filter(cat => !cat.parentId);
+  const { getCategory, updateCategory, categories, fetchCategories } =
+    useCategoryStore();
+  const parentCategories = categories.filter((cat) => !cat.parentId);
 
-  useEffect(() => { fetchCategories(); }, [fetchCategories]);
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [formData, setFormData] = useState<SubcategoryFormData>({
@@ -49,7 +52,7 @@ export default function EditSubcategoryPage() {
     if (category && category.parentId) {
       setFormData({
         name: category.name,
-        parentId: category.parentId,
+        parentId: category.parentId?.id,
         isActive: category.isActive,
       });
     } else {
@@ -65,10 +68,11 @@ export default function EditSubcategoryPage() {
     if (!formData.name.trim()) {
       newErrors.name = "Tên danh mục con không được để trống";
     }
-      const nameRegex = /^[a-zA-Z0-9\sÀ-ỹ]+$/;
-      if (formData.name && !nameRegex.test(formData.name)) {
-          newErrors.name = "Tên chỉ được chứa chữ, số và khoảng trắng (không có ký tự đặc biệt)";
-      }
+    const nameRegex = /^[a-zA-Z0-9\sÀ-ỹ]+$/;
+    if (formData.name && !nameRegex.test(formData.name)) {
+      newErrors.name =
+        "Tên chỉ được chứa chữ, số và khoảng trắng (không có ký tự đặc biệt)";
+    }
     if (!formData.parentId) {
       newErrors.parentId = "Vui lòng chọn danh mục cha";
     }
@@ -90,7 +94,7 @@ export default function EditSubcategoryPage() {
       await updateCategory(categoryId, {
         name: formData.name.trim(),
         slug: formData.name.trim().toLowerCase().replace(/\s+/g, "-"),
-        parentId: formData.parentId!,
+        parentId: categories.find((cat) => cat.id === formData.parentId),
         isActive: formData.isActive,
       });
       router.push("/subcategories");

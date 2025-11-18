@@ -7,7 +7,7 @@ import { useProductStore } from "./productStore";
 // Category interface matching database schema
 export interface Category {
   id: number;
-  parentId?: number;
+  parentId?: Category;
   name: string;
   slug: string;
   isActive: boolean;
@@ -135,7 +135,7 @@ export const useCategoryStore = create<CategoryState>()(
 
         // ✅ Check có subcategories không
         const hasSubcategories = get().categories.some(
-          (cat) => cat.parentId === id
+          (cat) => cat.parentId?.id === id
         );
 
         if (hasSubcategories) {

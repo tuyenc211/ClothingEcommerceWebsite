@@ -89,7 +89,6 @@ export default function UserProfilePage() {
   const onPasswordSubmit = async (data: PasswordForm) => {
     try {
       await changePassword(data.currentPassword, data.newPassword);
-      toast.success("Đổi mật khẩu thành công");
       resetPassword();
     } catch (error) {
       console.error("Change password error:", error);
