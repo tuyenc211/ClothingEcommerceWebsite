@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+} from "recharts";
 import {
   Card,
   CardContent,
@@ -26,25 +33,20 @@ import {
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 const chartConfig = {
   revenue: {
     label: "Doanh thu",
-    color: "hsl(var(--chart-1))",
+    color: "#000",
   },
 } satisfies ChartConfig;
 
 const formatCurrencyShort = (value: number) => {
-  if (value >= 1000000000) {
-    return `${(value / 1000000000).toFixed(1)}B`;
-  }
-  if (value >= 1000000) {
-    return `${(value / 1000000).toFixed(0)}M`;
-  }
-  if (value >= 1000) {
-    return `${(value / 1000).toFixed(0)}K`;
-  }
-  return value.toString();
+  if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)} tỷ`;
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(0)} tr`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(0)} ng`;
+  return value.toLocaleString("vi-VN");
 };
 
 export function RevenueChart() {
@@ -56,36 +58,20 @@ export function RevenueChart() {
   }, [fetchRevenueData]);
 
   const filteredData = React.useMemo(() => {
-    let monthsToShow = 6;
-
-    if (timeRange === "3m") {
-      monthsToShow = 3;
-    } else if (timeRange === "12m") {
-      monthsToShow = 12;
-    }
-
-    // Chuyển đổi dữ liệu để phù hợp với Bar Chart
-    return revenueData.slice(-monthsToShow).map((item) => ({
+    const months = timeRange === "3m" ? 3 : timeRange === "12m" ? 12 : 6;
+    return revenueData.slice(-months).map((item) => ({
       date: item.date,
-      revenue: item.revenue
+      revenue: item.revenue,
     }));
   }, [timeRange, revenueData]);
 
-  // Tính toán phần trăm thay đổi so với tháng trước
-  const currentMonthRevenue =
-    filteredData[filteredData.length - 1]?.revenue || 0;
-  const previousMonthRevenue =
-    filteredData[filteredData.length - 2]?.revenue || 0;
-
+  const currentRevenue = filteredData[filteredData.length - 1]?.revenue || 0;
+  const previousRevenue = filteredData[filteredData.length - 2]?.revenue || 0;
   const percentageChange =
-    previousMonthRevenue > 0
-      ? ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) *
-        100
+    previousRevenue > 0
+      ? ((currentRevenue - previousRevenue) / previousRevenue) * 100
       : 0;
 
-  const isPositive = percentageChange > 0;
-
-  // Tính tổng doanh thu
   const totalRevenue = filteredData.reduce(
     (sum, item) => sum + item.revenue,
     0
@@ -94,106 +80,122 @@ export function RevenueChart() {
     filteredData.length > 0 ? totalRevenue / filteredData.length : 0;
 
   return (
-    <Card>
-      <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-        <div className="grid flex-1 gap-1">
-          <CardTitle>Doanh thu theo tháng</CardTitle>
-          <CardDescription>
-            Hiển thị doanh thu của{" "}
-            {timeRange === "3m" ? "3" : timeRange === "6m" ? "6" : "12"} tháng
+    <Card className="border rounded-xl">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4">
+        <div>
+          <CardTitle className="text-xl font-semibold text-foreground">
+            Doanh thu theo tháng
+          </CardTitle>
+          <CardDescription className="text-sm text-muted-foreground">
+            {timeRange === "3m"
+              ? "3 tháng"
+              : timeRange === "6m"
+              ? "6 tháng"
+              : "12 tháng"}{" "}
             gần nhất
           </CardDescription>
         </div>
+
         <Select value={timeRange} onValueChange={setTimeRange}>
-          <SelectTrigger
-            className="w-[140px] rounded-lg sm:ml-auto"
-            aria-label="Select a value"
-          >
-            <SelectValue placeholder="6 tháng" />
+          <SelectTrigger className="w-36">
+            <SelectValue />
           </SelectTrigger>
-          <SelectContent className="rounded-xl">
-            <SelectItem value="3m" className="rounded-lg">
-              3 tháng
-            </SelectItem>
-            <SelectItem value="6m" className="rounded-lg">
-              6 tháng
-            </SelectItem>
-            <SelectItem value="12m" className="rounded-lg">
-              12 tháng
-            </SelectItem>
+          <SelectContent>
+            <SelectItem value="3m">3 tháng</SelectItem>
+            <SelectItem value="6m">6 tháng</SelectItem>
+            <SelectItem value="12m">12 tháng</SelectItem>
           </SelectContent>
         </Select>
       </CardHeader>
-      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-auto h-[300px] w-full"
-        >
-          <BarChart accessibilityLayer data={filteredData}>
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              minTickGap={32}
-              tickFormatter={(value) => {
-                const date = new Date(value);
-                return date.toLocaleDateString("vi-VN", {
-                  month: "short",
-                  year: "2-digit",
-                });
-              }}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickFormatter={formatCurrencyShort}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("vi-VN", {
-                      month: "long",
-                      year: "numeric",
-                    });
-                  }}
-                  formatter={(value) => [
-                    formatCurrency(Number(value)),
-                    "Doanh thu",
-                  ]}
-                  hideLabel={false}
-                />
-              }
-            />
-            <Bar
-              dataKey="revenue"
-              fill="var(--color-revenue)"
-              radius={[8, 8, 0, 0]}
-            />
-          </BarChart>
+
+      <CardContent className="pt-2">
+        <ChartContainer config={chartConfig} className="h-80 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={filteredData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid
+                strokeDasharray="4 4"
+                stroke="#e5e7eb"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={10}
+                fontSize={13}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return date.toLocaleDateString("vi-VN", { month: "short" });
+                }}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={10}
+                fontSize={13}
+                tickFormatter={formatCurrencyShort}
+              />
+              <ChartTooltip
+                cursor={{ fill: "#f3f4f6", opacity: 0.8 }}
+                content={
+                  <ChartTooltipContent
+                    className="bg-white border rounded-lg"
+                    labelFormatter={(value) =>
+                      new Date(value).toLocaleDateString("vi-VN", {
+                        month: "long",
+                        year: "numeric",
+                      })
+                    }
+                    formatter={(value: ValueType) =>
+                      formatCurrency(Number(value))
+                    }
+                  />
+                }
+              />
+              <Bar dataKey="revenue" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm pt-4">
-        <div className="flex gap-2 leading-none font-medium">
-          {isPositive ? (
-            <>
-              Tăng {Math.abs(percentageChange).toFixed(1)}% so với tháng trước{" "}
-              <TrendingUp className="h-4 w-4 text-green-600" />
-            </>
-          ) : (
-            <>
-              Giảm {Math.abs(percentageChange).toFixed(1)}% so với tháng trước{" "}
-              <TrendingDown className="h-4 w-4 text-red-600" />
-            </>
-          )}
+
+      <CardFooter className="flex flex-col sm:flex-row justify-between gap-6 pt-4 border-t text-sm">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 font-medium">
+            {percentageChange >= 0 ? (
+              <>
+                <TrendingUp className="w-5 h-5 text-green-600" />
+                <span className="text-green-600 text-lg font-semibold">
+                  +{Math.abs(percentageChange).toFixed(1)}%
+                </span>
+              </>
+            ) : (
+              <>
+                <TrendingDown className="w-5 h-5 text-red-600" />
+                <span className="text-red-600 text-lg font-semibold">
+                  {Math.abs(percentageChange).toFixed(1)}%
+                </span>
+              </>
+            )}
+            <span className="text-muted-foreground">so với tháng trước</span>
+          </div>
         </div>
-        <div className="text-muted-foreground leading-none">
-          Tổng doanh thu: {formatCurrency(totalRevenue)} • Trung bình:{" "}
-          {formatCurrency(averageRevenue)}/tháng
+
+        <div className="flex gap-8 text-sm">
+          <div>
+            <div className="text-muted-foreground">Tổng doanh thu</div>
+            <div className="text-xl font-semibold mt-1">
+              {formatCurrency(totalRevenue)}
+            </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground">Trung bình/tháng</div>
+            <div className="text-xl font-semibold mt-1">
+              {formatCurrency(averageRevenue)}
+            </div>
+          </div>
         </div>
       </CardFooter>
     </Card>

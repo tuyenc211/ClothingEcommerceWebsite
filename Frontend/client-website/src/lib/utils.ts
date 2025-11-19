@@ -28,3 +28,19 @@ export const formatDate = (dateString: string | undefined) => {
         return dateString;
     }
 };
+ export const priceRanges = [
+    { label: "Tất cả giá", value: [0, 5000000] as [number, number] },
+    { label: formatPrice(500000), value: [0, 500000] as [number, number] },
+    {
+        label: formatPrice(500000) + " - " + formatPrice(1000000),
+        value: [500000, 1000000] as [number, number],
+    },
+    {
+        label: formatPrice(1000000) + " - " + formatPrice(2000000),
+        value: [1000000, 2000000] as [number, number],
+    },
+    {
+        label: formatPrice(2000000) + " - " + formatPrice(5000000),
+        value: [2000000, 5000000] as [number, number],
+    },
+];
