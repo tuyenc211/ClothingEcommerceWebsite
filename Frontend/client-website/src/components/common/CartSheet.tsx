@@ -1,6 +1,6 @@
 "use client";
 
-import {useState, useMemo, useEffect} from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,19 +27,19 @@ export function CartSheet() {
     updateQuantity,
     removeFromCart,
     clearCart,
-      createCart,
-      fetchCartItems
+    createCart,
+    fetchCartItems,
   } = useCartStore();
   const { getProduct } = useProductStore();
-  const {authUser} =useAuthStore();
+  const { authUser } = useAuthStore();
   const itemCount = getTotalItems();
   const summary = getCartSummary();
-    useEffect(() => {
-        if (authUser?.id) {
-            createCart(authUser.id);
-            fetchCartItems(authUser.id);
-        }
-    }, [authUser?.id, fetchCartItems, createCart]);
+  useEffect(() => {
+    if (authUser?.id) {
+      createCart(authUser.id);
+      fetchCartItems(authUser.id);
+    }
+  }, [authUser?.id, fetchCartItems, createCart]);
   // Enrich cart items with full product, color, and size info
   const enrichedItems = useMemo(() => {
     return items

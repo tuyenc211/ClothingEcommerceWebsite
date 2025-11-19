@@ -25,8 +25,6 @@ export interface ProductVariant {
   product?: Product; // Populated from backend join (optional)
   inventory?: Inventory; // Populated from backend join (optional)
 }
-
-// Inventory interface để match với inventories table
 export interface Inventory {
   id: number;
   variant_id: number;

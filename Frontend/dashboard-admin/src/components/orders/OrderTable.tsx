@@ -50,7 +50,7 @@ export function OrderTable({ orders }: OrderTableProps) {
   // Get status label in Vietnamese
   const getStatusLabel = (status: OrderStatus): string => {
     const labels: Record<OrderStatus, string> = {
-      NEW: "Mới",
+      NEW: "Chờ xử lý",
       CONFIRMED: "Đã xác nhận",
       PACKING: "Đang đóng gói",
       SHIPPED: "Đang giao",
