@@ -6,33 +6,35 @@ import { AxiosError } from "axios";
 import { persist } from "zustand/middleware";
 
 export interface Role {
-  id: number; 
-  name: string; 
+  id: number;
+  name: string;
 }
 export interface Address {
-  id: number; 
-  user_id: number; 
-  line: string; 
-  ward?: string; 
-  district?: string; 
-  province?: string; 
-  country?: string; 
-  isDefault: boolean; 
+  id: number;
+  user_id: number;
+  line: string;
+  ward?: string;
+  district?: string;
+  province?: string;
+  country?: string;
+  isDefault: boolean;
 }
 
 export interface User {
-  id: number; 
-  email: string; 
-  password?: string; 
-  fullName: string; 
-  phone?: string; 
-  isActive: boolean; 
-  roles?: Role[]; 
-  addresses?: Address[]; 
+  id: number;
+  email: string;
+  password?: string;
+  fullName: string;
+  accessToken?: string;
+  phone?: string;
+  isActive: boolean;
+  roles?: Role[];
+  addresses?: Address[];
 }
 
 interface AuthStore {
   authUser: User | null;
+  accessToken: string | null;
   isLoggingIn: boolean;
   isCheckingAuth: boolean;
   isForgettingPassword: boolean;
@@ -55,6 +57,9 @@ interface AuthStore {
 
   login: (data: LoginData) => Promise<void>;
   logout: () => Promise<void>;
+  setAccessToken: (token: string | null) => void;
+  getAccessToken: () => string | null;
+
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, password: string) => Promise<void>;
 }
@@ -63,6 +68,7 @@ const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
       authUser: null,
+      accessToken: null,
       isLoggingIn: false,
       isCheckingAuth: false,
       isForgettingPassword: false,
@@ -89,11 +95,9 @@ const useAuthStore = create<AuthStore>()(
           }
 
           // Backend sẽ set cookie, frontend lưu user data
-          set({ authUser: user });
+          set({ authUser: user, accessToken: res.data.accesstoken });
           toast.success(
-            `Đăng nhập thành công với vai trò ${
-              user.roles?.[0]?.name?.toLowerCase()
-            }`
+            `Đăng nhập thành công với vai trò ${user.roles?.[0]?.name?.toLowerCase()}`
           );
         } catch (error: unknown) {
           const axiosError = error as AxiosError<{ message: string }>;
@@ -114,11 +118,17 @@ const useAuthStore = create<AuthStore>()(
         } catch (error) {
           console.log("Logout error:", error);
         } finally {
-          set({ authUser: null });
+          set({ authUser: null, accessToken: null });
           toast.success("Đăng xuất thành công");
         }
       },
+      setAccessToken: (token: string | null) => {
+        set({ accessToken: token });
+      },
 
+      getAccessToken: () => {
+        return get().accessToken;
+      },
       forgotPassword: async (email: string) => {
         set({ isForgettingPassword: true });
         try {
@@ -328,6 +338,7 @@ const useAuthStore = create<AuthStore>()(
       name: "auth-storage",
       partialize: (state) => ({
         authUser: state.authUser,
+        accessToken: state.accessToken,
       }),
     }
   )
