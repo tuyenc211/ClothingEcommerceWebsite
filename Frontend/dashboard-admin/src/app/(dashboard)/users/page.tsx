@@ -87,6 +87,9 @@ export default function UsersManagementPage() {
 
   useEffect(() => {
     let filtered = users;
+    filtered = filtered.filter(
+      (user) => !user.roles?.some((role) => role.name.toLowerCase() === "admin")
+    );
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -199,7 +202,9 @@ export default function UsersManagementPage() {
     );
 
     return {
-      totalUsers: users.length,
+      totalUsers: users.filter(
+        (u) => !u.roles?.some((role) => role.name.toLowerCase() === "admin")
+      ).length,
       totalCustomers: customers.length,
       totalStaff: staff.length,
     };
@@ -220,6 +225,19 @@ export default function UsersManagementPage() {
     }
   }
   const stats = getStatsData();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative">
+            {/* Spinner */}
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <RoleGuard requireAdmin>
       <div className="space-y-6">

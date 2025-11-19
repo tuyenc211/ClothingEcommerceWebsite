@@ -21,7 +21,6 @@ interface CategoryState {
   getCategory: (id: number) => Category | undefined;
   getCategoryBySlug: (slug: string) => Category | undefined;
   getChildCategories: (parentId: number) => Category[];
-  // Utility methods
   setError: (error: string | null) => void;
   clearError: () => void;
 }

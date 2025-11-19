@@ -103,7 +103,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<ShippingFormData>({
     fullName: "",
     phone: "",
@@ -285,7 +285,11 @@ export default function CheckoutPage() {
     removeCoupon();
     toast.info("Đã hủy mã giảm giá");
   };
-
+  const validatePhone = (phone: string): boolean => {
+    // Phone VN: 10 số, bắt đầu bằng 0
+    const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+    return phoneRegex.test(phone);
+  };
   const handleSubmitOrder = async () => {
     if (!authUser?.id) {
       toast.error("Vui lòng đăng nhập để đặt hàng");
@@ -297,7 +301,10 @@ export default function CheckoutPage() {
       toast.error("Vui lòng điền đầy đủ thông tin giao hàng");
       return;
     }
-
+    if (!validatePhone(formData.phone)) {
+      toast.error("Số điện thoại không hợp lệ");
+      return;
+    }
     if (!formData.province || !formData.ward) {
       toast.error("Vui lòng chọn tỉnh/thành phố và xã/phường");
       return;
@@ -343,14 +350,9 @@ export default function CheckoutPage() {
           toast.error("Không thể tạo thanh toán VNPay. Vui lòng thử lại.");
         }
       } else {
-        // COD payment - complete order immediately
         toast.success(`Đặt hàng thành công! Mã đơn hàng: ${order.code}`);
-
-        // Clear cart after successful order
         await clearCart();
         await fetchProducts();
-
-        // Redirect to order success page
         router.push(`/user/orders/${order.id}`);
       }
     } catch (error) {

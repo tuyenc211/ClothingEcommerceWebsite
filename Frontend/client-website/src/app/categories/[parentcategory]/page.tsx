@@ -15,6 +15,7 @@ import {
     BreadcrumbList,
     BreadcrumbSeparator
 } from "@/components/ui/breadcrumb";
+import {priceRanges} from "@/lib/utils";
 
 // Filter interface
 interface Filters {
@@ -25,13 +26,6 @@ interface Filters {
   sortBy: "name" | "price" | "rating" | "newest";
   sortOrder: "asc" | "desc";
 }
- const priceRanges = [
-    { label: "Tất cả giá", value: [0, 5000000] as [number, number] },
-    { label: "Dưới 500K", value: [0, 500000] as [number, number] },
-    { label: "500K - 1M", value: [500000, 1000000] as [number, number] },
-    { label: "1M - 2M", value: [1000000, 2000000] as [number, number] },
-    { label: "Trên 2M", value: [2000000, 5000000] as [number, number] },
-];
 export default function ParentCategoryPage() {
     const {parentcategory} = useParams();
     const [displayCount, setDisplayCount] = useState(12);

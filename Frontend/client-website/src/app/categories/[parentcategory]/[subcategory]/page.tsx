@@ -8,7 +8,7 @@ import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
 import ProductGrid from "@/components/common/ProductGrid";
 import { convertProductToItemProps } from "@/components/common/ProductItem";
-import { formatPrice } from "@/lib/utils";
+import {formatPrice, priceRanges} from "@/lib/utils";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -192,24 +192,6 @@ export default function SubCategoryPage() {
     });
     setDisplayCount(12);
   };
-
-  // Price range options
- const priceRanges = [
-    { label: "Tất cả giá", value: [0, 5000000] as [number, number] },
-    { label: formatPrice(500000), value: [0, 500000] as [number, number] },
-    {
-      label: formatPrice(500000) + " - " + formatPrice(1000000),
-      value: [500000, 1000000] as [number, number],
-    },
-    {
-      label: formatPrice(1000000) + " - " + formatPrice(2000000),
-      value: [1000000, 2000000] as [number, number],
-    },
-    {
-      label: formatPrice(2000000) + " - " + formatPrice(5000000),
-      value: [2000000, 5000000] as [number, number],
-    },
-  ];
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
