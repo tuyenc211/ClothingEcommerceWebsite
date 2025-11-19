@@ -125,6 +125,7 @@ const useAuthStore = create<AuthStore>()(
           console.log("Logout error:", error);
         } finally {
           set({ authUser: null });
+          localStorage.removeItem("cart-storage");
           toast.success("Đăng xuất thành công");
         }
       },

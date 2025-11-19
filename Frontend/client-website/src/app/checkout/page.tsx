@@ -55,7 +55,7 @@ export default function CheckoutPage() {
   } = useCartStore();
   const { getProduct, fetchProducts } = useProductStore();
 
-  const { getActiveCoupons, fetchCoupons} = useCouponStore();
+  const { getActiveCoupons, fetchCoupons } = useCouponStore();
   useEffect(() => {
     fetchCoupons();
   }, [fetchCoupons]);
@@ -317,15 +317,10 @@ export default function CheckoutPage() {
           province: formData.province,
         },
       };
-
-      console.log("Creating order:", orderRequest);
-
       // Call backend API to create order
       const order = await useOrderStore
         .getState()
         .createOrder(authUser.id, orderRequest);
-
-      console.log("Order created successfully:", order);
 
       // Handle payment method
       if (paymentMethod === "WALLET") {
@@ -338,8 +333,6 @@ export default function CheckoutPage() {
             order.grandTotal,
             order.id.toString()
           );
-
-          // Clear cart before redirect (order is already created)
           await clearCart();
           await fetchProducts();
 
