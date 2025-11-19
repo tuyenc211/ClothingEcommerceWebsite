@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: { turbopackFileSystemCacheForDev: true },
+  experimental: {turbopackFileSystemCacheForDev: true},
   images: {
     remotePatterns: [
       {
@@ -30,11 +30,11 @@ const nextConfig: NextConfig = {
         source: "/address-kit/:path*",
         destination: "https://production.cas.so/address-kit/:path*",
       },
-      {
-        source: "/api/v1/:path*",
-        destination:
-          "https://clothingecommercewebsite.onrender.com/api/v1/:path*",
-      },
+      // {
+      //   source: "/api/v1/:path*",
+      //   destination:
+      //     "https://clothingecommercewebsite.onrender.com/api/v1/:path*",
+      // },
     ];
   },
   // rewrites: async () => [

@@ -5,6 +5,8 @@ import com.project.ClothingEcommerceWebsite.dtos.request.ForgotPassWordRequest;
 import com.project.ClothingEcommerceWebsite.dtos.request.LoginRequest;
 import com.project.ClothingEcommerceWebsite.dtos.request.ResetPasswordRequest;
 import com.project.ClothingEcommerceWebsite.dtos.respond.MessageResponse;
+import com.project.ClothingEcommerceWebsite.exception.NotFoundException;
+import com.project.ClothingEcommerceWebsite.exception.UnauthorizedException;
 import com.project.ClothingEcommerceWebsite.models.User;
 import com.project.ClothingEcommerceWebsite.services.UserService;
 import com.project.ClothingEcommerceWebsite.utils.SecurityUtil;
@@ -13,17 +15,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("${api.prefix}/auth")
@@ -44,13 +48,44 @@ public class AuthController {
     
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        String accessToken = securityUtil.createToken(authentication);
-        User user = userService.getUserByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
+        Optional<User> user = userService.getUserByEmail(loginRequest.getEmail());
+        if (user.isEmpty()) {
+            throw new NotFoundException("Email chưa được đăng ký!!");
+        }
+        try {
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
+            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+            String accessToken = securityUtil.createAccessToken(authentication);
+            String refreshToken = securityUtil.createRefreshToken(authentication);
+            ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(24 * 60 * 60)
+                    .sameSite("None")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("user", user);
+            map.put("accesstoken", accessToken);
+            return ResponseEntity.ok().body(map);
+        } catch (AuthenticationException e) {
+            throw new UnauthorizedException("Email hoặc mật khẩu không chính xác");
+        }
+    }
+
+    @GetMapping("/refresh")
+    public ResponseEntity<?> getRefreshToken(@CookieValue(name = "refresh_token") String refreshToken, HttpServletResponse response) {
+        Jwt decodeToken = securityUtil.checkValidRefreshToken(refreshToken);
+        String email = decodeToken.getSubject();
+        User user = userService.getUserByEmail(email).orElseThrow(() -> new NotFoundException("Email not found!"));
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(user.getEmail(), null, new java.util.ArrayList<>());
+
+        String newAccessToken = securityUtil.createAccessToken(auth);
+        String newRefreshToken = securityUtil.createRefreshToken(auth);
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshToken)
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
@@ -58,28 +93,11 @@ public class AuthController {
                 .sameSite("None")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
         HashMap<String, Object> map = new HashMap<>();
         map.put("user", user);
-        map.put("accesstoken", accessToken);
+        map.put("accesstoken", newAccessToken);
         return ResponseEntity.ok().body(map);
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).body("Unauthorized");
-        }
-
-        // Lấy email từ token
-        String email = authentication.getName();
-        User user = userService.getUserByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return ResponseEntity.ok().body(
-                new java.util.HashMap<String, Object>() {{
-                    put("user", user);
-                }}
-        );
     }
 
     @PostMapping("/register")
@@ -92,7 +110,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
-        ResponseCookie clearAccess = ResponseCookie.from("accessToken", "")
+        ResponseCookie clearAccess = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(true)
                 .path("/")

@@ -1,5 +1,6 @@
 package com.project.ClothingEcommerceWebsite.configs;
 
+import com.project.ClothingEcommerceWebsite.exception.NotFoundException;
 import com.project.ClothingEcommerceWebsite.models.User;
 import com.project.ClothingEcommerceWebsite.services.UserService;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,7 @@ public class UserDetailCustom implements UserDetailsService {
     private final UserService userService;
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userService.getUserByEmail(username).get();
+        User user = userService.getUserByEmail(username).orElseThrow(() -> new NotFoundException("User not found!"));
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
