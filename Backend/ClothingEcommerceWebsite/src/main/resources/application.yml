@@ -30,8 +30,11 @@ spring:
           starttls:
             enable: true
   sendgrid:
-    api-key: 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
+    api-key: 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
     from-email: hoductuyenqp@gmail.com
+  cloudinary:
+    api-key: 794879747219491
+    api-secret: FWuxg7Zf3kg9uwonLtBQ5AbeYqY
   vnpay:
     tmn-code: M5O0LLB4
     secret-key: 9QPZCMNLUCBBFWPEWYVOENQM7LCKE6ND
@@ -44,5 +47,6 @@ spring:
 api:
   prefix: api/v1
 jwt:
-  expiration: 86400
+  accesstoken-expiration: 300
+  refreshtoken-expiration: 86400
   secretKey: TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=

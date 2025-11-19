@@ -55,7 +55,10 @@ public class CouponServiceImpl implements CouponService {
         Coupon coupon = couponRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Coupon not found"));
         String keepImageUrl = updatedCoupon.getKeepImageUrl();
-        if (!keepImageUrl.contains(coupon.getImageUrl())) {
+        if (keepImageUrl == null) {
+            keepImageUrl = "";
+        }
+        if (!keepImageUrl.equals(coupon.getImageUrl())) {
             try {
                 cloudinaryService.deleteImage(CloudinaryUtil.extractPublicIdFromUrl(coupon.getImageUrl()));
             } catch (Exception e) {

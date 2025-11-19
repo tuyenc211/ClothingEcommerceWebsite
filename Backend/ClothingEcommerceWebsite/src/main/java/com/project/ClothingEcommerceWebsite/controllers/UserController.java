@@ -5,6 +5,7 @@ import com.project.ClothingEcommerceWebsite.dtos.request.ChangeUserRequest;
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateProductVariantRequest;
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateUserRequest;
 import com.project.ClothingEcommerceWebsite.dtos.respond.MessageResponse;
+import com.project.ClothingEcommerceWebsite.exception.NotFoundException;
 import com.project.ClothingEcommerceWebsite.models.Product;
 import com.project.ClothingEcommerceWebsite.models.Role;
 import com.project.ClothingEcommerceWebsite.models.User;
@@ -41,9 +42,10 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        User user = userService.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("User không tồn tại với id = " + id));
+        return ResponseEntity.ok(user);
+
     }
 
     @PutMapping("/change/{id}")

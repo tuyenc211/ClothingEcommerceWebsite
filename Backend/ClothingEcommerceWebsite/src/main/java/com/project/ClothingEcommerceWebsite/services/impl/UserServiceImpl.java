@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User createUser(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new RuntimeException("Email đã tồn tại!!");
         }
         Set<Role> roles = new HashSet<>();
         if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
@@ -65,8 +65,8 @@ public class UserServiceImpl implements UserService {
                 .build();
         userRepository.save(user);
         String confirmToken = jwtUtil.generateConfirmToken(user.getEmail());
-        // String confirmLink = "http://localhost:3000/user/authenticate?token=" + confirmToken;
-        String confirmLink = "http://clothing-ecommerce-website-client.vercel.app/user/authenticate?token=" + confirmToken;
+        String confirmLink = "http://localhost:3000/user/authenticate?token=" + confirmToken;
+        // String confirmLink = "http://clothing-ecommerce-website-client.vercel.app/user/authenticate?token=" + confirmToken;
         emailService.sendConfirmEmail("Xác thực email", user.getEmail(), confirmLink);
 
         System.out.println("✅ Đã gửi email xác thực tới: " + user.getEmail());
@@ -152,8 +152,8 @@ public class UserServiceImpl implements UserService {
     public MessageResponse forgotPassword(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("Not found user"));
         String resetToken = jwtUtil.generateResetToken(user.getEmail());
-        // String resetLink = "http://localhost:3000/user/reset-password?token=" + resetToken;
-        String resetLink = "http://clothing-ecommerce-website-client.vercel.app/user/reset-password?token=" + resetToken;
+        String resetLink = "http://localhost:3000/user/reset-password?token=" + resetToken;
+        // String resetLink = "http://clothing-ecommerce-website-client.vercel.app/user/reset-password?token=" + resetToken;
         emailService.sendResetPasswordEmail("Đặt lại mật khẩu", user.getEmail(), resetLink);
         return new MessageResponse("Email da duoc gui!");
     }
