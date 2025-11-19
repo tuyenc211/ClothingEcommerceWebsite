@@ -34,11 +34,16 @@ export interface User {
 
 interface AuthStore {
   authUser: User | null;
+  accessToken: string | null;
   isSigningUp: boolean;
   isLoggingIn: boolean;
   isForgettingPassword: boolean;
   isResettingPassword: boolean;
   isConfirmingEmail: boolean;
+
+  // Token management
+  setAccessToken: (token: string | null) => void;
+  getAccessToken: () => string | null;
 
   // User management
   updateProfile: (data: Partial<User>) => Promise<void>;
@@ -67,11 +72,20 @@ const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
       authUser: null,
+      accessToken: null,
       isSigningUp: false,
       isLoggingIn: false,
       isForgettingPassword: false,
       isResettingPassword: false,
       isConfirmingEmail: false,
+
+      setAccessToken: (token: string | null) => {
+        set({ accessToken: token });
+      },
+
+      getAccessToken: () => {
+        return get().accessToken;
+      },
 
       login: async (data: LoginData) => {
         set({ isLoggingIn: true });
@@ -80,8 +94,11 @@ const useAuthStore = create<AuthStore>()(
 
           console.log("✅ Login success:", res.data);
 
-          // Backend set cookie, frontend lưu user data
-          set({ authUser: res.data.user || res.data });
+          // Lưu user data và access token
+          set({
+            authUser: res.data.user || res.data,
+            accessToken: res.data.accesstoken,
+          });
 
           toast.success("Đăng nhập thành công");
         } catch (error: unknown) {
@@ -124,7 +141,7 @@ const useAuthStore = create<AuthStore>()(
         } catch (error) {
           console.log("Logout error:", error);
         } finally {
-          set({ authUser: null });
+          set({ authUser: null, accessToken: null });
           localStorage.removeItem("cart-storage");
           toast.success("Đăng xuất thành công");
         }
@@ -407,6 +424,7 @@ const useAuthStore = create<AuthStore>()(
       name: "auth-storage",
       partialize: (state) => ({
         authUser: state.authUser,
+        accessToken: state.accessToken,
       }),
     }
   )
