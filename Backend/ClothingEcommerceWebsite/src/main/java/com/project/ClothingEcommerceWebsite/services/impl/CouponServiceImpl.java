@@ -1,9 +1,11 @@
 package com.project.ClothingEcommerceWebsite.services.impl;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateCouponRequest;
+import com.project.ClothingEcommerceWebsite.exception.BadRequestException;
 import com.project.ClothingEcommerceWebsite.models.Coupon;
 import com.project.ClothingEcommerceWebsite.models.Product;
 import com.project.ClothingEcommerceWebsite.models.ProductImage;
+import com.project.ClothingEcommerceWebsite.repositories.CouponRedemptionRepository;
 import com.project.ClothingEcommerceWebsite.repositories.CouponRepository;
 import com.project.ClothingEcommerceWebsite.services.CouponService;
 import com.project.ClothingEcommerceWebsite.utils.CloudinaryUtil;
@@ -11,15 +13,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CouponServiceImpl implements CouponService {
     private final CouponRepository couponRepository;
     private final CloudinaryService cloudinaryService;
+    private final CouponRedemptionRepository redemptionRepository;
     @Override
     public Coupon createCoupon(CreateCouponRequest request) {
         Coupon coupon = Coupon.builder()
@@ -84,7 +87,7 @@ public class CouponServiceImpl implements CouponService {
                 .orElseThrow(() -> new RuntimeException("Coupon not found"));
 
         if (coupon.getImageUrl() != null) {
-            cloudinaryService.deleteImage(coupon.getImageUrl());
+            cloudinaryService.deleteImage(CloudinaryUtil.extractPublicIdFromUrl(coupon.getImageUrl()));
         }
 
         couponRepository.delete(coupon);
@@ -98,5 +101,42 @@ public class CouponServiceImpl implements CouponService {
         coupon.setImageUrl(imageUrl);
         couponRepository.save(coupon);
         return imageUrl;
+    }
+
+    @Override
+    public List<Coupon> getAvailableCoupons(Long userId, Double orderTotal) {
+        List<Coupon> allCoupons = couponRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+
+        return allCoupons.stream()
+                .filter(coupon -> {
+                    if (!coupon.getIsActive()) return false;
+
+                    if (coupon.getStartsAt() != null && now.isBefore(coupon.getStartsAt())) {
+                        return false;
+                    }
+                    if (coupon.getEndsAt() != null && now.isAfter(coupon.getEndsAt())) {
+                        return false;
+                    }
+
+                    if (coupon.getMinOrderTotal() != null && orderTotal < coupon.getMinOrderTotal()) {
+                        return false;
+                    }
+
+                    if (coupon.getMaxUses() != null) {
+                        Long totalUsed = redemptionRepository.countByCouponId(coupon.getId());
+                        if (totalUsed >= coupon.getMaxUses()) return false;
+                    }
+
+                    if (coupon.getMaxUsesPerUser() != null) {
+                        Long userUsed = redemptionRepository.countByCouponIdAndUserId(
+                                coupon.getId(), userId
+                        );
+                        if (userUsed >= coupon.getMaxUsesPerUser()) return false;
+                    }
+
+                    return true;
+                })
+                .collect(Collectors.toList());
     }
 }

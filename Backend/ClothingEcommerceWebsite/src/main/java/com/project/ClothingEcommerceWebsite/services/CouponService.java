@@ -6,6 +6,7 @@ import com.project.ClothingEcommerceWebsite.models.ProductImage;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CouponService {
     Coupon createCoupon(CreateCouponRequest request);
@@ -14,4 +15,5 @@ public interface CouponService {
     Coupon updateCoupon(Long id, CreateCouponRequest request);
     void deleteCoupon(Long id);
     String uploadAndSaveImages(MultipartFile file, Long couponId);
+    List<Coupon> getAvailableCoupons(Long userId, Double orderTotal);
 }

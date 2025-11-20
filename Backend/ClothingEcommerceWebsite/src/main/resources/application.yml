@@ -47,6 +47,6 @@ spring:
 api:
   prefix: api/v1
 jwt:
-  accesstoken-expiration: 300
-  refreshtoken-expiration: 86400
+  accesstoken-expiration: 64000
+  refreshtoken-expiration: 64000
   secretKey: TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=
