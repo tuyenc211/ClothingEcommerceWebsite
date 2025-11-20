@@ -13,76 +13,74 @@ const privateClient = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-/* ---------- Refresh queue ---------- */
+// Refresh token queue
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (token?: string | null) => void;
-  reject: (err?: any) => void;
+  resolve: (token?: string) => void;
+  reject: (error: any) => void;
 }> = [];
 
-const processQueue = (err: any, token: string | null = null) => {
-  failedQueue.forEach((p) => (err ? p.reject(err) : p.resolve(token)));
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token || undefined);
+    }
+  });
   failedQueue = [];
 };
 
-/* ---------- Helpers re: paths ---------- */
-const isAuthPagePath = (path: string) =>
-  path.startsWith("/user/login") ||
-  path.startsWith("/user/signup") ||
-  path.startsWith("/user/forgot-password") ||
-  path.startsWith("/user/reset-password") ||
-  path.startsWith("/user/authenticate");
-
-const isRefreshUrl = (url?: string) => !!url && url.includes("/auth/refresh");
-
-/* ---------- Request interceptor: read token from Zustand ---------- */
+// Request interceptor: Đính kèm access token
 privateClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // only in browser
-    if (typeof window !== "undefined") {
-      const token = useAuthStore.getState().accessToken;
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+    const token = useAuthStore.getState().accessToken;
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (err) => Promise.reject(err)
+  (error) => Promise.reject(error)
 );
 
-/* ---------- Response interceptor: handle 401 + refresh ---------- */
+// Response interceptor: Xử lý 401 và refresh token
 privateClient.interceptors.response.use(
-  (res) => res,
+  (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
 
+    // Không phải lỗi 401 hoặc đã retry rồi -> reject
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
 
-    // If client-side and on auth pages or calling refresh endpoint -> clear token and reject
+    // Đang ở trang auth hoặc đang gọi refresh -> không xử lý
     if (typeof window !== "undefined") {
       const path = window.location.pathname;
-      if (isAuthPagePath(path) || isRefreshUrl(originalRequest.url)) {
-        // Clear only token in store (avoid calling logout() which may call this axios again)
-        try {
-          useAuthStore.getState().setAccessToken(null);
-        } catch {
-          /* ignore */
-        }
+      const isAuthPage =
+        path.startsWith("/user/login") ||
+        path.startsWith("/user/signup") ||
+        path.startsWith("/user/forgot-password") ||
+        path.startsWith("/user/reset-password");
+
+      const isRefreshEndpoint = originalRequest.url?.includes("/auth/refresh");
+
+      if (isAuthPage || isRefreshEndpoint) {
+        // Clear cả Zustand store và localStorage
+        useAuthStore.getState().logout();
         return Promise.reject(error);
       }
     }
 
-    // If already refreshing, queue subsequent requests
+    // Nếu đang refresh, đưa request vào queue
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         failedQueue.push({ resolve, reject });
       })
         .then((token) => {
-          if (originalRequest.headers && token) {
+          if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${token}`;
           }
           return privateClient(originalRequest);
@@ -90,48 +88,37 @@ privateClient.interceptors.response.use(
         .catch((err) => Promise.reject(err));
     }
 
+    // Bắt đầu refresh token
     originalRequest._retry = true;
     isRefreshing = true;
 
     try {
-      const resp = await privateClient.get("/auth/refresh");
-      const newToken = (resp.data as any)?.accesstoken || null;
+      const response = await privateClient.get("/auth/refresh");
+      const newAccessToken = response.data.accesstoken;
 
-      // update Zustand token (this will also be persisted by your persist middleware)
-      try {
-        useAuthStore.getState().setAccessToken(newToken);
-      } catch {
-        // swallow errors reading/setting store
-      }
+      // Cập nhật token mới vào Zustand (persist middleware sẽ tự lưu vào localStorage)
+      useAuthStore.getState().setAccessToken(newAccessToken);
 
-      processQueue(null, newToken);
+      // Process queue với token mới
+      processQueue(null, newAccessToken);
 
-      if (originalRequest.headers && newToken) {
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+      // Retry request ban đầu với token mới
+      if (originalRequest.headers) {
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
       }
       return privateClient(originalRequest);
-    } catch (refreshErr) {
-      processQueue(refreshErr, null);
+    } catch (refreshError) {
+      // Refresh token hết hạn hoặc không hợp lệ
+      processQueue(refreshError, null);
 
-      // Clear token in Zustand; do not call logout() to avoid loops.
-      try {
-        useAuthStore.getState().setAccessToken(null);
-      } catch {
-        /* ignore */
-      }
+      // QUAN TRỌNG: Clear toàn bộ auth state (bao gồm cả localStorage)
+      useAuthStore.getState().logout();
 
-      // Optional: clear any other client-only data
-      try {
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("cart-storage");
-        }
-      } catch {}
-
+      // Redirect về login
       if (typeof window !== "undefined") {
         window.location.replace("/user/login");
       }
-
-      return Promise.reject(refreshErr);
+      return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
     }
