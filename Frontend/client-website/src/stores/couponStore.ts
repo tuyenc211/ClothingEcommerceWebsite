@@ -21,11 +21,12 @@ export interface Coupon {
 
 interface CouponStore {
   coupons: Coupon[];
+  availableCoupons: Coupon[];
   isLoading: boolean;
   error: string | null;
 
   fetchCoupons: () => Promise<void>;
-  getActiveCoupons: () => Coupon[];
+  fetchAvailableCoupons: (userId: number, orderTotal: number) => Promise<void>;
   getValidCouponsByTime: () => Coupon[];
 
   setError: (error: string | null) => void;
@@ -36,6 +37,7 @@ export const useCouponStore = create<CouponStore>()(
   persist(
     (set, get) => ({
       coupons: [],
+      availableCoupons: [],
       isLoading: false,
       error: null,
       fetchCoupons: async () => {
@@ -64,7 +66,34 @@ export const useCouponStore = create<CouponStore>()(
           set({ isLoading: false });
         }
       },
+      fetchAvailableCoupons: async (userId: number, orderTotal: number) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await privateClient.get("/coupons/available", {
+            params: { userId, orderTotal },
+          });
+          const data = response.data || [];
 
+          set({
+            availableCoupons: data.sort((a: Coupon, b: Coupon) => {
+              if (!a.startsAt || !b.startsAt) return 0;
+              return (
+                new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
+              );
+            }),
+          });
+        } catch (error) {
+          const axiosErr = error as AxiosError<{ message: string }>;
+          const errorMsg =
+            axiosErr?.response?.data?.message ||
+            "Không thể tải danh sách mã giảm giá khả dụng";
+
+          set({ error: errorMsg, availableCoupons: [] });
+          console.error("Fetch available coupons error:", errorMsg);
+        } finally {
+          set({ isLoading: false });
+        }
+      },
       getActiveCoupons: () => {
         return get().coupons.filter((c) => c.isActive);
       },

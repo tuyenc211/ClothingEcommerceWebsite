@@ -55,10 +55,15 @@ export default function CheckoutPage() {
   } = useCartStore();
   const { getProduct, fetchProducts } = useProductStore();
 
-  const { getActiveCoupons, fetchCoupons } = useCouponStore();
+  const { availableCoupons, fetchAvailableCoupons } = useCouponStore();
+
+  const summary = getCartSummary();
+
   useEffect(() => {
-    fetchCoupons();
-  }, [fetchCoupons]);
+    if (authUser?.id && summary.subtotal > 0) {
+      fetchAvailableCoupons(authUser.id, summary.subtotal);
+    }
+  }, [authUser?.id, summary.subtotal, fetchAvailableCoupons]);
 
   const {
     provinces,
@@ -75,7 +80,6 @@ export default function CheckoutPage() {
     fetchProvinces();
   }, [fetchProvinces]);
 
-  // Fetch user addresses when authUser changes
   useEffect(() => {
     const loadAddresses = async () => {
       if (authUser?.id) {
@@ -113,9 +117,6 @@ export default function CheckoutPage() {
     province: "",
     provinceCode: "",
   });
-
-  const activeCoupons = getActiveCoupons();
-  const summary = getCartSummary();
 
   const enrichedItems: EnrichedCartItem[] = useMemo(() => {
     return items
@@ -171,7 +172,6 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (items.length === 0) {
-      // Don't redirect if coming back from payment
       const paymentStatus = searchParams?.get("status");
       if (!paymentStatus) {
         toast.error("Giỏ hàng trống");
@@ -269,7 +269,7 @@ export default function CheckoutPage() {
   };
 
   const handleApplyCoupon = (couponCode: string) => {
-    const coupon = activeCoupons.find((c) => c.code === couponCode);
+    const coupon = availableCoupons.find((c) => c.code === couponCode);
     if (coupon) {
       const success = applyCoupon(coupon);
       if (success) {
@@ -323,6 +323,7 @@ export default function CheckoutPage() {
           ward: formData.ward,
           province: formData.province,
         },
+        couponCode: appliedCoupon?.code,
       };
       // Call backend API to create order
       const order = await useOrderStore
@@ -495,7 +496,7 @@ export default function CheckoutPage() {
                   items={enrichedItems}
                   summary={summary}
                   appliedCoupon={appliedCoupon}
-                  activeCoupons={activeCoupons}
+                  availableCoupons={availableCoupons}
                   showCouponList={showCouponList}
                   isSubmitting={isSubmitting}
                   paymentMethod={paymentMethod}

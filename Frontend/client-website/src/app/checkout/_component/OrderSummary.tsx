@@ -13,7 +13,7 @@ interface OrderSummaryProps {
   items: EnrichedCartItem[];
   summary: CartSummary;
   appliedCoupon: Coupon | null;
-  activeCoupons: Coupon[];
+  availableCoupons: Coupon[];
   showCouponList: boolean;
   isSubmitting: boolean;
   paymentMethod?: "COD" | "WALLET";
@@ -28,7 +28,7 @@ export default function OrderSummary({
   items,
   summary,
   appliedCoupon,
-  activeCoupons,
+  availableCoupons,
   showCouponList,
   isSubmitting,
   paymentMethod = "COD",
@@ -127,8 +127,8 @@ export default function OrderSummary({
         {/* Coupon List */}
         {showCouponList && !appliedCoupon && (
           <div className="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-2">
-            {activeCoupons.length > 0 ? (
-              activeCoupons.map((coupon) => (
+            {availableCoupons.length > 0 ? (
+              availableCoupons.map((coupon) => (
                 <div
                   key={coupon.id}
                   className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
