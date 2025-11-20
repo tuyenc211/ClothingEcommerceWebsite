@@ -36,7 +36,7 @@ import { useCouponStore } from "@/stores/couponStore";
 import { toast } from "sonner";
 
 export default function CouponListPage() {
-  const { coupons, deleteCoupon, getCouponStatus, fetchCoupons } =
+  const { coupons, deleteCoupon, getCouponStatus, fetchCoupons, isLoading } =
     useCouponStore();
   useEffect(() => {
     fetchCoupons();
@@ -64,7 +64,6 @@ export default function CouponListPage() {
   const handleDeleteConfirm = () => {
     if (deleteDialog.couponId) {
       deleteCoupon(deleteDialog.couponId);
-      toast.success("Xóa mã giảm giá thành công!");
       setDeleteDialog({ open: false, couponId: null, couponCode: "" });
     }
   };
@@ -109,6 +108,19 @@ export default function CouponListPage() {
     return pages;
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative">
+            {/* Spinner */}
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
+          </div>
+          <p className="text-gray-600 text-lg font-medium">Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="space-y-6">
       {/* Header */}

@@ -211,7 +211,6 @@ export const useCouponStore = create<CouponStore>()(
           }));
 
           toast.success("Xóa mã giảm giá thành công");
-          console.log("✅ Coupon deleted:", id);
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
           const errorMessage =

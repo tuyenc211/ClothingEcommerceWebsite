@@ -400,7 +400,7 @@ export default function ProductDetailPage() {
             <div className="space-y-3 sm:space-y-4 pt-4 ">
               <Button
                 onClick={handleAddToCart}
-                disabled={!selectedSize || !selectedColor || isOutOfStock}
+                disabled={!selectedSize || !selectedColor}
                 className="w-full bg-gray-900 text-white py-6 px-4 sm:px-6 rounded-sm font-medium hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 text-lg"
               >
                 <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -412,7 +412,7 @@ export default function ProductDetailPage() {
               {/* Buy Now Button */}
               <Button
                 onClick={handleBuyNow}
-                disabled={!selectedSize || !selectedColor || isOutOfStock}
+                disabled={!selectedSize || !selectedColor}
                 className="w-full bg-red-600 text-white py-6 px-4 sm:px-6 rounded-sm font-medium hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 text-lg"
               >
                 <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />

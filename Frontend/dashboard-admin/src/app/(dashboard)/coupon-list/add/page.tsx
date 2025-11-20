@@ -9,10 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {ArrowLeft, ImageIcon, Save, X} from "lucide-react";
+import { ArrowLeft, ImageIcon, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { useCouponStore, Coupon } from "@/stores/couponStore";
-import {useState} from "react";
+import { useState } from "react";
 import Image from "next/image";
 
 type FormValues = {
@@ -31,7 +31,7 @@ type FormValues = {
 export default function AddCouponPage() {
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const { addCoupon, validateCouponCode } = useCouponStore();
 
   const {
@@ -56,23 +56,23 @@ export default function AddCouponPage() {
   });
 
   const isActive = watch("isActive");
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setSelectedImage(file);
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
 
-            // Create preview
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-    const handleRemoveImage = () => {
-        setSelectedImage(null);
-        setImagePreview(null);
-    };
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
   const onSubmit = async (data: FormValues) => {
     // Validate coupon code uniqueness
     if (!validateCouponCode(data.code)) {
@@ -184,13 +184,18 @@ export default function AddCouponPage() {
                   {...register("value", {
                     required: "Giá trị giảm không được để trống",
                     min: { value: 0, message: "Giá trị phải lớn hơn 0" },
-                    max: { value: 100, message: "Giá trị không được vượt quá 100%" },
+                    max: {
+                      value: 100,
+                      message: "Giá trị không được vượt quá 100%",
+                    },
                   })}
                   placeholder="VD: 10"
                   className={errors.value ? "border-red-500" : ""}
                   disabled={isSubmitting}
                 />
-                <p className="text-xs text-muted-foreground">Nhập giá trị từ 0-100 (phần trăm)</p>
+                <p className="text-xs text-muted-foreground">
+                  Nhập giá trị từ 0-100 (phần trăm)
+                </p>
                 {errors.value && (
                   <p className="text-sm text-red-500">{errors.value.message}</p>
                 )}
@@ -207,6 +212,7 @@ export default function AddCouponPage() {
                       value: 0,
                       message: "Giá trị phải lớn hơn hoặc bằng 0",
                     },
+                    required: "Giá trị không được để trống",
                   })}
                   placeholder="VD: 200000"
                   className={errors.minOrderTotal ? "border-red-500" : ""}
@@ -227,6 +233,7 @@ export default function AddCouponPage() {
                   type="number"
                   {...register("maxUses", {
                     min: { value: 1, message: "Số lần sử dụng phải lớn hơn 0" },
+                    required: "Giá trị không được để trống",
                   })}
                   placeholder="VD: 1000"
                   disabled={isSubmitting}
@@ -241,6 +248,7 @@ export default function AddCouponPage() {
                   type="number"
                   {...register("maxUsesPerUser", {
                     min: { value: 1, message: "Số lần sử dụng phải lớn hơn 0" },
+                    required: "Giá trị không được để trống",
                   })}
                   placeholder="VD: 1"
                   disabled={isSubmitting}
@@ -253,7 +261,9 @@ export default function AddCouponPage() {
                 <Input
                   id="starts_at"
                   type="datetime-local"
-                  {...register("startsAt")}
+                  {...register("startsAt", {
+                    required: "Ngày bắt đầu không được để trống",
+                  })}
                   disabled={isSubmitting}
                 />
               </div>
@@ -264,7 +274,9 @@ export default function AddCouponPage() {
                 <Input
                   id="ends_at"
                   type="datetime-local"
-                  {...register("endsAt")}
+                  {...register("endsAt", {
+                    required: "Ngày kết thúc không được để trống",
+                  })}
                   disabled={isSubmitting}
                 />
               </div>
@@ -281,43 +293,43 @@ export default function AddCouponPage() {
                 disabled={isSubmitting}
               />
             </div>
-              <div className="space-y-2">
-                  <Label>Hình ảnh mã giảm giá</Label>
-                  <div className="flex items-start gap-4">
-                      {/* Image Preview */}
-                      {imagePreview ? (
-                          <div className="relative w-48 h-48 border-2 border-dashed rounded-lg overflow-hidden">
-                              <Image
-                                  src={imagePreview}
-                                  alt="Preview"
-                                  fill
-                                  className="object-cover"
-                              />
-                              <button
-                                  type="button"
-                                  onClick={handleRemoveImage}
-                                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                              >
-                                  <X className="w-4 h-4" />
-                              </button>
-                          </div>
-                      ) : (
-                          <label className="w-48 h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
-                              <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
-                              <span className="text-sm text-gray-500">Chọn ảnh</span>
-                              <input
-                                  type="file"
-                                  accept="image/*"
-                                  onChange={handleImageChange}
-                                  className="hidden"
-                                  disabled={isSubmitting}
-                              />
-                          </label>
-                      )}
-
-                      {/* Upload Instructions */}
+            <div className="space-y-2">
+              <Label>Hình ảnh mã giảm giá</Label>
+              <div className="flex items-start gap-4">
+                {/* Image Preview */}
+                {imagePreview ? (
+                  <div className="relative w-48 h-48 border-2 border-dashed rounded-lg overflow-hidden">
+                    <Image
+                      src={imagePreview}
+                      alt="Preview"
+                      fill
+                      className="object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
+                ) : (
+                  <label className="w-48 h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
+                    <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-500">Chọn ảnh</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                      disabled={isSubmitting}
+                    />
+                  </label>
+                )}
+
+                {/* Upload Instructions */}
               </div>
+            </div>
             {/* Is Active */}
             <div className="flex items-center space-x-2">
               <Switch
