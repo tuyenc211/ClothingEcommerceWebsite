@@ -129,7 +129,7 @@ export const useCouponStore = create<CouponStore>()(
           const CouponId = newCoupon.id;
           if (image && CouponId) {
             const formData = new FormData();
-            formData.append("image", image);
+            formData.append("file", image);
             await privateClient.post(
               `/coupons/${CouponId}/upload-image`,
               formData,

@@ -22,7 +22,7 @@ import java.util.Map;
 public class CouponController {
     private final CouponService couponService;
     @PostMapping("")
-    public ResponseEntity<?> createCoupon(@Valid @ModelAttribute CreateCouponRequest request) {
+    public ResponseEntity<?> createCoupon(@Valid @RequestBody CreateCouponRequest request) {
         Coupon coupon = couponService.createCoupon(request);
         return ResponseEntity.ok(coupon);
     }
@@ -63,5 +63,14 @@ public class CouponController {
     public ResponseEntity<?> deleteCoupon(@PathVariable Long id) {
         couponService.deleteCoupon(id);
         return ResponseEntity.ok("");
+    }
+
+    @GetMapping("/available")
+    public ResponseEntity<?> getAvailableCoupons(
+            @RequestParam Long userId,
+            @RequestParam Double orderTotal
+    ) {
+        List<Coupon> coupons = couponService.getAvailableCoupons(userId, orderTotal);
+        return ResponseEntity.ok(coupons);
     }
 }

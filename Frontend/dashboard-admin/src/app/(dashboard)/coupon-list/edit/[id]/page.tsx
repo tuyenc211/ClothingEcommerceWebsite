@@ -104,7 +104,6 @@ export default function EditCouponPage() {
   const handleRemoveCurrentImage = () => {
     setCurrentImageUrl(null);
     setRemoveCurrentImage(true);
-    toast.info("Ảnh sẽ bị xóa khi bạn lưu thay đổi");
   };
   const onSubmit = async (data: FormValues) => {
     // Validate coupon code uniqueness (excluding current coupon)
@@ -137,7 +136,6 @@ export default function EditCouponPage() {
       };
 
       updateCoupon(couponId, couponData, selectedImage || undefined);
-      toast.success("Cập nhật mã giảm giá thành công!");
       router.push("/coupon-list");
     } catch (error) {
       toast.error("Có lỗi xảy ra khi cập nhật mã giảm giá");

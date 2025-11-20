@@ -1,6 +1,7 @@
 package com.project.ClothingEcommerceWebsite.utils;
 
 import com.nimbusds.jose.util.Base64;
+import com.project.ClothingEcommerceWebsite.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -71,9 +72,9 @@ public class SecurityUtil {
                 getSecretKey()).macAlgorithm(SecurityUtil.JWT_ALGORITHM).build();
             try {
                 return jwtDecoder.decode(token);
-            } catch (Exception e) {
+            } catch (JwtException e) {
                 System.out.println(">>> JWT error: " + e.getMessage());
-                throw e;
+                throw new UnauthorizedException("Refresh token đã hết hạn hoặc không hợp lệ");
             }
         };
 }

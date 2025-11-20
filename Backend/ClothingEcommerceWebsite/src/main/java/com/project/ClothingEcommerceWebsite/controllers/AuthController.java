@@ -62,7 +62,7 @@ public class AuthController {
                     .httpOnly(true)
                     .secure(true)
                     .path("/")
-                    .maxAge(24 * 60 * 60)
+                    .maxAge(64000)
                     .sameSite("None")
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -76,7 +76,7 @@ public class AuthController {
     }
 
     @GetMapping("/refresh")
-    public ResponseEntity<?> getRefreshToken(@CookieValue(name = "refresh_token") String refreshToken, HttpServletResponse response) {
+    public ResponseEntity<?> getRefreshToken(@CookieValue(name = "refreshToken") String refreshToken, HttpServletResponse response) {
         Jwt decodeToken = securityUtil.checkValidRefreshToken(refreshToken);
         String email = decodeToken.getSubject();
         User user = userService.getUserByEmail(email).orElseThrow(() -> new NotFoundException("Email not found!"));
@@ -89,7 +89,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(24 * 60 * 60)
+                .maxAge(64000)
                 .sameSite("None")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

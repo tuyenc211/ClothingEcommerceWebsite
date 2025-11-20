@@ -67,19 +67,8 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         authz -> authz
                                 .antMatchers("/api/v1/auth/**").permitAll()
-                                .antMatchers("/api/v1/colors/**").permitAll()
-                                .antMatchers("/api/v1/sizes/**").permitAll()
-                                .antMatchers("/api/v1/coupons/**").permitAll()
-                                .antMatchers("/api/v1/users/**").permitAll()
                                 .antMatchers("/api/v1/categories/**").permitAll()
-                                .antMatchers("/api/v1/products/**").permitAll()
-                                .antMatchers("/api/v1/subcategories/**").permitAll()
-                                .antMatchers("/api/v1/inventories/**").permitAll()
-                                .antMatchers("/api/v1/addresses/**").permitAll()
-                                .antMatchers("/api/v1/carts/**").permitAll()
-                                .antMatchers("/api/v1/orders/**").permitAll()
-                                .antMatchers("/api/v1/reviews/**").permitAll()
-                                .antMatchers("/api/v1/payment/**").permitAll()
+                                .antMatchers("/api/v1/users/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

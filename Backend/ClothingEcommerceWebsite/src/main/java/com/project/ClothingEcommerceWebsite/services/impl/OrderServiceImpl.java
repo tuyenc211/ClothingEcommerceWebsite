@@ -9,6 +9,7 @@ import com.project.ClothingEcommerceWebsite.services.OrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -24,9 +25,12 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
+    private final CouponRepository couponRepository;
+    private final CouponRedemptionRepository redemptionRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
+    @Transactional
     public Order createOrder(Long userId, CreateOrderRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -42,7 +46,19 @@ public class OrderServiceImpl implements OrderService {
                 .mapToDouble(i -> i.getUnitPrice() * i.getQuantity())
                 .sum();
         double shippingFee = 30000.0;
-        double grandTotal = subtotal + shippingFee;
+        double discountTotal = 0.0;
+        Coupon appliedCoupon = null;
+
+        if (request.getCouponCode() != null && !request.getCouponCode().isEmpty()) {
+            appliedCoupon = couponRepository.findByCode(request.getCouponCode()).orElse(null);
+
+            if (appliedCoupon != null && appliedCoupon.getIsActive()) {
+                discountTotal = appliedCoupon.getValue();
+            } else {
+                appliedCoupon = null;
+            }
+        }
+        double grandTotal = subtotal - discountTotal + shippingFee;
         Enums.PaymentStatus paymentStatus;
         if(request.getPaymentMethod().equals("COD")) {
             paymentStatus = Enums.PaymentStatus.PAID;
@@ -57,7 +73,7 @@ public class OrderServiceImpl implements OrderService {
                 .paymentMethod(request.getPaymentMethod())
                 .paymentStatus(paymentStatus)
                 .subtotal(subtotal)
-                .discountTotal(0.0)
+                .discountTotal(discountTotal)
                 .shippingFee(shippingFee)
                 .grandTotal(grandTotal)
                 .totalItems(cartItems.size())
@@ -91,6 +107,10 @@ public class OrderServiceImpl implements OrderService {
                     .build();
         }).collect(Collectors.toList());
         orderItemRepository.saveAll(orderItems);
+
+        if (appliedCoupon != null) {
+            redeemCoupon(appliedCoupon, user, order);
+        }
         // Xóa giỏ hàng sau khi đặt
         cartItemRepository.deleteAll(cartItems);
 
@@ -147,6 +167,7 @@ public class OrderServiceImpl implements OrderService {
             inventory.setQuantity(inventory.getQuantity() + item.getQuantity());
             inventoryRepository.save(inventory);
         }
+        redemptionRepository.findByOrderId(orderId).ifPresent(redemptionRepository::delete);
     }
 
     @Override
@@ -182,6 +203,7 @@ public class OrderServiceImpl implements OrderService {
                     inventory.setQuantity(inventory.getQuantity() + item.getQuantity());
                     inventoryRepository.save(inventory);
                 }
+                redemptionRepository.findByOrderId(orderId).ifPresent(redemptionRepository::delete);
             }
         }
         return orderRepository.save(order);
@@ -208,4 +230,13 @@ public class OrderServiceImpl implements OrderService {
         };
     }
 
+    private void redeemCoupon(Coupon coupon, User user, Order order) {
+        CouponRedemption redemption = CouponRedemption.builder()
+                .coupon(coupon)
+                .user(user)
+                .order(order)
+                .redeemedAt(LocalDateTime.now())
+                .build();
+        redemptionRepository.save(redemption);
+    }
 }
