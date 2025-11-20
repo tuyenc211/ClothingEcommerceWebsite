@@ -342,6 +342,7 @@ export default function CheckoutPage() {
             order.id.toString()
           );
           await clearCart();
+          removeCoupon();
           await fetchProducts();
 
           // Redirect to VNPay payment gateway
@@ -353,6 +354,7 @@ export default function CheckoutPage() {
       } else {
         toast.success(`Đặt hàng thành công! Mã đơn hàng: ${order.code}`);
         await clearCart();
+        removeCoupon();
         await fetchProducts();
         router.push(`/user/orders/${order.id}`);
       }
