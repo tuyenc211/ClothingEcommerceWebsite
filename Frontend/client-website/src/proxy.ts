@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 export function proxy(request: NextRequest) {
-  // Check refreshToken cookie thay vì accessToken
-  // vì backend set refreshToken vào cookie, còn accessToken lưu trong localStorage
   const refreshToken = request.cookies.get("refreshToken")?.value;
   const pathname = request.nextUrl.pathname;
 
