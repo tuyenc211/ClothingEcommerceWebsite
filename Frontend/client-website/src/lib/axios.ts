@@ -1,140 +1,140 @@
+// libs/axios.ts
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import useAuthStore from "@/stores/useAuthStore";
 
 const API_URL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:8088/api/v1"
     : "/api/v1";
-// const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+
 const privateClient = axios.create({
   baseURL: API_URL,
   withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  headers: { "Content-Type": "application/json" },
 });
 
-// Biến để track refresh token đang chạy
+/* ---------- Refresh queue ---------- */
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (value?: any) => void;
-  reject: (reason?: any) => void;
+  resolve: (token?: string | null) => void;
+  reject: (err?: any) => void;
 }> = [];
 
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
+const processQueue = (err: any, token: string | null = null) => {
+  failedQueue.forEach((p) => (err ? p.reject(err) : p.resolve(token)));
   failedQueue = [];
 };
 
-// Request interceptor - Thêm access token vào header
+/* ---------- Helpers re: paths ---------- */
+const isAuthPagePath = (path: string) =>
+  path.startsWith("/user/login") ||
+  path.startsWith("/user/signup") ||
+  path.startsWith("/user/forgot-password") ||
+  path.startsWith("/user/reset-password") ||
+  path.startsWith("/user/authenticate");
+
+const isRefreshUrl = (url?: string) => !!url && url.includes("/auth/refresh");
+
+/* ---------- Request interceptor: read token from Zustand ---------- */
 privateClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Lấy access token từ localStorage
-    const authStorage = localStorage.getItem("auth-storage");
-    if (authStorage) {
-      try {
-        const { state } = JSON.parse(authStorage);
-        const accessToken = state?.accessToken;
-
-        if (accessToken && config.headers) {
-          config.headers.Authorization = `Bearer ${accessToken}`;
-        }
-      } catch (error) {
-        console.error("Error parsing auth storage:", error);
+    // only in browser
+    if (typeof window !== "undefined") {
+      const token = useAuthStore.getState().accessToken;
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (err) => Promise.reject(err)
 );
 
-// Response interceptor - Handle refresh token khi 401
+/* ---------- Response interceptor: handle 401 + refresh ---------- */
 privateClient.interceptors.response.use(
-  (response) => response,
+  (res) => res,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
 
-    // Nếu lỗi 401 và chưa retry
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      // Nếu đang ở trang auth hoặc đang gọi endpoint refresh, không retry
-      if (typeof window !== "undefined") {
-        const path = window.location.pathname;
-        const isAuthPage =
-          path.startsWith("/user/login") ||
-          path.startsWith("/user/signup") ||
-          path.startsWith("/user/forgot-password") ||
-          path.startsWith("/user/reset-password");
+    if (error.response?.status !== 401 || originalRequest._retry) {
+      return Promise.reject(error);
+    }
 
-        const isRefreshEndpoint =
-          originalRequest.url?.includes("/auth/refresh");
-
-        if (isAuthPage || isRefreshEndpoint) {
-          localStorage.removeItem("auth-storage");
-          return Promise.reject(error);
+    // If client-side and on auth pages or calling refresh endpoint -> clear token and reject
+    if (typeof window !== "undefined") {
+      const path = window.location.pathname;
+      if (isAuthPagePath(path) || isRefreshUrl(originalRequest.url)) {
+        // Clear only token in store (avoid calling logout() which may call this axios again)
+        try {
+          useAuthStore.getState().setAccessToken(null);
+        } catch {
+          /* ignore */
         }
-      }
-
-      // Nếu đang refresh, đưa request vào queue
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-            }
-            return privateClient(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
-      }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      try {
-        // Gọi endpoint refresh để lấy access token mới
-        const response = await privateClient.get("/auth/refresh");
-        const newAccessToken = response.data.accesstoken;
-
-        // Cập nhật access token vào localStorage
-        const authStorage = localStorage.getItem("auth-storage");
-        if (authStorage) {
-          const parsed = JSON.parse(authStorage);
-          parsed.state.accessToken = newAccessToken;
-          localStorage.setItem("auth-storage", JSON.stringify(parsed));
-        }
-
-        // Process queue với token mới
-        processQueue(null, newAccessToken);
-
-        // Retry request ban đầu với token mới
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        }
-        return privateClient(originalRequest);
-      } catch (refreshError) {
-        // Refresh token thất bại, clear auth và redirect
-        processQueue(refreshError, null);
-        localStorage.removeItem("auth-storage");
-        localStorage.removeItem("cart-storage");
-
-        if (typeof window !== "undefined") {
-          window.location.replace("/user/login");
-        }
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
+        return Promise.reject(error);
       }
     }
 
-    return Promise.reject(error);
+    // If already refreshing, queue subsequent requests
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      })
+        .then((token) => {
+          if (originalRequest.headers && token) {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+          }
+          return privateClient(originalRequest);
+        })
+        .catch((err) => Promise.reject(err));
+    }
+
+    originalRequest._retry = true;
+    isRefreshing = true;
+
+    try {
+      const resp = await privateClient.get("/auth/refresh");
+      const newToken = (resp.data as any)?.accesstoken || null;
+
+      // update Zustand token (this will also be persisted by your persist middleware)
+      try {
+        useAuthStore.getState().setAccessToken(newToken);
+      } catch {
+        // swallow errors reading/setting store
+      }
+
+      processQueue(null, newToken);
+
+      if (originalRequest.headers && newToken) {
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+      }
+      return privateClient(originalRequest);
+    } catch (refreshErr) {
+      processQueue(refreshErr, null);
+
+      // Clear token in Zustand; do not call logout() to avoid loops.
+      try {
+        useAuthStore.getState().setAccessToken(null);
+      } catch {
+        /* ignore */
+      }
+
+      // Optional: clear any other client-only data
+      try {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("cart-storage");
+        }
+      } catch {}
+
+      if (typeof window !== "undefined") {
+        window.location.replace("/user/login");
+      }
+
+      return Promise.reject(refreshErr);
+    } finally {
+      isRefreshing = false;
+    }
   }
 );
 
