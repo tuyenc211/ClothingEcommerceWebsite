@@ -193,7 +193,7 @@ export default function ProductDetailPage() {
       console.error("Buy now error:", error);
     }
   };
-  const isOutOfStock = selectedQuantity === 0;
+  const isOutOfStock = selectedVariant && selectedQuantity === 0;
   const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
     return (
