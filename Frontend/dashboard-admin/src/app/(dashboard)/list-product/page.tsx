@@ -119,7 +119,9 @@ export default function ProductListPage() {
 
                 return (
                   <TableRow key={index}>
-                    <TableCell className="font-medium">{index}</TableCell>
+                    <TableCell className="font-medium">
+                      {startIndex + index + 1}
+                    </TableCell>
                     <TableCell>
                       <span className="font-mono text-sm">{product.sku}</span>
                     </TableCell>

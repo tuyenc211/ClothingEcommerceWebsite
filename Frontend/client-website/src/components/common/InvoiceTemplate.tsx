@@ -1,30 +1,63 @@
 "use client";
 
+import { useState } from "react";
 import { Order } from "@/stores/orderStore";
 import { OrderStatusBadge } from "./StatusBadges";
 import { format } from "date-fns";
-import {formatDate, formatPrice} from "@/lib/utils";
+import { formatDate, formatPrice } from "@/lib/utils";
 import useAuthStore from "@/stores/useAuthStore";
+import { createVNPayPayment } from "@/services/paymentService";
+import { toast } from "sonner";
+import { Button } from "../ui/button";
 interface InvoiceTemplateProps {
   order: Order;
 }
-
 export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
   const { authUser } = useAuthStore();
-  
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+
+  // Check if order needs VNPay payment
+  const needsVNPayPayment =
+    order.paymentMethod === "WALLET" && order.paymentStatus === "UNPAID";
+
+  // Handle VNPay payment
+  const handleVNPayPayment = async () => {
+    if (!order.id) {
+      toast.error("Không tìm thấy thông tin đơn hàng");
+      return;
+    }
+
+    setIsPaymentLoading(true);
+    try {
+      toast.info("Đang tạo liên kết thanh toán VNPay...");
+
+      const paymentUrl = await createVNPayPayment(
+        order.grandTotal,
+        order.id.toString()
+      );
+
+      // Redirect to VNPay payment gateway
+      window.location.href = paymentUrl;
+    } catch (error) {
+      toast.error("Không thể tạo thanh toán VNPay. Vui lòng thử lại.");
+    } finally {
+      setIsPaymentLoading(false);
+    }
+  };
+
   // Parse shipping address snapshot
   const getShippingInfo = () => {
     if (!order.shippingAddressSnapshot) return null;
-    
+
     try {
       let addr: Record<string, string>;
-      
+
       if (typeof order.shippingAddressSnapshot === "string") {
         addr = JSON.parse(order.shippingAddressSnapshot);
       } else {
         addr = order.shippingAddressSnapshot as Record<string, string>;
       }
-      
+
       return addr;
     } catch (error) {
       console.error("Error parsing shipping address:", error);
@@ -33,18 +66,18 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
   };
 
   const shippingInfo = getShippingInfo();
-  
+
   const formatAddress = () => {
     if (!shippingInfo) return "N/A";
-    
+
     const parts = [
-     shippingInfo.line,
+      shippingInfo.line,
       shippingInfo.ward,
       shippingInfo.district,
       shippingInfo.province,
-      shippingInfo.country
+      shippingInfo.country,
     ].filter(Boolean);
-    
+
     return parts.length > 0 ? parts.join(", ") : "N/A";
   };
 
@@ -68,8 +101,8 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
           <div className="text-sm text-gray-600 space-y-1">
             <p>123 Đường ABC, Quận XYZ, Thành phố ABC, Việt Nam</p>
             <p>+84 909 090 909</p>
-            <p>info@aristino.com</p>
-            <p>https://aristino.com</p>
+            <p>info@atino.com</p>
+            <p>https://atino.com</p>
           </div>
         </div>
       </div>
@@ -186,7 +219,10 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                 Tổng số lượng sản phẩm: {order.totalItems}
               </p>
               <p className="text-sm text-gray-600">
-                Trạng thái thanh toán: {order.paymentMethod}
+                Trạng thái thanh toán:{" "}
+                {order.paymentStatus === "PAID"
+                  ? "Đã thanh toán"
+                  : "Chưa thanh toán"}
               </p>
             </div>
             <div className="text-right">
@@ -198,6 +234,30 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
               </p>
             </div>
           </div>
+
+          {/* VNPay Payment Button */}
+          {needsVNPayPayment && (
+            <div className="mt-6 pt-4 border-t border-gray-100">
+              <div className="flex flex-col sm:flex-row gap-4 justify-end items-end sm:items-end">
+                <Button
+                  onClick={handleVNPayPayment}
+                  disabled={isPaymentLoading}
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors duration-200 min-w-fit"
+                >
+                  {isPaymentLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Đang xử lý...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Thanh toán VNPay</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

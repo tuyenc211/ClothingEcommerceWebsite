@@ -58,9 +58,10 @@ interface ProductState {
   isLoading: boolean;
   error: string | null;
   fetchProducts: () => Promise<void>;
+  getProductById: (id: number) => Promise<Product | null>;
   getProduct: (id: number) => Product | undefined;
-  getProductBySku: (sku: string) => Product | undefined;
-  getProductBySlug: (slug: string) => Product | undefined;
+  // getProductBySku: (sku: string) => Promise<Product | null>;
+  // getProductBySlug: (slug: string) => Promise<Product | null>;
   searchProducts: (query: string) => Product[];
   getPublishedProducts: () => Product[];
   setError: (error: string | null) => void;
@@ -89,20 +90,36 @@ export const useProductStore = create<ProductState>()(
           throw error;
         }
       },
-      getProduct: (id) => {
+      getProductById: async (id: number) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await privateClient.get(`/products/${id}`);
+          const product = response.data?.data || response.data;
+          return product;
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message: string }>;
+          const message =
+            axiosError?.response?.data?.message || "Lỗi khi tải sản phẩm";
+          set({ error: message, isLoading: false });
+          toast.error(message);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+      getProduct: (id: number) => {
         const { products } = get();
         return products.find((product) => product.id === id);
       },
+      // getProductBySku: (sku) => {
+      //   const { products } = get();
+      //   return products.find((product) => product.sku === sku);
+      // },
 
-      getProductBySku: (sku) => {
-        const { products } = get();
-        return products.find((product) => product.sku === sku);
-      },
-
-      getProductBySlug: (slug) => {
-        const { products } = get();
-        return products.find((product) => product.slug === slug);
-      },
+      // getProductBySlug: (slug) => {
+      //   const { products } = get();
+      //   return products.find((product) => product.slug === slug);
+      // },
 
       // Product search and filtering
       searchProducts: (query) => {

@@ -217,11 +217,7 @@ export function CartSheet() {
                   )}
                   <div className="flex justify-between">
                     <span>Phí vận chuyển:</span>
-                    <span>
-                      {summary.shipping === 0
-                        ? "Miễn phí"
-                        : formatPrice(summary.shipping)}
-                    </span>
+                    <span>{formatPrice(summary.shippingFee)}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg pt-2 border-t mt-2">
                     <span>Tổng cộng:</span>

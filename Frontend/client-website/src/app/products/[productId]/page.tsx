@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Heart, ShoppingCart, Plus, Minus, CreditCard } from "lucide-react";
-import { useProductStore } from "@/stores/productStore";
+import { Product, useProductStore } from "@/stores/productStore";
 import { useCartStore } from "@/stores/cartStore";
 import ProductImageGallery from "@/components/common/ThumnailGallery";
 import { formatPrice } from "@/lib/utils";
@@ -28,20 +28,22 @@ export default function ProductDetailPage() {
   const { productId } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  // Stores
-  const { getProduct } = useProductStore();
+  const { getProductById } = useProductStore();
+  const [product, setProduct] = useState<Product | null>(null);
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (productId) {
+        const product = await getProductById(parseInt(productId as string));
+        if (product) {
+          setProduct(product);
+        }
+      }
+    };
+    
+    fetchProduct();
+  }, [productId, getProductById]);
   const { addToCart, buyNow } = useCartStore();
   const { fetchReviewsByProduct, reviews } = useReviewStore();
-  const product = useMemo(() => {
-    if (typeof productId === "string") {
-      const id = parseInt(productId, 10);
-      if (!isNaN(id)) {
-        return getProduct(id);
-      }
-    }
-    return undefined;
-  }, [productId, getProduct]);
   const orderId = parseInt(searchParams.get("orderId") || "0", 10);
 
   // Fetch reviews when product loads

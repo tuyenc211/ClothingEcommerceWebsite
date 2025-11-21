@@ -24,7 +24,7 @@ export interface CartItem {
 export interface CartSummary {
   subtotal: number;
   discount: number;
-  shipping: number;
+  shippingFee: number;
   total: number;
   itemCount: number;
 }
@@ -34,7 +34,6 @@ interface CartState {
   items: CartItem[];
   appliedCoupon: Coupon | null;
   shippingFee: number;
-  freeShippingThreshold: number;
   isLoading: boolean;
   error: string | null;
 
@@ -68,7 +67,6 @@ const initialState = {
   items: [],
   appliedCoupon: null,
   shippingFee: 30000,
-  freeShippingThreshold: 500000,
   isLoading: false,
   error: null,
 };
@@ -301,7 +299,7 @@ export const useCartStore = create<CartState>()((set, get) => ({
   },
 
   getCartSummary: (): CartSummary => {
-    const { items, appliedCoupon, shippingFee, freeShippingThreshold } = get();
+    const { items, appliedCoupon, shippingFee } = get();
 
     const subtotal = items.reduce(
       (total, item) => total + (item.unitPrice || 0) * item.quantity,
@@ -338,16 +336,12 @@ export const useCartStore = create<CartState>()((set, get) => ({
     }
 
     const subtotalAfterDiscount = subtotal - discount;
-
-    const shipping =
-      subtotalAfterDiscount >= freeShippingThreshold ? 0 : shippingFee;
-
-    const total = subtotalAfterDiscount + shipping;
+    const total = subtotalAfterDiscount + shippingFee;
 
     return {
       subtotal,
       discount,
-      shipping,
+      shippingFee,
       total,
       itemCount: items.reduce((count, item) => count + item.quantity, 0),
     };
