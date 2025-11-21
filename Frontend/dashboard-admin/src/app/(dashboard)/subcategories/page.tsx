@@ -142,7 +142,7 @@ export default function SubcategoriesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID danh mục nhỏ</TableHead>
+                <TableHead>STT</TableHead>
                 <TableHead>Tên danh mục nhỏ</TableHead>
                 <TableHead>Tên danh mục chính</TableHead>
                 <TableHead>Trạng thái</TableHead>
@@ -157,9 +157,9 @@ export default function SubcategoriesPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedSubcategories.map((category) => (
+                paginatedSubcategories.map((category, index) => (
                   <TableRow key={category.id}>
-                    <TableCell className="font-medium">{category.id}</TableCell>
+                    <TableCell className="font-medium">{index + 1}</TableCell>
                     <TableCell>{category.name}</TableCell>
                     <TableCell>
                       {getParentCategoryName(category.parentId)}

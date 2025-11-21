@@ -177,7 +177,7 @@ export default function ColorListPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  paginatedColors.map((color) => (
+                  paginatedColors.map((color, index) => (
                     <TableRow key={color.id}>
                       <TableCell>
                         <div className="flex items-center space-x-2">
