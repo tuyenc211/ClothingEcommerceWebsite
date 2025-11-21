@@ -52,7 +52,7 @@ export default function GridLetter() {
                   {item.title}
                 </h2>
                 <p className="text-white/90 text-sm lg:text-base font-medium">
-                  Nhập {item.title} Giảm {item.value}%
+                  Nhập {item.code} Giảm {item.value}%
                 </p>
               </div>
               <button className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all duration-300 w-fit uppercase tracking-wide">
