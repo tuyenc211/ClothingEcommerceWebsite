@@ -1,6 +1,7 @@
 package com.project.ClothingEcommerceWebsite.services.impl;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateCategoryRequest;
+import com.project.ClothingEcommerceWebsite.exception.BadRequestException;
 import com.project.ClothingEcommerceWebsite.models.Category;
 import com.project.ClothingEcommerceWebsite.repositories.CategoryRepository;
 import com.project.ClothingEcommerceWebsite.services.CategoryService;
@@ -20,6 +21,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category createCategory(CreateCategoryRequest request) {
+        if(categoryRepository.existsByName(request.getName())) {
+            throw new BadRequestException("Tên danh mục đã tồn tại. Vui lòng sử dụng tên khác!!");
+        }
         Category parent = null;
         if (request.getParentId() != null) {
             parent = categoryRepository.findById(request.getParentId())
@@ -51,6 +55,9 @@ public class CategoryServiceImpl implements CategoryService {
     public Category updateCategory(Long id, CreateCategoryRequest request) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+        if(categoryRepository.existsByNameAndIdNot(request.getName(),id)) {
+            throw new BadRequestException("Tên danh mục đã tồn tại. Vui lòng sử dụng tên khác!!");
+        }
         if (request.getName() != null && !request.getName().isBlank()) {
             category.setName(request.getName());
             category.setSlug(SlugUtil.toSlug(request.getName()));
@@ -75,7 +82,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
         boolean hasChildren = categoryRepository.existsByParentIdId(id);
         if (hasChildren) {
-            throw new RuntimeException("Cannot delete category that has subcategories");
+            throw new BadRequestException("Cannot delete category that has subcategories");
         }
         categoryRepository.delete(category);
     }

@@ -75,6 +75,7 @@ public class SecurityConfiguration {
                                 .antMatchers(HttpMethod.GET, "/api/v1/sizes/**").permitAll()
                                 .antMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
                                 .antMatchers(HttpMethod.GET, "/api/v1/coupons/**").permitAll()
+                                .antMatchers(HttpMethod.GET, "/api/v1/payment/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
