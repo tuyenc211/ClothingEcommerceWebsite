@@ -373,7 +373,7 @@ export default function UsersManagementPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
+                  <TableHead>STT</TableHead>
                   <TableHead>Tên</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Số điện thoại</TableHead>
@@ -383,10 +383,10 @@ export default function UsersManagementPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedUsers.map((user) => (
+                {paginatedUsers.map((user, index) => (
                   <TableRow key={user.id}>
                     <TableCell>
-                      <div className="font-medium">{user.id}</div>
+                      <div className="font-medium">{index}</div>
                     </TableCell>
                     <TableCell>
                       <div className="font-medium">{user.fullName}</div>

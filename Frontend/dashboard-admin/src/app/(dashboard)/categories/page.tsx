@@ -154,7 +154,7 @@ export default function CategoriesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
+                <TableHead>STT</TableHead>
                 <TableHead>Tên danh mục</TableHead>
                 <TableHead>Trạng thái</TableHead>
                 <TableHead className="text-right">Thao tác</TableHead>
@@ -168,9 +168,9 @@ export default function CategoriesPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedCategories.map((category) => (
+                paginatedCategories.map((category, index) => (
                   <TableRow key={category.id}>
-                    <TableCell className="font-medium">{category.id}</TableCell>
+                    <TableCell className="font-medium">{index + 1}</TableCell>
                     <TableCell>{category.name}</TableCell>
                     <TableCell>
                       <Badge

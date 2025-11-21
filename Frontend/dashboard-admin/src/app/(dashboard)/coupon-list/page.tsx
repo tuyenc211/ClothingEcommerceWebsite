@@ -179,7 +179,7 @@ export default function CouponListPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
+                <TableHead>STT</TableHead>
                 <TableHead>Code</TableHead>
                 <TableHead>Tên</TableHead>
                 <TableHead>Giá trị</TableHead>
@@ -200,9 +200,9 @@ export default function CouponListPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedCoupons.map((coupon) => (
+                paginatedCoupons.map((coupon, index) => (
                   <TableRow key={coupon.id}>
-                    <TableCell className="font-medium">{coupon.id}</TableCell>
+                    <TableCell className="font-medium">{index + 1}</TableCell>
                     <TableCell>
                       <code className="bg-muted px-2 py-1 rounded text-sm">
                         {coupon.code}
