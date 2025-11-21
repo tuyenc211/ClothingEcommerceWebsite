@@ -181,11 +181,8 @@ export default function OrderSummary({
           </div>
         )}
         <div className="flex justify-between">
-          <span className="text-gray-600">Phí vận chuyển:</span>
-          <span className="font-medium">
-            {summary.shipping === 0
-              ? "Miễn phí"
-              : formatPrice(summary.shipping)}
+          <span className="text-gray-600">
+            Phí vận chuyển: {formatPrice(summary.shippingFee)}
           </span>
         </div>
       </div>
