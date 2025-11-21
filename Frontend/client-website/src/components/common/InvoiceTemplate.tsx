@@ -251,7 +251,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                     </>
                   ) : (
                     <>
-                      <span>Thanh toán VNPay</span>
+                      <span>Thanh toán VNPAY</span>
                     </>
                   )}
                 </Button>
