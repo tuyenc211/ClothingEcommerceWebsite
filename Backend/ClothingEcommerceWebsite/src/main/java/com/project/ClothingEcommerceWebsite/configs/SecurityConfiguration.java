@@ -6,6 +6,7 @@ import com.project.ClothingEcommerceWebsite.utils.SecurityUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -67,8 +68,13 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         authz -> authz
                                 .antMatchers("/api/v1/auth/**").permitAll()
-                                .antMatchers("/api/v1/categories/**").permitAll()
-                                .antMatchers("/api/v1/users/**").permitAll()
+                                .antMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
+                                .antMatchers(HttpMethod.GET, "/api/v1/users/**").permitAll()
+                                .antMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
+                                .antMatchers(HttpMethod.GET, "/api/v1/colors/**").permitAll()
+                                .antMatchers(HttpMethod.GET, "/api/v1/sizes/**").permitAll()
+                                .antMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
+                                .antMatchers(HttpMethod.GET, "/api/v1/coupons/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

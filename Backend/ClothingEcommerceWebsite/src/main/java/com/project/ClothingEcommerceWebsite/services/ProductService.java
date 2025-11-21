@@ -13,7 +13,7 @@ public interface ProductService {
     Product createProductWithVariants(CreateProductVariantRequest request);
     List<ProductResponse> getAllProduct();
     List<ProductResponse> searchByName(String name);
-    Product getProductById(Long id);
+    ProductResponse getProductById(Long id);
     Product updateProduct(Long id, CreateProductVariantRequest request);
     void deleteProduct(Long id);
 }
