@@ -155,9 +155,58 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product getProductById(Long id) {
-        return productRepository.findById(id)
+    public ProductResponse getProductById(Long id) {
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        List<Inventory> inventories = inventoryRepository.findAllByProductVariant_Product_Id(product.getId());
+        List<ProductImage> images = productImageRepository.findAllByProductId(product.getId());
+        List<ProductVariant> variants = productVariantRepository.findAllByProductId(product.getId());
+
+        List<ProductImageResponse> imageDTOs = images.stream()
+                .map(image -> ProductImageResponse.builder()
+                        .id(image.getId())
+                        .image_url(image.getImageUrl())
+                        .position(image.getPosition())
+                        .build())
+                .collect(Collectors.toList());
+
+        Set<SizeResponse> sizeDTOs = variants.stream()
+                .map(v -> v.getSize())
+                .filter(Objects::nonNull)
+                .map(size -> SizeResponse.builder()
+                        .id(size.getId())
+                        .name(size.getName())
+                        .code(size.getCode())
+                        .sortOrder(size.getSortOrder())
+                        .build())
+                .collect(Collectors.toSet());
+
+        Set<ColorResponse> colorDTOs = variants.stream()
+                .map(v -> v.getColor())
+                .filter(Objects::nonNull)
+                .map(color -> ColorResponse.builder()
+                        .id(color.getId())
+                        .name(color.getName())
+                        .code(color.getCode())
+                        .build())
+                .collect(Collectors.toSet());
+
+        return ProductResponse.builder()
+                .id(product.getId())
+                .sku(product.getSku())
+                .name(product.getName())
+                .slug(product.getSlug())
+                .description(product.getDescription())
+                .basePrice(product.getBasePrice())
+                .category(product.getCategory())
+                .isPublished(product.getIsPublished())
+                .variants(variants)
+                .inventories(inventories)
+                .sizes(sizeDTOs)
+                .colors(colorDTOs)
+                .images(imageDTOs)
+                .build();
+
     }
 
     @Override
