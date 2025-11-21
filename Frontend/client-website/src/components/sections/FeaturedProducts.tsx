@@ -27,23 +27,6 @@ const FeaturedProducts: React.FC = () => {
       setIsLoading(false);
     }, 1000);
   };
-
-  const handleAddToCart = (productId: number) => {
-    const product = allProducts.find((p) => p.id === productId);
-    if (product) {
-      alert(`Đã thêm "${product.name}" vào giỏ hàng!`);
-      // Here you would typically dispatch to cart state or call an API
-    }
-  };
-
-  //   const handleQuickView = (productId: string) => {
-  //     const product = allProducts.find((p) => p.id === productId);
-  //     if (product) {
-  //       alert(`Xem nhanh: "${product.title}"`);
-  //       // Here you would typically open a modal or navigate to product detail
-  //     }
-  //   };
-
   return (
     <section className="py-6">
       <div className="w-full mx-auto px-4 md:px-10 lg:px-12">

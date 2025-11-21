@@ -143,13 +143,12 @@ export function LoginForm({
         </Button>
 
         {/* Divider */}
-        <div className="relative text-center text-sm after:absolute after:inset-0 ">
+        {/* <div className="relative text-center text-sm after:absolute after:inset-0 ">
           <span className="relative z-10  px-2 ">Hoặc tiếp tục với</span>
-        </div>
+        </div> */}
 
         {/* Social Login Buttons */}
-        <div className="grid gap-2">
-          {/* Google Login */}
+        {/* <div className="grid gap-2">
           <Button
             type="button"
             variant="outline"
@@ -177,8 +176,6 @@ export function LoginForm({
             </svg>
             Đăng nhập bằng Google
           </Button>
-
-          {/* Facebook Login */}
           <Button
             type="button"
             variant="outline"
@@ -194,7 +191,7 @@ export function LoginForm({
             </svg>
             Đăng nhập bằng Facebook
           </Button>
-        </div>
+        </div> */}
       </div>
 
       <div className="text-center text-sm">

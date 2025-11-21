@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/stores/productStore";
 import { formatPrice } from "@/lib/utils";
-import { Rating, RatingButton } from "../ui/shadcn-io/rating";
 import { toast } from "sonner";
+import { Heart } from "lucide-react";
+import { Button } from "../ui/button";
 
 export interface ProductItemProps {
   id: number;
@@ -16,13 +17,12 @@ export interface ProductItemProps {
   reviewCount?: number;
   isHovered?: boolean;
   isFocused?: boolean;
-  isOutOfStock?: boolean; // Thêm prop này
+  isOutOfStock?: boolean;
 }
 
 export const convertProductToItemProps = (
   product: Product
 ): ProductItemProps => {
-  // Kiểm tra xem tất cả biến thể có hết hàng không
   const isOutOfStock =
     product.inventories?.every((inv) => inv.quantity === 0) || false;
 
@@ -51,17 +51,6 @@ const ProductItem: React.FC<ProductItemProps> = ({
   const imageUrls = images.map((img) => img.image_url);
   const currentImage =
     imageUrls[currentImageIndex] || "/images/placeholder.jpg";
-
-  const renderStars = (rating: number) => {
-    const fullStars = Math.floor(rating);
-    return (
-      <Rating value={fullStars} readOnly>
-        {Array.from({ length: 5 }).map((_, index) => (
-          <RatingButton className="text-yellow-500" key={index} />
-        ))}
-      </Rating>
-    );
-  };
 
   return (
     <div
@@ -101,33 +90,16 @@ const ProductItem: React.FC<ProductItemProps> = ({
             isHovered ? "opacity-100" : "opacity-0"
           }`}
         >
-          <button
+          <Button
             onClick={() => {
               toast.info("Chức năng chưa được phát triển");
             }}
             className="bg-white/90 backdrop-blur-sm hover:bg-white text-gray-700 hover:text-red-500 p-2 rounded-full shadow-md transition-all duration-200 hover:scale-110"
             title="Thêm vào yêu thích"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </button>
+            <Heart className="w-5 h-5 text-red-500" />
+          </Button>
         </div>
-
-        {/* Overlay mờ khi hết hàng */}
-        {isOutOfStock && (
-          <div className="absolute inset-0 bg-black/10 pointer-events-none" />
-        )}
       </div>
 
       {/* Product Info */}
@@ -143,11 +115,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
 
         {/* Price */}
         <div className="mb-2">
-          <span
-            className={`text-lg font-bold ${
-              isOutOfStock ? "text-gray-400" : "text-gray-900"
-            }`}
-          >
+          <span className="text-lg font-bold text-gray-900">
             {formatPrice(basePrice)}
           </span>
         </div>

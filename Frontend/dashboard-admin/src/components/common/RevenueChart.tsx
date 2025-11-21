@@ -155,7 +155,7 @@ export function RevenueChart() {
                   />
                 }
               />
-              <Bar dataKey="revenue" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="revenue" fill="#000000d6" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
