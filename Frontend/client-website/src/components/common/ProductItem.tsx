@@ -55,7 +55,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
   return (
     <div
       className={`group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer relative ${
-        isFocused ? "blur-sm scale-[0.98]" : ""
+        isFocused ? "scale-[0.98]" : ""
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

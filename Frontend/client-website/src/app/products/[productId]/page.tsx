@@ -28,7 +28,7 @@ export default function ProductDetailPage() {
   const { productId } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { getProductById } = useProductStore();
+  const { isLoading, getProductById } = useProductStore();
   const [product, setProduct] = useState<Product | null>(null);
   useEffect(() => {
     const fetchProduct = async () => {
@@ -39,7 +39,7 @@ export default function ProductDetailPage() {
         }
       }
     };
-    
+
     fetchProduct();
   }, [productId, getProductById]);
   const { addToCart, buyNow } = useCartStore();
@@ -114,26 +114,6 @@ export default function ProductDetailPage() {
   };
 
   const stockStatus = getStockStatus();
-  if (!product) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="text-center max-w-md mx-auto">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
-            Product Not Found
-          </h1>
-          <p className="text-gray-600 mb-6 text-sm sm:text-base">
-            The product you&apos;re looking for doesn&apos;t exist.
-          </p>
-          <button
-            onClick={() => router.back()}
-            className="bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors text-sm sm:text-base"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   // Handlers
   const handleQuantityChange = (action: "increment" | "decrement") => {
@@ -174,7 +154,7 @@ export default function ProductDetailPage() {
     }
 
     addToCart(selectedVariant, quantity);
-    toast.success(`Đã thêm "${product.name}" vào giỏ hàng!`);
+    toast.success(`Đã thêm "${product?.name}" vào giỏ hàng!`);
   };
 
   const handleBuyNow = async () => {
@@ -213,7 +193,7 @@ export default function ProductDetailPage() {
       console.error("Buy now error:", error);
     }
   };
-  const isOutOfStock = !selectedQuantity || selectedQuantity === 0;
+  const isOutOfStock = selectedQuantity === 0;
   const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
     return (
@@ -224,7 +204,50 @@ export default function ProductDetailPage() {
       </Rating>
     );
   };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Image Skeleton */}
+            <div className="bg-gray-200 animate-pulse rounded-lg h-96"></div>
 
+            {/* Info Skeleton */}
+            <div className="space-y-4">
+              <div className="bg-gray-200 animate-pulse h-8 w-3/4 rounded"></div>
+              <div className="bg-gray-200 animate-pulse h-6 w-1/2 rounded"></div>
+              <div className="bg-gray-200 animate-pulse h-10 w-1/3 rounded"></div>
+              <div className="space-y-2">
+                <div className="bg-gray-200 animate-pulse h-4 w-full rounded"></div>
+                <div className="bg-gray-200 animate-pulse h-4 w-5/6 rounded"></div>
+                <div className="bg-gray-200 animate-pulse h-4 w-4/6 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-md mx-auto">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+            Không tìm thấy sản phẩm
+          </h1>
+          <p className="text-gray-600 mb-6 text-sm sm:text-base">
+            Sản phẩm bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
+          </p>
+          <button
+            onClick={() => router.back()}
+            className="bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors text-sm sm:text-base"
+          >
+            Quay lại
+          </button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb - RESPONSIVE */}
