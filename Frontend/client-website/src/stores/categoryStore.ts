@@ -64,7 +64,7 @@ export const useCategoryStore = create<CategoryState>()(
       getChildCategories: (parentId) => {
         const { categories } = get();
         return categories.filter(
-          (category) => category.parentId?.id === parentId
+          (category) => category.parentId?.id === parentId && category.isActive
         );
       },
 
