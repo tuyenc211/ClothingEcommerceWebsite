@@ -195,9 +195,9 @@ export function SignupForm({
         </div>
 
         {/* Social Signup Buttons */}
-        <div className="grid gap-2">
-          {/* Google Signup */}
-          <Button
+        {/* <div className="grid gap-2"> */}
+        {/* Google Signup */}
+        {/* <Button
             type="button"
             variant="outline"
             className="w-full"
@@ -223,10 +223,10 @@ export function SignupForm({
               />
             </svg>
             Đăng Nhập bằng Google
-          </Button>
+          </Button> */}
 
-          {/* Facebook Signup */}
-          <Button
+        {/* Facebook Signup */}
+        {/* <Button
             type="button"
             variant="outline"
             className="w-full"
@@ -240,8 +240,8 @@ export function SignupForm({
               />
             </svg>
             Đăng Nhập bằng Facebook
-          </Button>
-        </div>
+          </Button> */}
+        {/* </div> */}
       </div>
 
       <div className="text-center text-sm">

@@ -210,10 +210,10 @@ function Sidebar({
                 collapsed && "hidden"
               )}
             >
-              Cart Corner Admin
+              Atino Admin Dashboard
             </h2>
             {collapsed && (
-              <span className="text-lg font-semibold text-white">Corner</span>
+              <span className="text-lg font-semibold text-white">Atino</span>
             )}
           </div>
         </div>

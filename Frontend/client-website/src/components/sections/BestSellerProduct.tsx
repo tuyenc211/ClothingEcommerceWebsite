@@ -19,7 +19,7 @@ const BestSellerProduct: React.FC = () => {
       <div className="w-full mx-auto">
         <ProductCarousel
           products={bestSellerProducts}
-          title="Best Selling Product"
+          title="Sản phẩm bán chạy"
           autoPlay={true}
           showArrows={false}
         />

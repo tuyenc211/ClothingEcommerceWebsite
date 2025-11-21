@@ -118,7 +118,7 @@ export default function Header() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link href="/public" className="text-2xl font-bold">
+              <Link href="/" className="text-2xl font-bold">
                 <Logo />
               </Link>
             </div>

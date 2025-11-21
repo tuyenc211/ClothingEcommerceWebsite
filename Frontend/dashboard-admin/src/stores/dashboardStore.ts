@@ -169,19 +169,19 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
           monthlyRevenue.set(monthKey, current + order.grandTotal);
         }
       });
+      const revenueData: RevenueData[] = [];
+      const today = new Date();
+      for (let i = 11; i >= 0; i--) {
+        const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const monthKey = `${date.getFullYear()}-${String(
+          date.getMonth() + 1
+        ).padStart(2, "0")}-01`;
 
-      // Convert to array and sort by date
-      const sortedMonths = Array.from(monthlyRevenue.entries()).sort(
-        ([a], [b]) => a.localeCompare(b)
-      );
-
-      // Create simplified revenue data - mỗi tháng chỉ có một giá trị doanh thu
-      const revenueData: RevenueData[] = sortedMonths.map(
-        ([date, revenue]) => ({
-          date,
-          revenue, // Đơn giản hóa
-        })
-      );
+        revenueData.push({
+          date: monthKey,
+          revenue: monthlyRevenue.get(monthKey) || 0,
+        });
+      }
 
       set({ revenueData });
     } catch (error) {

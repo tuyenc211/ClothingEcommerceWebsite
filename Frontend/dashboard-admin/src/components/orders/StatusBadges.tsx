@@ -16,29 +16,29 @@ export function OrderStatusBadge({ status, className }: OrderStatusBadgeProps) {
     }
   > = {
     NEW: {
-      label: "Mới",
+      label: "Chờ xử lý",
       variant: "secondary" as const,
-      className: "bg-blue-100 text-blue-800 hover:bg-blue-200",
+      className: "bg-gray-100 text-gray-800 hover:bg-gray-200",
     },
     CONFIRMED: {
       label: "Đã xác nhận",
       variant: "secondary" as const,
-      className: "bg-purple-100 text-purple-800 hover:bg-purple-200",
+      className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
     },
     PACKING: {
       label: "Đang đóng gói",
       variant: "secondary" as const,
-      className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+      className: "bg-purple-100 text-purple-800 hover:bg-purple-200",
     },
     SHIPPED: {
       label: "Đang giao",
       variant: "secondary" as const,
-      className: "bg-cyan-100 text-cyan-800 hover:bg-cyan-200",
+      className: "bg-green-100 text-green-800 hover:bg-green-200",
     },
     DELIVERED: {
       label: "Đã giao",
       variant: "secondary" as const,
-      className: "bg-green-100 text-green-800 hover:bg-green-200",
+      className: "bg-blue-100 text-blue-800 hover:bg-blue-200",
     },
     CANCELLED: {
       label: "Đã hủy",
