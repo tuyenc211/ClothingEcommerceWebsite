@@ -9,7 +9,7 @@ export default function GridLetter() {
   // Lấy các coupon active có ảnh
   const couponBanners = useMemo(() => {
     return coupons
-      .filter((coupon) => coupon.imageUrl)
+      .filter((coupon) => coupon.imageUrl && coupon.isActive) // Chỉ lấy coupon có ảnh
       .map((coupon) => ({
         id: coupon.id,
         image: coupon.imageUrl!,
