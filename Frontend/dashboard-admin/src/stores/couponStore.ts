@@ -54,11 +54,10 @@ interface CouponStore {
   deleteCoupon: (id: number) => Promise<void>;
 
   searchCoupons: (query: string) => Coupon[];
-  getActiveCoupons: () => Coupon[];
   getCouponsSortedByDate: () => Coupon[];
 
   validateCouponCode: (code: string, excludeId?: number) => boolean;
-  getCouponStatus: (coupon: Coupon) => "active" | "expired" | "upcoming";
+  getCouponStatus: (coupon: Coupon) => "active" | "expired" | "upcoming"|"inactive";
 
   setError: (error: string | null) => void;
   clearError: () => void;
@@ -231,24 +230,20 @@ export const useCouponStore = create<CouponStore>()(
               coupon.description.toLowerCase().includes(lowerQuery))
         );
       },
-      getCouponStatus: (coupon: Coupon): "active" | "expired" | "upcoming" => {
-        const now = new Date();
-        if (!coupon.startsAt || !coupon.endsAt) return "active";
+      getCouponStatus :(coupon: Coupon): "active" | "expired" | "upcoming" | "inactive" => {
+            const now = new Date();
 
-        const startDate = new Date(coupon.startsAt);
-        const endDate = new Date(coupon.endsAt);
+            if (!coupon.startsAt || !coupon.endsAt) return "active";
+            if (!coupon.isActive) return "inactive";
 
-        if (now < startDate) return "upcoming";
-        if (now > endDate) return "expired";
+            const startDate = new Date(coupon.startsAt);
+            const endDate = new Date(coupon.endsAt);
 
-        return "active";
-      },
-      getActiveCoupons: () => {
-        return get().coupons.filter((coupon) => {
-          const status = get().getCouponStatus(coupon);
-          return status === "active";
-        });
-      },
+            if (now < startDate) return "upcoming";
+            if (now > endDate) return "expired";
+
+            return "active";
+        },
 
       getCouponsSortedByDate: () => {
         return get().coupons.sort((a, b) => {

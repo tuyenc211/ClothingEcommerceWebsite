@@ -1,5 +1,4 @@
 "use client";
-
 import {
   Table,
   TableBody,
@@ -14,9 +13,11 @@ import { useOrderStore, Order, OrderStatus } from "@/stores/orderStore";
 import { OrderStatusBadge, PaymentMethodBadge } from "./StatusBadges";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
+
 interface OrderTableProps {
   orders: Order[];
 }
+
 export const formatDate = (dateString: string) => {
   try {
     return new Date(dateString).toLocaleString("vi-VN", {
@@ -30,6 +31,7 @@ export const formatDate = (dateString: string) => {
     return dateString;
   }
 };
+
 export function OrderTable({ orders }: OrderTableProps) {
   const router = useRouter();
   const { updateOrderStatus } = useOrderStore();
@@ -60,62 +62,59 @@ export function OrderTable({ orders }: OrderTableProps) {
     return labels[status] || status;
   };
 
+  // Get status color classes for select
+  const getStatusSelectClass = (status: OrderStatus): string => {
+    const colorClasses: Record<OrderStatus, string> = {
+      NEW: "bg-gray-100 text-gray-800 border-gray-300",
+      CONFIRMED: "bg-yellow-100 text-yellow-800 border-yellow-300",
+      PACKING: "bg-purple-100 text-purple-800 border-purple-300",
+      SHIPPED: "bg-green-100 text-green-800 border-green-300",
+      DELIVERED: "bg-blue-100 text-blue-800 border-blue-300",
+      CANCELLED: "bg-red-100 text-red-800 border-red-300",
+    };
+    return colorClasses[status] || "bg-gray-100 text-gray-800 border-gray-300";
+  };
+
   const handleViewInvoice = (orderId: number) => {
     router.push(`/orders/${orderId}`);
   };
 
   if (orders.length === 0) {
     return (
-      <div className="bg-white rounded-lg border p-8 text-center">
-        <div className="text-gray-500 text-lg mb-2">No orders found</div>
-        <div className="text-gray-400">
+      <div className="text-center py-12 bg-white rounded-lg shadow">
+        <p className="text-gray-500 text-lg font-medium">No orders found</p>
+        <p className="text-gray-400 text-sm mt-2">
           Try adjusting your filters to see more results
-        </div>
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg border overflow-hidden">
+    <div className="rounded-lg border bg-white shadow-sm">
       <Table>
         <TableHeader>
-          <TableRow className="bg-gray-50">
-            <TableHead className="font-semibold text-gray-700">
-              INVOICE NO
-            </TableHead>
-            <TableHead className="font-semibold text-gray-700">
-              ORDER TIME
-            </TableHead>
-            <TableHead className="font-semibold text-gray-700">
-              CUSTOMER NAME
-            </TableHead>
-            <TableHead className="font-semibold text-gray-700">
-              METHOD
-            </TableHead>
-            <TableHead className="font-semibold text-gray-700">
-              AMOUNT
-            </TableHead>
-            <TableHead className="font-semibold text-gray-700">
-              STATUS
-            </TableHead>
-            <TableHead className="font-semibold text-gray-700">
-              ACTION
-            </TableHead>
-            <TableHead className="font-semibold text-gray-700">
-              INVOICE
-            </TableHead>
+          <TableRow>
+            <TableHead>Mã đơn hàng</TableHead>
+            <TableHead>Thời gian đặt</TableHead>
+            <TableHead>Tên khách hàng</TableHead>
+            <TableHead>Phương thức</TableHead>
+            <TableHead>Số tiền</TableHead>
+            <TableHead>Trạng thái</TableHead>
+            <TableHead>Hành động</TableHead>
+            <TableHead>Hóa đơn</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {orders.map((order) => (
-            <TableRow key={order.id} className="hover:bg-gray-50">
+            <TableRow key={order.id}>
               <TableCell className="font-medium">#{order.code}</TableCell>
-              <TableCell className="text-gray-600">
+              <TableCell>
                 {order.createdAt ? formatDate(order.createdAt) : "N/A"}
               </TableCell>
               <TableCell>
                 <div>
-                  <div className="font-medium text-gray-900">
+                  <div className="font-medium">
                     {order.user?.fullName || order.customerName || "N/A"}
                   </div>
                   <div className="text-sm text-gray-500">
@@ -126,11 +125,8 @@ export function OrderTable({ orders }: OrderTableProps) {
               <TableCell>
                 <PaymentMethodBadge method={order.paymentMethod} />
               </TableCell>
-              <TableCell className="font-medium">
+              <TableCell className="font-semibold">
                 {formatCurrency(order.grandTotal)}
-              </TableCell>
-              <TableCell>
-                <OrderStatusBadge status={order.status} />
               </TableCell>
               <TableCell>
                 <select
@@ -138,7 +134,9 @@ export function OrderTable({ orders }: OrderTableProps) {
                   onChange={(e) =>
                     updateOrderStatus(order.id, e.target.value as OrderStatus)
                   }
-                  className="form-control border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className={`rounded-md px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors ${getStatusSelectClass(
+                    order.status
+                  )}`}
                   disabled={
                     order.status === "DELIVERED" || order.status === "CANCELLED"
                   }
@@ -151,17 +149,17 @@ export function OrderTable({ orders }: OrderTableProps) {
                 </select>
               </TableCell>
               <TableCell>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={() => handleViewInvoice(order.id)}
-                    title="View Invoice"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </div>
+                <OrderStatusBadge status={order.status} />
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleViewInvoice(order.id)}
+                  title="View Invoice"
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
               </TableCell>
             </TableRow>
           ))}

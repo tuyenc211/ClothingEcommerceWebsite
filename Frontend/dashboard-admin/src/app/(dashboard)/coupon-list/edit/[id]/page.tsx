@@ -252,6 +252,7 @@ export default function EditCouponPage() {
                       value: 0,
                       message: "Giá trị phải lớn hơn hoặc bằng 0",
                     },
+                      required:"Giắ trị không được để trống"
                   })}
                   placeholder="VD: 200000"
                   className={errors.minOrderTotal ? "border-red-500" : ""}
@@ -272,6 +273,7 @@ export default function EditCouponPage() {
                   type="number"
                   {...register("maxUses", {
                     min: { value: 1, message: "Số lần sử dụng phải lớn hơn 0" },
+                      required:"Giắ trị không được để trống"
                   })}
                   placeholder="VD: 1000"
                   disabled={isSubmitting}
@@ -286,6 +288,7 @@ export default function EditCouponPage() {
                   type="number"
                   {...register("maxUsesPerUser", {
                     min: { value: 1, message: "Số lần sử dụng phải lớn hơn 0" },
+                      required:"Giá trị không được để trống"
                   })}
                   placeholder="VD: 1"
                   disabled={isSubmitting}

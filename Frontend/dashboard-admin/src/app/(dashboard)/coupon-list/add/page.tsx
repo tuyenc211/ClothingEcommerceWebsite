@@ -239,6 +239,9 @@ export default function AddCouponPage() {
                   disabled={isSubmitting}
                 />
               </div>
+              {errors.maxUses && (
+                <p className="text-sm text-red-500">{errors.maxUses.message}</p>
+              )}
 
               {/* Max Uses Per User */}
               <div className="space-y-2">
@@ -254,6 +257,11 @@ export default function AddCouponPage() {
                   disabled={isSubmitting}
                 />
               </div>
+              {errors.maxUsesPerUser && (
+                <p className="text-sm text-red-500">
+                  {errors.maxUsesPerUser.message}
+                </p>
+              )}
 
               {/* Start Date */}
               <div className="space-y-2">

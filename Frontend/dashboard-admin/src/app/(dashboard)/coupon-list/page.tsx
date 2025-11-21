@@ -32,8 +32,7 @@ import {
 } from "@/components/ui/pagination";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useCouponStore } from "@/stores/couponStore";
-import { toast } from "sonner";
+import { Coupon, useCouponStore } from "@/stores/couponStore";
 
 export default function CouponListPage() {
   const { coupons, deleteCoupon, getCouponStatus, fetchCoupons, isLoading } =
@@ -61,6 +60,38 @@ export default function CouponListPage() {
     });
   };
 
+  const getStatusBadge = (coupon: Coupon) => {
+    const status = getCouponStatus(coupon);
+
+    switch (status) {
+      case "active":
+        return (
+          <Badge variant="default" className="bg-green-600">
+            Đang hoạt động
+          </Badge>
+        );
+      case "expired":
+        return (
+          <Badge variant="secondary" className="bg-gray-400 text-gray-700">
+            Hết hạn
+          </Badge>
+        );
+      case "upcoming":
+        return (
+          <Badge variant="outline" className="border-blue-500 text-blue-600">
+            Sắp diễn ra
+          </Badge>
+        );
+      case "inactive":
+        return (
+          <Badge variant="secondary" className="bg-yellow-400 text-yellow-900">
+            Không hoạt động
+          </Badge>
+        );
+      default:
+        return <Badge variant="secondary">Không xác định</Badge>;
+    }
+  };
   const handleDeleteConfirm = () => {
     if (deleteDialog.couponId) {
       deleteCoupon(deleteDialog.couponId);
@@ -150,14 +181,14 @@ export default function CouponListPage() {
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>Code</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Value</TableHead>
-                <TableHead>Min Order Total</TableHead>
-                <TableHead>Starts At</TableHead>
-                <TableHead>Ends At</TableHead>
-                <TableHead>Max Uses</TableHead>
-                <TableHead>Max Uses Per User</TableHead>
-                <TableHead>Is Active</TableHead>
+                <TableHead>Tên</TableHead>
+                <TableHead>Giá trị</TableHead>
+                <TableHead>Đơn hàng tối thiểu</TableHead>
+                <TableHead>Ngày bắt đầu</TableHead>
+                <TableHead>Ngày kết thúc</TableHead>
+                <TableHead>Số lần sử dụng tối đa</TableHead>
+                <TableHead>Số lần sử dụng tối đa mỗi người dùng</TableHead>
+                <TableHead>Trạng thái</TableHead>
                 <TableHead className="text-right">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
@@ -190,13 +221,7 @@ export default function CouponListPage() {
                     <TableCell>{formatDate(coupon.endsAt)}</TableCell>
                     <TableCell>{coupon.maxUses || "-"}</TableCell>
                     <TableCell>{coupon.maxUsesPerUser || "-"}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={coupon.isActive ? "default" : "secondary"}
-                      >
-                        {coupon.isActive ? "Hoạt động" : "Không hoạt động"}
-                      </Badge>
-                    </TableCell>
+                    <TableCell>{getStatusBadge(coupon)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end space-x-2">
                         <Button variant="outline" size="sm" asChild>
@@ -211,6 +236,7 @@ export default function CouponListPage() {
                             handleDeleteClick(coupon.id, coupon.code)
                           }
                           className="text-red-600 hover:text-red-700"
+                          disabled={getCouponStatus(coupon) === "expired"}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
