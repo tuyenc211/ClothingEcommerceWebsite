@@ -4,6 +4,7 @@ import { SignUpData, LoginData } from "@/types";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { persist } from "zustand/middleware";
+import { useCartStore } from "./cartStore";
 
 export interface Role {
   id: number;
@@ -142,7 +143,12 @@ const useAuthStore = create<AuthStore>()(
           console.log("Logout error:", error);
         } finally {
           set({ authUser: null, accessToken: null });
-          localStorage.removeItem("cart-storage");
+          useCartStore.setState({ 
+            items: [], 
+            currentCart: null,
+            appliedCoupon: null,
+            error: null 
+          });
           toast.success("Đăng xuất thành công");
         }
       },
