@@ -94,7 +94,7 @@ export default function EditSubcategoryPage() {
       await updateCategory(categoryId, {
         name: formData.name.trim(),
         slug: formData.name.trim().toLowerCase().replace(/\s+/g, "-"),
-        parentId: categories.find((cat) => cat.id === formData.parentId),
+        parentId: formData.parentId as any,
         isActive: formData.isActive,
       });
       router.push("/subcategories");

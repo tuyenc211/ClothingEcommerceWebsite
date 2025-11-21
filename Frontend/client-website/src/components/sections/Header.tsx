@@ -62,7 +62,7 @@ export default function Header() {
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
-  const parentCategories = categories.filter((cat) => !cat.parentId);
+  const parentCategories = categories.filter((cat) => !cat.parentId && cat.isActive);
 
   return (
     <>
@@ -138,7 +138,7 @@ export default function Header() {
 
                   {parentCategories.map((parent) => {
                     const children = categories.filter(
-                      (child) => child.parentId?.id === parent.id
+                      (child) => child.parentId?.id === parent.id && child.isActive
                     );
                     if (children.length === 0) {
                       return (
@@ -241,6 +241,7 @@ export default function Header() {
                 const children = categories.filter(
                   (child) =>
                     child.parentId &&
+                    child.isActive &&
                     (typeof child.parentId === "object"
                       ? child.parentId.id === parent.id
                       : child.parentId === parent.id)
