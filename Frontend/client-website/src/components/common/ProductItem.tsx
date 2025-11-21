@@ -5,6 +5,7 @@ import { Product } from "@/stores/productStore";
 import { formatPrice } from "@/lib/utils";
 import { Rating, RatingButton } from "../ui/shadcn-io/rating";
 import { toast } from "sonner";
+
 export interface ProductItemProps {
   id: number;
   name: string;
@@ -15,17 +16,23 @@ export interface ProductItemProps {
   reviewCount?: number;
   isHovered?: boolean;
   isFocused?: boolean;
+  isOutOfStock?: boolean; // Thêm prop này
 }
 
 export const convertProductToItemProps = (
   product: Product
 ): ProductItemProps => {
+  // Kiểm tra xem tất cả biến thể có hết hàng không
+  const isOutOfStock =
+    product.inventories?.every((inv) => inv.quantity === 0) || false;
+
   return {
     id: product.id,
     name: product.name,
     slug: product.slug,
     basePrice: product.basePrice,
     images: product.images?.sort((a, b) => a.position - b.position) || [],
+    isOutOfStock,
   };
 };
 
@@ -36,10 +43,11 @@ const ProductItem: React.FC<ProductItemProps> = ({
   images = [],
   isHovered: isHoveredFromParent,
   isFocused = false,
+  isOutOfStock = false,
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
-  // Get image URLs from images array
+
   const imageUrls = images.map((img) => img.image_url);
   const currentImage =
     imageUrls[currentImageIndex] || "/images/placeholder.jpg";
@@ -70,13 +78,24 @@ const ProductItem: React.FC<ProductItemProps> = ({
             src={currentImage}
             alt={name}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            className={`object-cover group-hover:scale-105 transition-transform duration-300 ${
+              isOutOfStock ? "opacity-60" : ""
+            }`}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             loading={"eager"}
           />
         </Link>
 
-        {/* Hover Overlay với Buttons - ĐÃ SỬA */}
+        {/* Badge Hết Hàng - Góc Trái Trên */}
+        {isOutOfStock && (
+          <div className="absolute top-4 left-4 z-10">
+            <span className="bg-red-500 text-white px-3 py-1 text-sm font-semibold rounded-md shadow-lg">
+              Hết hàng
+            </span>
+          </div>
+        )}
+
+        {/* Hover Overlay với Buttons */}
         <div
           className={`absolute top-4 right-4 flex flex-col gap-4 transition-opacity duration-300 ${
             isHovered ? "opacity-100" : "opacity-0"
@@ -104,17 +123,31 @@ const ProductItem: React.FC<ProductItemProps> = ({
             </svg>
           </button>
         </div>
+
+        {/* Overlay mờ khi hết hàng */}
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-black/10 pointer-events-none" />
+        )}
       </div>
+
       {/* Product Info */}
       <div className="p-4 text-center">
         {/* Title */}
-        <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2">
+        <h3
+          className={`font-semibold mb-1 line-clamp-2 ${
+            isOutOfStock ? "text-gray-400" : "text-gray-900"
+          }`}
+        >
           {name}
         </h3>
 
         {/* Price */}
         <div className="mb-2">
-          <span className="text-lg font-bold text-gray-900">
+          <span
+            className={`text-lg font-bold ${
+              isOutOfStock ? "text-gray-400" : "text-gray-900"
+            }`}
+          >
             {formatPrice(basePrice)}
           </span>
         </div>
