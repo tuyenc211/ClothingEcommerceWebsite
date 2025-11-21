@@ -134,6 +134,7 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponse> searchByName(String name) {
         List<Product> products = productRepository.findByNameContainingIgnoreCase(name);
         return products.stream()
+                .filter(Product::getIsPublished)
                 .map(p -> ProductResponse.builder()
                         .id(p.getId())
                         .sku(p.getSku())
