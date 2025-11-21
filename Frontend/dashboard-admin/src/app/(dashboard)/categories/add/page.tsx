@@ -9,8 +9,6 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { useCategoryStore } from "@/stores/categoryStore";
-import { toast } from "sonner";
-
 interface CategoryFormData {
   name: string;
 }
@@ -30,10 +28,11 @@ export default function AddCategoryPage() {
     if (!formData.name.trim()) {
       newErrors.name = "Tên danh mục không được để trống";
     }
-      const nameRegex = /^[a-zA-Z0-9\sÀ-ỹ]+$/;
-      if (formData.name && !nameRegex.test(formData.name)) {
-          newErrors.name = "Tên chỉ được chứa chữ, số và khoảng trắng (không có ký tự đặc biệt)";
-      }
+    const nameRegex = /^[a-zA-Z0-9\sÀ-ỹ]+$/;
+    if (formData.name && !nameRegex.test(formData.name)) {
+      newErrors.name =
+        "Tên chỉ được chứa chữ, số và khoảng trắng (không có ký tự đặc biệt)";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -55,7 +54,6 @@ export default function AddCategoryPage() {
       router.push("/categories");
     } catch (error) {
       console.error("Error adding category:", error);
-      // Error handling is already done in the store with toast
     } finally {
       setLoading(false);
     }

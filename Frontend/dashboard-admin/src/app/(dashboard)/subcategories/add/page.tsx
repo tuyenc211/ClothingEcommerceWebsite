@@ -27,7 +27,7 @@ interface SubcategoryFormData {
 
 export default function AddSubcategoryPage() {
   const router = useRouter();
-  const { createCategory,categories } = useCategoryStore();
+  const { createCategory, categories } = useCategoryStore();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<SubcategoryFormData>({
     name: "",
@@ -35,7 +35,7 @@ export default function AddSubcategoryPage() {
     isActive: true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-const parentCategories = categories.filter(cat => !cat.parentId);
+  const parentCategories = categories.filter((cat) => !cat.parentId);
   // Lấy danh sách danh mục cha
 
   const validateForm = () => {
@@ -44,10 +44,6 @@ const parentCategories = categories.filter(cat => !cat.parentId);
     if (!formData.name.trim()) {
       newErrors.name = "Tên danh mục con không được để trống";
     }
-      const nameRegex = /^[a-zA-Z0-9\sÀ-ỹ]+$/;
-      if (formData.name && !nameRegex.test(formData.name)) {
-          newErrors.name = "Tên chỉ được chứa chữ, số và khoảng trắng (không có ký tự đặc biệt)";
-      }
     if (!formData.parentId) {
       newErrors.parentId = "Vui lòng chọn danh mục cha";
     }
@@ -66,15 +62,12 @@ const parentCategories = categories.filter(cat => !cat.parentId);
     setLoading(true);
 
     try {
-      createCategory({
+      await createCategory({
         parentId: formData.parentId!,
         name: formData.name.trim(),
       });
-
-      toast.success("Thêm danh mục con thành công!");
       router.push("/subcategories");
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi thêm danh mục con");
       console.error("Error adding subcategory:", error);
     } finally {
       setLoading(false);
@@ -86,7 +79,6 @@ const parentCategories = categories.filter(cat => !cat.parentId);
     value: string | boolean | number
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }

@@ -170,7 +170,9 @@ export default function CategoriesPage() {
               ) : (
                 paginatedCategories.map((category, index) => (
                   <TableRow key={category.id}>
-                    <TableCell className="font-medium">{index + 1}</TableCell>
+                    <TableCell className="font-medium">
+                      {startIndex + index + 1}
+                    </TableCell>
                     <TableCell>{category.name}</TableCell>
                     <TableCell>
                       <Badge
