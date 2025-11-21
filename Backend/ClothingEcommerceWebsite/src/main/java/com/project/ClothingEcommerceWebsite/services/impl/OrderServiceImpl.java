@@ -58,7 +58,7 @@ public class OrderServiceImpl implements OrderService {
                 appliedCoupon = null;
             }
         }
-        double grandTotal = subtotal - discountTotal + shippingFee;
+        double grandTotal = subtotal * (1 - discountTotal / 100) + shippingFee;
         Enums.PaymentStatus paymentStatus;
         if(request.getPaymentMethod().equals("COD")) {
             paymentStatus = Enums.PaymentStatus.PAID;
@@ -73,7 +73,7 @@ public class OrderServiceImpl implements OrderService {
                 .paymentMethod(request.getPaymentMethod())
                 .paymentStatus(paymentStatus)
                 .subtotal(subtotal)
-                .discountTotal(discountTotal)
+                .discountTotal(subtotal * (discountTotal / 100))
                 .shippingFee(shippingFee)
                 .grandTotal(grandTotal)
                 .totalItems(cartItems.size())
