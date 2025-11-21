@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     boolean existsByName(String name);
+    boolean existsByNameAndIdNot(String name, Long id);
     boolean existsBySlug(String slug);
     Optional<Category> findBySlug(String slug);
     Page<Category> findByNameContainingIgnoreCase(String keyword, Pageable pageable);

@@ -69,6 +69,7 @@ public class CouponServiceImpl implements CouponService {
             }
         }
         coupon.setName(updatedCoupon.getName());
+        coupon.setCode(updatedCoupon.getCode());
         coupon.setDescription(updatedCoupon.getDescription());
         coupon.setValue(updatedCoupon.getValue());
         coupon.setMaxUses(updatedCoupon.getMaxUses());

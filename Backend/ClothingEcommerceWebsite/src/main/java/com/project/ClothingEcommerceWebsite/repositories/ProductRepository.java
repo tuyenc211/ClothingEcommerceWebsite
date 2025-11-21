@@ -8,4 +8,6 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     boolean existsBySku(String sku);
     List<Product> findByNameContainingIgnoreCase(String name);
+    boolean existsBySkuAndIdNot(String sku, Long id);
+    boolean existsByName(String name);
 }

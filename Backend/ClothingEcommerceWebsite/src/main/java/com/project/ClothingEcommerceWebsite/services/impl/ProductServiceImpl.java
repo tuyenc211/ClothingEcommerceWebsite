@@ -5,6 +5,7 @@ import com.project.ClothingEcommerceWebsite.dtos.respond.ColorResponse;
 import com.project.ClothingEcommerceWebsite.dtos.respond.ProductImageResponse;
 import com.project.ClothingEcommerceWebsite.dtos.respond.ProductResponse;
 import com.project.ClothingEcommerceWebsite.dtos.respond.SizeResponse;
+import com.project.ClothingEcommerceWebsite.exception.BadRequestException;
 import com.project.ClothingEcommerceWebsite.models.*;
 import com.project.ClothingEcommerceWebsite.repositories.*;
 import com.project.ClothingEcommerceWebsite.services.CategoryService;
@@ -40,9 +41,8 @@ public class ProductServiceImpl implements ProductService {
     public Product createProductWithVariants(CreateProductVariantRequest request) {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
-
         if (productRepository.existsBySku(request.getSku())) {
-            throw new RuntimeException("SKU already exists");
+            throw new BadRequestException("SKU đã tồn tại. Vui lòng sử dụng SKU khác!!");
         }
         Product product = Product.builder()
                 .sku(request.getSku())
@@ -214,6 +214,9 @@ public class ProductServiceImpl implements ProductService {
     public Product updateProduct(Long id, CreateProductVariantRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        if (productRepository.existsBySkuAndIdNot(request.getSku(), id)) {
+            throw new BadRequestException("SKU đã tồn tại. Vui lòng sử dụng SKU khác!!");
+        }
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setSku(request.getSku());
