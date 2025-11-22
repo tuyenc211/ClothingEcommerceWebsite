@@ -353,10 +353,10 @@ export default function CheckoutPage() {
         }
       } else {
         toast.success(`Đặt hàng thành công! Mã đơn hàng: ${order.code}`);
-        await clearCart();
-        removeCoupon();
-        await fetchProducts();
         router.push(`/user/orders/${order.id}`);
+        clearCart();
+        removeCoupon();
+        fetchProducts();
       }
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
