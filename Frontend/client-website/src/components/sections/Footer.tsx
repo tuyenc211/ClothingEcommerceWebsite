@@ -162,22 +162,32 @@ export default function Footer() {
 
         {/* Cột 4: Theo dõi chúng tôi & Thanh toán */}
         <div className="text-white">
-          <h3 className="font-bold text-lg uppercase mb-4">
-            THEO DÕI CHÚNG TÔI
-          </h3>
-          <div className="flex  mb-6 gap-4">
-            {socialLinks.map((socialLink, index) => (
-              <a
-                key={index}
-                href={socialLink.href}
-                target="_blank"
-                className="flex items-center gap-3 text-sm text-gray-300 hover:text-white transition-colors group"
-              >
-                <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                  {socialLink.icon}
-                </div>
-              </a>
-            ))}
+          <div className="flex flex-col space-y-2">
+            <h3 className="font-bold text-lg uppercase mb-4">
+              THEO DÕI CHÚNG TÔI
+            </h3>
+            <div className="flex  mb-6 gap-4">
+              {socialLinks.map((socialLink, index) => (
+                <a
+                  key={index}
+                  href={socialLink.href}
+                  target="_blank"
+                  className="flex items-center gap-3 text-sm text-gray-300 hover:text-white transition-colors group"
+                >
+                  <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
+                    {socialLink.icon}
+                  </div>
+                </a>
+              ))}
+            </div>
+            <iframe
+              src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fprofile.php%3Fid%3D61582315304972&tabs&width=340&height=130&small_header=false&adapt_container_width=true&hide_cover=true&show_facepile=true&appId"
+              width="340"
+              height="130"
+              style={{ border: "none", overflow: "hidden" }}
+              allowFullScreen={true}
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            />
           </div>
         </div>
       </div>
