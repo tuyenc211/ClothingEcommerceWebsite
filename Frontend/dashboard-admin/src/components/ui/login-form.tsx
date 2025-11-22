@@ -37,9 +37,7 @@ export function LoginForm({
 
     try {
       await login({ email, password });
-      // Router sẽ tự động chuyển hướng thông qua useEffect
     } catch (error) {
-      // Error đã được xử lý trong store và hiển thị toast
       console.log("Login failed:", error);
     }
   };

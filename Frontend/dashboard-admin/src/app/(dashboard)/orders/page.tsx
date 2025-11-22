@@ -14,24 +14,24 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function OrdersPage() {
-  const { orders, isLoading, currentPage, itemsPerPage, setPage, fetchAllOrders } =
-    useOrderStore();
+  const {
+    orders,
+    isLoading,
+    currentPage,
+    itemsPerPage,
+    setPage,
+    fetchAllOrders,
+  } = useOrderStore();
 
   useEffect(() => {
     fetchAllOrders();
   }, [fetchAllOrders]);
-  console.log("Orders:", orders);
-
-  // Sort orders by created_at (newest first)
-  const sortedOrders = [...orders].sort((a, b) => {
-    return new Date(b.createdAt|| "").getTime() - new Date(a.createdAt|| "").getTime();
-  });
 
   // Pagination calculation
-  const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedOrders = sortedOrders.slice(startIndex, endIndex);
+  const paginatedOrders = orders.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     setPage(page);
@@ -59,21 +59,13 @@ export default function OrdersPage() {
 
   if (isLoading) {
     return (
-      <div className="p-2 md:p-6  max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Orders</h1>
-          <p className="text-gray-600">Manage and track your orders</p>
-        </div>
-
-        {/* Loading skeleton */}
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-32" />
-            ))}
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative">
+            {/* Spinner */}
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
           </div>
-          <Skeleton className="h-48" />
-          <Skeleton className="h-96" />
+          <p className="text-gray-600 text-lg font-medium">Đang tải...</p>
         </div>
       </div>
     );
@@ -138,8 +130,8 @@ export default function OrdersPage() {
 
       {/* Results info */}
       <div className="mt-4 text-center text-sm text-gray-500">
-        Showing {startIndex + 1}-{Math.min(endIndex, sortedOrders.length)} of{" "}
-        {sortedOrders.length} orders
+        Showing {startIndex + 1}-{Math.min(endIndex, orders.length)} of{" "}
+        {orders.length} orders
       </div>
     </div>
   );

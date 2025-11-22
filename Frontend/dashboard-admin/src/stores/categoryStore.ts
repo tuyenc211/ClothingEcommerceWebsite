@@ -27,7 +27,7 @@ interface CategoryState {
   createCategory: (categoryData: {
     name: string;
     parentId?: number;
-    isActive: boolean;
+    isActive?: boolean;
   }) => Promise<void>;
   updateCategory: (id: number, category: Partial<Category>) => Promise<void>;
   deleteCategory: (id: number) => Promise<void>;
@@ -109,6 +109,7 @@ export const useCategoryStore = create<CategoryState>()(
             ),
             isLoading: false,
           }));
+          await useProductStore.getState().fetchProducts();
 
           toast.success("Cập nhật danh mục thành công");
           console.log("✅ Category updated:", updatedCategory);

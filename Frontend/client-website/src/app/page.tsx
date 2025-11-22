@@ -19,7 +19,7 @@ export default function Home() {
     fetchProducts();
     fetchColors();
     fetchSizes();
-  }, []);
+  }, [fetchProducts, fetchColors, fetchSizes]);
   return (
     <div className=" mx-auto">
       <Heroslide />

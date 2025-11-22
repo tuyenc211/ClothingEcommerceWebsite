@@ -277,11 +277,11 @@ export default function DashboardLayout({
   const handleLogout = async () => {
     try {
       await logout();
-      setShowLogoutDialog(false); // Đóng dialog
-      router.push("/login");
+      setShowLogoutDialog(false);
+      window.location.href = "/login";
     } catch (error) {
       console.error("Logout error:", error);
-      setShowLogoutDialog(false); // Đóng dialog dù có lỗi
+      setShowLogoutDialog(false);
       toast.error("Đăng xuất thất bại");
     }
   };

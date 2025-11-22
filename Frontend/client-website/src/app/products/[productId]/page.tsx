@@ -23,6 +23,7 @@ import { Rating, RatingButton } from "@/components/ui/shadcn-io/rating";
 import ReviewForm from "@/app/user/reviews/_component/ReviewForm";
 import ReviewList from "@/app/user/reviews/_component/ReviewList";
 import { useReviewStore } from "@/stores/reviewStore";
+import { Input } from "@/components/ui/input";
 
 export default function ProductDetailPage() {
   const { productId } = useParams();
@@ -396,9 +397,24 @@ export default function ProductDetailPage() {
                   >
                     <Minus className="w-4 h-4" />
                   </button>
-                  <span className="px-3 sm:px-4 py-2 sm:py-3 min-w-[50px] sm:min-w-[60px] text-center font-medium text-sm sm:text-base">
-                    {quantity}
-                  </span>
+                  <Input
+                    type="number"
+                    min="1"
+                    max={maxQuantity}
+                    value={quantity}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 1;
+                      if (value >= 1 && value <= maxQuantity) {
+                        setQuantity(value);
+                      } else if (value > maxQuantity) {
+                        setQuantity(maxQuantity);
+                        toast.warning(`Chỉ còn ${maxQuantity} sản phẩm`);
+                      } else {
+                        setQuantity(1);
+                      }
+                    }}
+                    className="w-24 text-center"
+                  />
                   <button
                     onClick={() => handleQuantityChange("increment")}
                     className="p-2 sm:p-3 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
