@@ -27,6 +27,7 @@ interface CategoryState {
   createCategory: (categoryData: {
     name: string;
     parentId?: number;
+    isActive: boolean;
   }) => Promise<void>;
   updateCategory: (id: number, category: Partial<Category>) => Promise<void>;
   deleteCategory: (id: number) => Promise<void>;

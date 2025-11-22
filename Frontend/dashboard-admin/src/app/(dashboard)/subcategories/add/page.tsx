@@ -65,6 +65,7 @@ export default function AddSubcategoryPage() {
       await createCategory({
         parentId: formData.parentId!,
         name: formData.name.trim(),
+        isActive: formData.isActive,
       });
       router.push("/subcategories");
     } catch (error) {
