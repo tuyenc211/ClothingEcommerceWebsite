@@ -35,7 +35,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         Order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new RuntimeException("Order not found"));
-        if (reviewRepository.existsByUserIdAndProductId(user.getId(), product.getId())) {
+        if (reviewRepository.existsByUserIdAndOrderId(user.getId(), order.getId())) {
             throw new RuntimeException("Bạn đã đánh giá sản phẩm này rồi.");
         }
         Review review = Review.builder()
