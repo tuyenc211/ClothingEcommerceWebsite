@@ -17,10 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +29,7 @@ public class ProductServiceImpl implements ProductService {
     private final ColorRepository colorRepository;
     private final CategoryRepository categoryRepository;
     private final SizeRepository sizeRepository;
+    private final OrderItemRepository orderItemRepository;
     private final ProductVariantRepository productVariantRepository;
     private final InventoryRepository inventoryRepository;
     private final CloudinaryService cloudinaryService;
@@ -53,7 +51,7 @@ public class ProductServiceImpl implements ProductService {
                 .description(request.getDescription())
                 .basePrice(request.getBasePrice())
                 .category(category)
-                .isPublished(request.getIsPublished() != null ? request.getIsPublished() : true)
+                .isPublished(request.getIsPublished())
                 .build();
         productRepository.save(product);
 
@@ -83,6 +81,60 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponse> getAllProduct() {
         List<Product> products = productRepository.findAll();
         return products.stream().map(product -> {
+            List<Inventory> inventories = inventoryRepository.findAllByProductVariant_Product_Id(product.getId());
+            List<ProductImage> images = productImageRepository.findAllByProductId(product.getId());
+            List<ProductVariant> variants = productVariantRepository.findAllByProductId(product.getId());
+            List<ProductImageResponse> imageDTOs = images.stream()
+                    .map(image -> ProductImageResponse.builder()
+                            .id(image.getId())
+                            .image_url(image.getImageUrl())
+                            .position(image.getPosition())
+                            .build())
+                    .collect(Collectors.toList());
+            Set<SizeResponse> sizeDTOs = variants.stream()
+                    .map(v -> v.getSize())
+                    .filter(Objects::nonNull)
+                    .map(size -> SizeResponse.builder()
+                            .id(size.getId())
+                            .name(size.getName())
+                            .code(size.getCode())
+                            .sortOrder(size.getSortOrder())
+                            .build())
+                    .collect(Collectors.toSet());
+            Set<ColorResponse> colorDTOs = variants.stream()
+                    .map(v -> v.getColor())
+                    .filter(Objects::nonNull)
+                    .map(color -> ColorResponse.builder()
+                            .id(color.getId())
+                            .name(color.getName())
+                            .code(color.getCode())
+                            .build())
+                    .collect(Collectors.toSet());
+            return ProductResponse.builder()
+                    .id(product.getId())
+                    .sku(product.getSku())
+                    .name(product.getName())
+                    .slug(product.getSlug())
+                    .description(product.getDescription())
+                    .basePrice(product.getBasePrice())
+                    .category(product.getCategory())
+                    .isPublished(product.getIsPublished())
+                    .variants(variants)
+                    .inventories(inventories)
+                    .sizes(sizeDTOs)
+                    .colors(colorDTOs)
+                    .images(imageDTOs)
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProductResponse> getAllProductIsPublished() {
+        List<Product> products = productRepository.findAll();
+        return products
+                .stream()
+                .filter(Product::getIsPublished)
+                .map(product -> {
             List<Inventory> inventories = inventoryRepository.findAllByProductVariant_Product_Id(product.getId());
             List<ProductImage> images = productImageRepository.findAllByProductId(product.getId());
             List<ProductVariant> variants = productVariantRepository.findAllByProductId(product.getId());
@@ -218,6 +270,47 @@ public class ProductServiceImpl implements ProductService {
         if (productRepository.existsBySkuAndIdNot(request.getSku(), id)) {
             throw new BadRequestException("SKU đã tồn tại. Vui lòng sử dụng SKU khác!!");
         }
+        List<ProductVariant> oldVariants = productVariantRepository.findAllByProductId(id);
+        // Tạo Set các cặp (sizeId, colorId) từ variants cũ
+        Set<String> oldVariantKeys = new HashSet<>();
+        for (ProductVariant variant : oldVariants) {
+            String key = variant.getSize().getId() + "-" + variant.getColor().getId();
+            oldVariantKeys.add(key);
+        }
+
+        // Tạo Set các cặp (sizeId, colorId) từ request mới
+        Set<String> newVariantKeys = new HashSet<>();
+        for (Long sizeId : request.getSizeIds()) {
+            for (Long colorId : request.getColorIds()) {
+                String key = sizeId + "-" + colorId;
+                newVariantKeys.add(key);
+            }
+        }
+
+        boolean variantsChanged = !oldVariantKeys.equals(newVariantKeys);
+
+        // Nếu variants THAY ĐỔI → Check orders
+        if (variantsChanged) {
+            // Tìm variants nào sẽ bị XÓA (có trong cũ, không có trong mới)
+            Set<String> removedVariantKeys = new HashSet<>(oldVariantKeys);
+            removedVariantKeys.removeAll(newVariantKeys);
+
+            if (!removedVariantKeys.isEmpty()) {
+                // Check xem variants bị xóa có trong orders không
+                for (ProductVariant variant : oldVariants) {
+                    String key = variant.getSize().getId() + "-" + variant.getColor().getId();
+                    if (removedVariantKeys.contains(key)) {
+                        if (orderItemRepository.existsByVariantId(variant.getId())) {
+                            throw new BadRequestException(
+                                    "Không thể xóa biến thể Size " + variant.getSize().getName() +
+                                            ", Màu " + variant.getColor().getName() +
+                                            " vì đã có đơn hàng!!"
+                            );
+                        }
+                    }
+                }
+            }
+        }
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setSku(request.getSku());
@@ -249,25 +342,52 @@ public class ProductServiceImpl implements ProductService {
                 }
             }
         }
-        List<Size> sizes = sizeRepository.findAllById(request.getSizeIds());
-        List<Color> colors = colorRepository.findAllById(request.getColorIds());
-        List<ProductVariant> variants = new ArrayList<>();
-        for (Size size : sizes) {
-            for (Color color : colors) {
-                String variantSku = product.getSku() + "-" + color.getCode() + "-" + size.getCode();
-                ProductVariant variant = ProductVariant.builder()
-                        .product(product)
-                        .sku(variantSku)
-                        .size(size)
-                        .color(color)
-                        .price(product.getBasePrice())
-                        .build();
-                variants.add(variant);
+        if (variantsChanged) {
+            Map<String, Integer> oldInventoryMap = new HashMap<>();
+            for (ProductVariant oldVariant : oldVariants) {
+                String key = oldVariant.getSize().getId() + "-" + oldVariant.getColor().getId();
+                List<Inventory> inventories = inventoryRepository.findAllByProductVariant_Product_Id(id);
+                for (Inventory inv : inventories) {
+                    if (inv.getProductVariant().getId().equals(oldVariant.getId())) {
+                        oldInventoryMap.put(key, inv.getQuantity());
+                        break;
+                    }
+                }
+            }
+
+            inventoryRepository.deleteAllByProductVariant_Product_Id(product.getId());
+            inventoryRepository.flush();
+            productVariantRepository.deleteAllByProductId(product.getId());
+            productVariantRepository.flush();
+
+            List<Size> sizes = sizeRepository.findAllById(request.getSizeIds());
+            List<Color> colors = colorRepository.findAllById(request.getColorIds());
+            for (Size size : sizes) {
+                for (Color color : colors) {
+                    String variantSku = product.getSku() + "-" + color.getCode() + "-" + size.getCode();
+                    ProductVariant variant = ProductVariant.builder()
+                            .product(product)
+                            .sku(variantSku)
+                            .size(size)
+                            .color(color)
+                            .price(product.getBasePrice())
+                            .build();
+                    productVariantRepository.save(variant);
+
+                    String key = size.getId() + "-" + color.getId();
+                    Integer oldQuantity = oldInventoryMap.get(key);
+                    int quantity = (oldQuantity != null) ? oldQuantity : 0;
+
+                    inventoryRepository.save(Inventory.builder()
+                            .productVariant(variant)
+                            .quantity(quantity)
+                            .build());
+                }
+            }
+        } else {
+            for (ProductVariant variant : oldVariants) {
+                variant.setPrice(product.getBasePrice());
                 productVariantRepository.save(variant);
-                inventoryRepository.save(Inventory.builder()
-                        .productVariant(variant)
-                        .quantity(0)
-                        .build());
             }
         }
         return product;
@@ -278,6 +398,9 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        if(orderItemRepository.existsByProductId(id)) {
+            throw new BadRequestException("Không thể xóa sản phẩm đã có đơn hàng!!");
+        }
         inventoryRepository.deleteAllByProductVariant_Product_Id(product.getId());
         productVariantRepository.deleteAllByProductId(product.getId());
         List<ProductImage> productImages = productImageRepository.findAllByProductId(product.getId());

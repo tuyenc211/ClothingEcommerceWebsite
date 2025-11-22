@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface ProductService {
     Product createProductWithVariants(CreateProductVariantRequest request);
     List<ProductResponse> getAllProduct();
+    List<ProductResponse> getAllProductIsPublished();
     List<ProductResponse> searchByName(String name);
     ProductResponse getProductById(Long id);
     Product updateProduct(Long id, CreateProductVariantRequest request);

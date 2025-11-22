@@ -1,7 +1,9 @@
 package com.project.ClothingEcommerceWebsite.services.impl;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateSizeRequest;
+import com.project.ClothingEcommerceWebsite.exception.BadRequestException;
 import com.project.ClothingEcommerceWebsite.models.Size;
+import com.project.ClothingEcommerceWebsite.repositories.ProductVariantRepository;
 import com.project.ClothingEcommerceWebsite.repositories.SizeRepository;
 import com.project.ClothingEcommerceWebsite.services.SizeService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import java.util.List;
 public class SizeServiceImpl implements SizeService {
 
     private final SizeRepository sizeRepository;
+    private final ProductVariantRepository productVariantRepository;
 
     @Override
     public Size createSize(CreateSizeRequest request) {
@@ -61,6 +64,11 @@ public class SizeServiceImpl implements SizeService {
     public void deleteSize(Long id) {
         if (!sizeRepository.existsById(id)) {
             throw new RuntimeException("Size not found with id: " + id);
+        }
+        if(productVariantRepository.existsBySizeId(id)) {
+            throw new BadRequestException(
+                    "Không thể xóa size đã được sử dụng trong sản phẩm!!"
+            );
         }
         sizeRepository.deleteById(id);
     }

@@ -1,8 +1,10 @@
 package com.project.ClothingEcommerceWebsite.services.impl;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateColorRequest;
+import com.project.ClothingEcommerceWebsite.exception.BadRequestException;
 import com.project.ClothingEcommerceWebsite.models.Color;
 import com.project.ClothingEcommerceWebsite.repositories.ColorRepository;
+import com.project.ClothingEcommerceWebsite.repositories.ProductVariantRepository;
 import com.project.ClothingEcommerceWebsite.services.ColorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,6 +18,7 @@ import java.util.List;
 public class ColorServiceImpl implements ColorService {
 
     private final ColorRepository colorRepository;
+    private final ProductVariantRepository productVariantRepository;
 
     @Override
     public Color createColor(CreateColorRequest request) {
@@ -58,6 +61,11 @@ public class ColorServiceImpl implements ColorService {
     public void deleteColor(Long id) {
         if (!colorRepository.existsById(id)) {
             throw new RuntimeException("Color not found with id: " + id);
+        }
+        if (productVariantRepository.existsByColorId(id)) {
+            throw new BadRequestException(
+                    "Không thể xóa màu sắc đã được sử dụng trong sản phẩm!!"
+            );
         }
         colorRepository.deleteById(id);
     }

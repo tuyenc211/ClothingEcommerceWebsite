@@ -3,7 +3,9 @@ package com.project.ClothingEcommerceWebsite.services.impl;
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateCategoryRequest;
 import com.project.ClothingEcommerceWebsite.exception.BadRequestException;
 import com.project.ClothingEcommerceWebsite.models.Category;
+import com.project.ClothingEcommerceWebsite.models.Product;
 import com.project.ClothingEcommerceWebsite.repositories.CategoryRepository;
+import com.project.ClothingEcommerceWebsite.repositories.ProductRepository;
 import com.project.ClothingEcommerceWebsite.services.CategoryService;
 import com.project.ClothingEcommerceWebsite.utils.SlugUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,9 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     @Override
     public Category createCategory(CreateCategoryRequest request) {
@@ -36,7 +41,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .parentId(parent)
                 .name(request.getName())
                 .slug(slug)
-                .isActive(true)
+                .isActive(request.getIsActive())
                 .build();
         categoryRepository.save(category);
         return category;
@@ -71,7 +76,41 @@ public class CategoryServiceImpl implements CategoryService {
             category.setParentId(parent);
         }
         if (request.getIsActive() != null) {
-            category.setIsActive(request.getIsActive());
+            boolean newStatus = request.getIsActive();
+            boolean oldStatus = category.getIsActive();
+
+            if (newStatus != oldStatus) {
+                category.setIsActive(newStatus);
+                boolean isParent = (category.getParentId() == null);
+
+                if (isParent) {
+                    List<Category> children = categoryRepository.findByParentIdId(id);
+                    if (!children.isEmpty()) {
+                        children.forEach(child -> child.setIsActive(newStatus));
+                        categoryRepository.saveAll(children);
+
+                        for (Category child : children) {
+                            List<Product> products = productRepository.findByCategoryId(child.getId());
+                            if (!products.isEmpty()) {
+                                products.forEach(p -> p.setIsPublished(newStatus));
+                                productRepository.saveAll(products);
+                            }
+                        }
+                    }
+
+                    List<Product> parentProducts = productRepository.findByCategoryId(id);
+                    if (!parentProducts.isEmpty()) {
+                        parentProducts.forEach(p -> p.setIsPublished(newStatus));
+                        productRepository.saveAll(parentProducts);
+                    }
+                } else {
+                    List<Product> products = productRepository.findByCategoryId(id);
+                    if (!products.isEmpty()) {
+                        products.forEach(p -> p.setIsPublished(newStatus));
+                        productRepository.saveAll(products);
+                    }
+                }
+            }
         }
         return categoryRepository.save(category);
     }
@@ -80,9 +119,19 @@ public class CategoryServiceImpl implements CategoryService {
     public void deleteCategory(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
-        boolean hasChildren = categoryRepository.existsByParentIdId(id);
-        if (hasChildren) {
-            throw new BadRequestException("Cannot delete category that has subcategories");
+        List<Category> children = categoryRepository.findByParentIdId(id);
+        if (!children.isEmpty()) {
+            throw new BadRequestException(
+                    "Không thể xóa danh mục có " + children.size() + " danh mục con. " +
+                            "Vui lòng xóa hoặc chuyển danh mục con trước!"
+            );
+        }
+        List<Product> products = productRepository.findByCategoryId(id);
+        if (!products.isEmpty()) {
+            throw new BadRequestException(
+                    "Không thể xóa danh mục có " + products.size() + " sản phẩm. " +
+                            "Vui lòng xóa hoặc chuyển sản phẩm sang danh mục khác!"
+            );
         }
         categoryRepository.delete(category);
     }
