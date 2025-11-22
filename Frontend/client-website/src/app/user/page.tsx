@@ -91,8 +91,7 @@ export default function UserProfilePage() {
       await changePassword(data.currentPassword, data.newPassword);
       resetPassword();
     } catch (error) {
-      console.error("Change password error:", error);
-      toast.error("Đổi mật khẩu thất bại");
+      console.log(error);
     }
   };
 
