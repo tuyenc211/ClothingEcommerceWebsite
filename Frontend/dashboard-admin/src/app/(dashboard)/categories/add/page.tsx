@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { useCategoryStore } from "@/stores/categoryStore";
+import { toast } from "sonner";
+
 interface CategoryFormData {
   name: string;
 }

@@ -8,13 +8,13 @@ import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
 import ProductGrid from "@/components/common/ProductGrid";
 import { convertProductToItemProps } from "@/components/common/ProductItem";
-import {formatPrice, priceRanges} from "@/lib/utils";
+import { formatPrice, priceRanges } from "@/lib/utils";
 import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbSeparator
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
 interface Filters {
@@ -68,9 +68,10 @@ export default function SubCategoryPage() {
     // Apply price range filter (using base_price or variant prices)
     filtered = filtered.filter((product) => {
       // Check if product base price is in range
-      return product.basePrice >= filters.priceRange[0] &&
-          product.basePrice <= filters.priceRange[1];
-
+      return (
+        product.basePrice >= filters.priceRange[0] &&
+        product.basePrice <= filters.priceRange[1]
+      );
     });
 
     // Apply color filter (check variants)
@@ -196,22 +197,20 @@ export default function SubCategoryPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
       <div className="bg-white border-b">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
-              {/* Breadcrumb using shadcn/ui */}
-              <Breadcrumb className="hidden sm:block">
-                  <BreadcrumbList>
-                      <BreadcrumbItem>
-                          <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
-                      </BreadcrumbItem>
-                      <BreadcrumbSeparator />
-                      <BreadcrumbItem>
-                          {categoryTitle}
-                      </BreadcrumbItem>
-                  </BreadcrumbList>
-              </Breadcrumb>
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
+          {/* Breadcrumb using shadcn/ui */}
+          <Breadcrumb className="hidden sm:block">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>{categoryTitle}</BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
-              {/* Back button */}
-          </div>
+          {/* Back button */}
+        </div>
       </div>
 
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">

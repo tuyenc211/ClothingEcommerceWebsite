@@ -62,7 +62,9 @@ export default function Header() {
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
-  const parentCategories = categories.filter((cat) => !cat.parentId && cat.isActive);
+  const parentCategories = categories.filter(
+    (cat) => !cat.parentId && cat.isActive
+  );
 
   return (
     <>
@@ -118,9 +120,9 @@ export default function Header() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link href="/" className="text-2xl font-bold">
+              <a href="/" className="text-2xl font-bold">
                 <Logo />
-              </Link>
+              </a>
             </div>
 
             {/* Desktop Navigation with NavigationMenu */}
@@ -129,16 +131,17 @@ export default function Header() {
                 <NavigationMenuList>
                   {/* Trang chủ */}
                   <NavigationMenuItem className="px-2">
-                    <Link href="/">
+                    <a href="/">
                       <NavigationMenuLink asChild>
                         <span className="uppercase font-bold">Trang chủ</span>
                       </NavigationMenuLink>
-                    </Link>
+                    </a>
                   </NavigationMenuItem>
 
                   {parentCategories.map((parent) => {
                     const children = categories.filter(
-                      (child) => child.parentId?.id === parent.id && child.isActive
+                      (child) =>
+                        child.parentId?.id === parent.id && child.isActive
                     );
                     if (children.length === 0) {
                       return (

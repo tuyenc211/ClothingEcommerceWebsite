@@ -90,11 +90,8 @@ const useAuthStore = create<AuthStore>()(
 
           if (!hasValidRole) {
             set({ isLoggingIn: false });
-            toast.error("Bạn không có quyền truy cập vào trang quản trị");
             throw new Error("Unauthorized access");
           }
-
-          // Backend sẽ set cookie, frontend lưu user data
           set({ authUser: user, accessToken: res.data.accesstoken });
           toast.success(
             `Đăng nhập thành công với vai trò ${user.roles?.[0]?.name?.toLowerCase()}`
