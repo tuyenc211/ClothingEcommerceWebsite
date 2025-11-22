@@ -32,8 +32,10 @@ import { Plus, Edit, Trash2, Palette } from "lucide-react";
 import Link from "next/link";
 
 export default function ColorListPage() {
-  const { colors, deleteColor, fetchColors, isLoading, error } =
-    useColorStore();
+  const { colors, deleteColor, fetchColors, isLoading } = useColorStore();
+  useEffect(() => {
+    fetchColors();
+  }, [fetchColors]);
   const [deleteModal, setDeleteModal] = useState<{
     open: boolean;
     colorId: number | null;
@@ -53,9 +55,9 @@ export default function ColorListPage() {
     });
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deleteModal.colorId) {
-      deleteColor(deleteModal.colorId);
+      await deleteColor(deleteModal.colorId);
       setDeleteModal({ open: false, colorId: null, colorName: "" });
     }
   };
@@ -64,26 +66,10 @@ export default function ColorListPage() {
     setDeleteModal({ open: false, colorId: null, colorName: "" });
   };
 
-  // Fetch colors when component mounts
-  useEffect(() => {
-    fetchColors();
-  }, [fetchColors]);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">Lỗi: {error}</p>
-          <Button onClick={() => fetchColors()}>Thử lại</Button>
-        </div>
       </div>
     );
   }

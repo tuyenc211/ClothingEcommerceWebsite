@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -107,6 +108,7 @@ export default function ProductListPage() {
                 <TableHead>Ảnh</TableHead>
                 <TableHead>Giá Gốc</TableHead>
                 <TableHead>Danh Mục</TableHead>
+                <TableHead>Trạng Thái</TableHead>
                 <TableHead className="text-right">Thao Tác</TableHead>
               </TableRow>
             </TableHeader>
@@ -157,6 +159,15 @@ export default function ProductListPage() {
                       <span className="text-sm">
                         {category?.name || "Chưa phân loại"}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          product.isPublished ? "success" : "destructive"
+                        }
+                      >
+                        {product.isPublished ? "Hoạt động" : "Không hoạt động"}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

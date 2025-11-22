@@ -32,7 +32,10 @@ import { Plus, Edit, Trash2, Ruler } from "lucide-react";
 import Link from "next/link";
 
 export default function SizeListPage() {
-  const { sizes, deleteSize, fetchSizes, isLoading, error } = useSizeStore();
+  const { sizes, deleteSize, fetchSizes, isLoading } = useSizeStore();
+  useEffect(() => {
+    fetchSizes();
+  }, [fetchSizes]);
   const [deleteModal, setDeleteModal] = useState<{
     open: boolean;
     sizeId: number | null;
@@ -63,12 +66,6 @@ export default function SizeListPage() {
   const handleDeleteCancel = () => {
     setDeleteModal({ open: false, sizeId: null, sizeName: "" });
   };
-
-  // Fetch sizes when component mounts
-  useEffect(() => {
-    fetchSizes();
-  }, [fetchSizes]);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -76,19 +73,6 @@ export default function SizeListPage() {
       </div>
     );
   }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">Lỗi: {error}</p>
-          <Button onClick={() => fetchSizes()}>Thử lại</Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Sort sizes by sortOrder
   const sortedSizes = [...sizes].sort((a, b) => a.sortOrder - b.sortOrder);
 
   // Pagination calculation
