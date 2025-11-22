@@ -72,15 +72,14 @@ export default function OrderDetailPage() {
       <div className="p-6 max-w-4xl mx-auto text-center">
         <div className="mt-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Order Not Found
+            Không tìm thấy đơn hàng
           </h2>
           <p className="text-gray-600 mb-6">
-            The order you&apos;re looking for doesn&apos;t exist or may have
-            been deleted.
+            Đơn hàng bạn tìm kiếm không tồn tại hoặc có thể đã bị xóa.
           </p>
           <Button onClick={handleGoBack}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Orders
+            Quay lại đơn hàng
           </Button>
         </div>
       </div>
@@ -99,7 +98,7 @@ export default function OrderDetailPage() {
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Invoice</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Hóa đơn</h1>
                 <p className="text-gray-600">Order #{currentOrder.code}</p>
               </div>
             </div>

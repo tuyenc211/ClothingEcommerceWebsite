@@ -19,7 +19,7 @@ export function OrderStatsCards() {
 
   const stats = [
     {
-      title: "Total Orders",
+      title: "Tổng đơn hàng",
       value: totalOrders,
       icon: ShoppingBag,
       change: "+12%",
@@ -27,7 +27,7 @@ export function OrderStatsCards() {
       color: "blue",
     },
     {
-      title: "Total Revenue",
+      title: "Tổng doanh thu",
       value: formatCurrency(totalRevenue),
       icon: DollarSign,
       change: "+18%",
@@ -35,7 +35,7 @@ export function OrderStatsCards() {
       color: "green",
     },
     {
-      title: "Pending Orders",
+      title: "Đơn chờ xử lý",
       value: pendingOrders.toLocaleString(),
       icon: Clock,
       change: "-5%",
@@ -43,7 +43,7 @@ export function OrderStatsCards() {
       color: "yellow",
     },
     {
-      title: "Completed Orders",
+      title: "Đơn hoàn thành",
       value: deliveredOrders.toLocaleString(),
       icon: CheckCircle,
       change: "+22%",
@@ -96,7 +96,7 @@ export function OrderStatsCards() {
                 >
                   {stat.change}
                 </span>
-                <span className="text-gray-500 ml-1">from last month</span>
+                <span className="text-gray-500 ml-1">so với tháng trước</span>
               </div>
             </CardContent>
           </Card>

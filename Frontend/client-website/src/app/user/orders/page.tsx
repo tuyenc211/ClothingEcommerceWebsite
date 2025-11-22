@@ -72,8 +72,8 @@ export default function OrdersPage() {
     return (
       <div className="p-2 md:p-6  max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Orders</h1>
-          <p className="text-gray-600">Manage and track your orders</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Đơn hàng</h1>
+          <p className="text-gray-600">Quản lý và theo dõi đơn hàng</p>
         </div>
 
         {/* Loading skeleton */}
@@ -95,9 +95,9 @@ export default function OrdersPage() {
       <div className="p-1 md:p-6 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Orders</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Đơn hàng</h1>
           <p className="text-gray-600">
-            Manage and track your orders ({orders.length} total)
+            Quản lý và theo dõi đơn hàng ({orders.length} tổng cộng)
           </p>
         </div>
         {/* Orders Table */}
@@ -147,8 +147,8 @@ export default function OrdersPage() {
 
         {/* Results info */}
         <div className="mt-4 text-center text-sm text-gray-500">
-          Showing {startIndex + 1}-{Math.min(endIndex, sortedOrders.length)} of{" "}
-          {sortedOrders.length} orders
+          Hiển thị {startIndex + 1}-{Math.min(endIndex, sortedOrders.length)}{" "}
+          trong {sortedOrders.length} đơn hàng
         </div>
       </div>
     </UserLayout>
