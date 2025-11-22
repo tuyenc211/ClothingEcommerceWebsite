@@ -138,13 +138,12 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new NotFoundException("User not found"));
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            throw new BadRequestException("Old password is incorrect");
+            throw new BadRequestException("Mật khẩu cũ không đúng!!");
         }
-        if (!request.getNewPassword().equals(request.getNewPassword())) {
-            throw new BadRequestException("New password and confirm password do not match");
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new BadRequestException("Mật khẩu mới phải khác với mật khẩu cũ!!");
         }
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-
         userRepository.save(user);
     }
 
@@ -170,7 +169,7 @@ public class UserServiceImpl implements UserService {
 
         user.setPassword(passwordEncoder.encode(password));
         userRepository.save(user);
-        return new MessageResponse("Mat khau thay doi thanh cong!");
+        return new MessageResponse("Mật khẩu thay đổi thành công!!");
     }
 
     @Override
