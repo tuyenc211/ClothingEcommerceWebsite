@@ -535,13 +535,15 @@ export default function ProductDetailPage() {
                   <h3 className="text-xl font-semibold text-gray-900">
                     Đánh giá của khách hàng
                   </h3>
-                  <ReviewForm
-                    productId={product.id}
-                    orderId={orderId}
-                    onSuccess={() => {
-                      fetchReviewsByProduct(product.id);
-                    }}
-                  />
+                  {orderId > 0 && (
+                    <ReviewForm
+                      productId={product.id}
+                      orderId={orderId}
+                      onSuccess={() => {
+                        fetchReviewsByProduct(product.id);
+                      }}
+                    />
+                  )}
                 </div>
                 {/* Review List */}
                 <ReviewList productId={product.id} />

@@ -75,9 +75,9 @@ export default function OrdersPage() {
     <div className="p-1 md:p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Orders</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Đơn hàng</h1>
         <p className="text-gray-600">
-          Manage and track your orders ({orders.length} total)
+          Quản lý và theo dõi đơn hàng ({orders.length} tổng cộng)
         </p>
       </div>
 
@@ -130,8 +130,8 @@ export default function OrdersPage() {
 
       {/* Results info */}
       <div className="mt-4 text-center text-sm text-gray-500">
-        Showing {startIndex + 1}-{Math.min(endIndex, orders.length)} of{" "}
-        {orders.length} orders
+        Hiển thị {startIndex + 1}-{Math.min(endIndex, orders.length)} trong{" "}
+        {orders.length} đơn hàng
       </div>
     </div>
   );

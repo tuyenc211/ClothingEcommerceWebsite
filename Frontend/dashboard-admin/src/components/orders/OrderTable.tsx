@@ -82,9 +82,11 @@ export function OrderTable({ orders }: OrderTableProps) {
   if (orders.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-lg shadow">
-        <p className="text-gray-500 text-lg font-medium">No orders found</p>
+        <p className="text-gray-500 text-lg font-medium">
+          Không tìm thấy đơn hàng
+        </p>
         <p className="text-gray-400 text-sm mt-2">
-          Try adjusting your filters to see more results
+          Thử điều chỉnh bộ lọc để xem thêm kết quả
         </p>
       </div>
     );
@@ -156,7 +158,7 @@ export function OrderTable({ orders }: OrderTableProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleViewInvoice(order.id)}
-                  title="View Invoice"
+                  title="Xem hóa đơn"
                 >
                   <Eye className="h-4 w-4" />
                 </Button>

@@ -13,7 +13,7 @@ import { Eye } from "lucide-react";
 import { Order } from "@/stores/orderStore";
 import { OrderStatusBadge, PaymentMethodBadge } from "./StatusBadges";
 import { useRouter } from "next/navigation";
-import {formatDate, formatPrice} from "@/lib/utils";
+import { formatDate, formatPrice } from "@/lib/utils";
 interface OrderTableProps {
   orders: Order[];
 }
@@ -25,14 +25,14 @@ export function OrderTable({ orders }: OrderTableProps) {
     router.push(`/user/orders/${orderId}`);
   };
 
-
-
   if (orders.length === 0) {
     return (
       <div className="bg-white rounded-lg border p-8 text-center">
-        <div className="text-gray-500 text-lg mb-2">No orders found</div>
+        <div className="text-gray-500 text-lg mb-2">
+          Không tìm thấy đơn hàng
+        </div>
         <div className="text-gray-400">
-          Try adjusting your filters to see more results
+          Thử điều chỉnh bộ lọc để xem thêm kết quả
         </div>
       </div>
     );
@@ -44,22 +44,22 @@ export function OrderTable({ orders }: OrderTableProps) {
         <TableHeader>
           <TableRow className="bg-gray-50">
             <TableHead className="font-semibold text-gray-700">
-              INVOICE NO
+              MÃ ĐƠN HÀNG
             </TableHead>
             <TableHead className="font-semibold text-gray-700">
-              ORDER TIME
+              THỜI GIAN ĐẶT
             </TableHead>
             <TableHead className="font-semibold text-gray-700">
-              METHOD
+              PHƯƠNG THỨC
             </TableHead>
             <TableHead className="font-semibold text-gray-700">
-              AMOUNT
+              SỐ TIỀN
             </TableHead>
             <TableHead className="font-semibold text-gray-700">
-              STATUS
+              TRẠNG THÁI
             </TableHead>
             <TableHead className="font-semibold text-gray-700">
-              INVOICE
+              HÓA ĐƠN
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -86,7 +86,7 @@ export function OrderTable({ orders }: OrderTableProps) {
                     size="sm"
                     className="h-8 w-8 p-0"
                     onClick={() => handleViewInvoice(order.id)}
-                    title="View Invoice"
+                    title="Xem hóa đơn"
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
