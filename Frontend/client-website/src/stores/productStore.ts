@@ -79,7 +79,10 @@ export const useProductStore = create<ProductState>()(
           const res = await privateClient.get("/products");
           const data = Array.isArray(res.data?.data) ? res.data.data : res.data;
           console.log(data);
-          set({ products: data, isLoading: false });
+          set({
+            products: data.filter((product: Product) => product.isPublished),
+            isLoading: false,
+          });
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
           const message =
@@ -138,9 +141,8 @@ export const useProductStore = create<ProductState>()(
       },
       getPublishedProducts: () => {
         const { products } = get();
-        return products.filter((product) => product.isPublished);
+        return products;
       },
-
       setError: (error) => {
         set({ error });
       },
