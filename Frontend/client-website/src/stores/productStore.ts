@@ -76,11 +76,11 @@ export const useProductStore = create<ProductState>()(
       fetchProducts: async () => {
         set({ isLoading: true, error: null });
         try {
-          const res = await privateClient.get("/products");
+          const res = await privateClient.get("/products/published");
           const data = Array.isArray(res.data?.data) ? res.data.data : res.data;
           console.log(data);
           set({
-            products: data.filter((product: Product) => product.isPublished),
+            products: data,
             isLoading: false,
           });
         } catch (error) {

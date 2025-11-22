@@ -11,7 +11,7 @@ import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
 import { useEffect } from "react";
 export default function Home() {
-  const { products, fetchProducts } = useProductStore();
+  const { fetchProducts } = useProductStore();
   const { fetchColors } = useColorStore();
   const { fetchSizes } = useSizeStore();
 
@@ -19,8 +19,7 @@ export default function Home() {
     fetchProducts();
     fetchColors();
     fetchSizes();
-  }, [fetchProducts, fetchColors, fetchSizes]);
-  console.log(products);
+  }, []);
   return (
     <div className=" mx-auto">
       <Heroslide />
