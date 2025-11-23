@@ -2,11 +2,12 @@
 
 import React, { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { useProductStore } from "@/stores/productStore";
+import {Product, useProductStore} from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
 import ProductGrid from "@/components/common/ProductGrid";
+import {productKeys} from "@/services/productService";
 import { convertProductToItemProps } from "@/components/common/ProductItem";
 import {
   Breadcrumb,
@@ -16,6 +17,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { priceRanges } from "@/lib/utils";
+import {queryClient} from "@/lib/react-query";
 
 // Filter interface
 interface Filters {
@@ -71,7 +73,7 @@ export default function ParentCategoryPage() {
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
-    let filtered = getPublishedProducts();
+      let filtered = queryClient.getQueryData<Product[]>(productKeys.lists()) || [];
     if (parentCategory) {
       const categoryIds = [
         parentCategory.id,

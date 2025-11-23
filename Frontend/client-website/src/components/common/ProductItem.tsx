@@ -6,6 +6,7 @@ import { formatPrice } from "@/lib/utils";
 import { toast } from "sonner";
 import { Heart } from "lucide-react";
 import { Button } from "../ui/button";
+import { Rating, RatingButton } from "../ui/shadcn-io/rating";
 
 export interface ProductItemProps {
   id: number;
@@ -33,6 +34,12 @@ export const convertProductToItemProps = (
     basePrice: product.basePrice,
     images: product.images?.sort((a, b) => a.position - b.position) || [],
     isOutOfStock,
+    rating:
+      product?.reviews && product.reviews.length > 0
+        ? product.reviews.reduce((sum, review) => sum + review.rating, 0) /
+          product.reviews.length
+        : 0,
+    reviewCount: product.reviews?.length || 0,
   };
 };
 
@@ -44,6 +51,8 @@ const ProductItem: React.FC<ProductItemProps> = ({
   isHovered: isHoveredFromParent,
   isFocused = false,
   isOutOfStock = false,
+  rating,
+  reviewCount,
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -51,6 +60,16 @@ const ProductItem: React.FC<ProductItemProps> = ({
   const imageUrls = images.map((img) => img.image_url);
   const currentImage =
     imageUrls[currentImageIndex] || "/images/placeholder.jpg";
+
+  const renderStars = (rating: number) => {
+    return (
+      <Rating value={rating} readOnly>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <RatingButton className="text-yellow-500" key={index} />
+        ))}
+      </Rating>
+    );
+  };
 
   return (
     <div
@@ -112,21 +131,19 @@ const ProductItem: React.FC<ProductItemProps> = ({
         >
           {name}
         </h3>
-
         {/* Price */}
         <div className="mb-2">
           <span className="text-lg font-bold text-gray-900">
             {formatPrice(basePrice)}
           </span>
         </div>
-
-        {/* Rating
+        Rating
         <div className="flex items-center justify-center gap-1">
           <div className="flex text-yellow-400 text-sm">
-            {renderStars(rating)}
+            {renderStars(rating || 0)}
           </div>
           <span className="text-xs text-gray-500">({reviewCount} Reviews)</span>
-        </div> */}
+        </div>
       </div>
     </div>
   );

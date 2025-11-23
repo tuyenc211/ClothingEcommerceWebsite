@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CreditCard, MapPin, Settings } from "lucide-react";
 import { toast } from "sonner";
-
+import { useCartQuery } from "@/services/cartService";
 import { useCartStore } from "@/stores/cartStore";
 import { useProductStore } from "@/stores/productStore";
 import { useCouponStore } from "@/stores/couponStore";
@@ -44,9 +44,8 @@ export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { authUser, fetchAddresses } = useAuthStore();
-
+  const { data: items = [], isLoading: isLoadingCart } = useCartQuery();
   const {
-    items,
     getCartSummary,
     clearCart,
     applyCoupon,
