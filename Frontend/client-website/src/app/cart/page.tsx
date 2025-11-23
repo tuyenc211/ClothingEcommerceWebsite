@@ -25,10 +25,11 @@ import {
 } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { EnrichedCartItem } from "@/types/cart";
+import { useCartQuery } from "@/services/cartService";
 
 export default function CartPage() {
+  const { data: items = [], isLoading: isLoadingCart } = useCartQuery();
   const {
-    items,
     getTotalItems,
     getCartSummary,
     updateQuantity,
@@ -36,7 +37,6 @@ export default function CartPage() {
     clearCart,
     fetchCartItems,
     createCart,
-    isLoading,
   } = useCartStore();
 
   const { authUser } = useAuthStore();
@@ -117,7 +117,7 @@ export default function CartPage() {
         </div>
 
         {/* Main Content */}
-        {isLoading ? (
+        {isLoadingCart ? (
           <div className="flex items-center justify-center py-20">
             <div className="flex flex-col items-center space-y-4">
               <div className="relative">
@@ -301,8 +301,9 @@ export default function CartPage() {
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Phí vận chuyển:{formatPrice(summary.shippingFee)}</span>
-
+                      <span className="text-gray-600">
+                        Phí vận chuyển:{formatPrice(summary.shippingFee)}
+                      </span>
                     </div>
                   </div>
 
