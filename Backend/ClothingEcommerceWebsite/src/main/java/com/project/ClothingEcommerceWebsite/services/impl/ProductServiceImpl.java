@@ -25,6 +25,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductImageRepository productImageRepository;
     private final ReviewRepository reviewRepository;
     private final ColorRepository colorRepository;
+    private final CartItemRepository cartItemRepository;
     private final CategoryRepository categoryRepository;
     private final SizeRepository sizeRepository;
     private final OrderItemRepository orderItemRepository;
@@ -388,6 +389,11 @@ public class ProductServiceImpl implements ProductService {
         }
 
         if (variantsChanged) {
+            List<ProductVariant> variantsToDelete = productVariantRepository.findAllByProductId(product.getId());
+            for (ProductVariant variant : variantsToDelete) {
+                cartItemRepository.deleteAllByVariantId(variant.getId());
+            }
+            cartItemRepository.flush();
             inventoryRepository.deleteAllByProductVariant_Product_Id(product.getId());
             inventoryRepository.flush();
             productVariantRepository.deleteAllByProductId(product.getId());
