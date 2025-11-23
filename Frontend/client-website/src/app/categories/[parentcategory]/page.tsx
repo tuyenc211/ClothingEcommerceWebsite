@@ -2,20 +2,22 @@
 
 import React, { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { useProductStore } from "@/stores/productStore";
+import { Product, useProductStore } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
 import ProductGrid from "@/components/common/ProductGrid";
+import { productKeys, useProductsQuery } from "@/services/productService";
 import { convertProductToItemProps } from "@/components/common/ProductItem";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
+  Link,
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { priceRanges } from "@/lib/utils";
+import { queryClient } from "@/lib/react-query";
 
 // Filter interface
 interface Filters {
@@ -27,6 +29,7 @@ interface Filters {
   sortOrder: "asc" | "desc";
 }
 export default function ParentCategoryPage() {
+  const { data: products = [] } = useProductsQuery();
   const { parentcategory } = useParams();
   const [displayCount, setDisplayCount] = useState(12);
   const [isLoading, setIsLoading] = useState(false);
@@ -71,7 +74,7 @@ export default function ParentCategoryPage() {
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
-    let filtered = getPublishedProducts();
+    let filtered = products;
     if (parentCategory) {
       const categoryIds = [
         parentCategory.id,
@@ -233,7 +236,7 @@ export default function ParentCategoryPage() {
           <Breadcrumb className="hidden sm:block">
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+                <Link href="/">Trang chủ</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>{categoryTitle}</BreadcrumbItem>

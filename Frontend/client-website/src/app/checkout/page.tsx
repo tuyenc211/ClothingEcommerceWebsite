@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   Breadcrumb,
   BreadcrumbSeparator,
-  BreadcrumbLink,
   BreadcrumbItem,
   BreadcrumbList,
 } from "@/components/ui/breadcrumb";
@@ -14,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CreditCard, MapPin, Settings } from "lucide-react";
 import { toast } from "sonner";
-
+import { useCartQuery } from "@/services/cartService";
 import { useCartStore } from "@/stores/cartStore";
 import { useProductStore } from "@/stores/productStore";
 import { useCouponStore } from "@/stores/couponStore";
@@ -44,9 +43,8 @@ export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { authUser, fetchAddresses } = useAuthStore();
-
+  const { data: items = [], isLoading: isLoadingCart } = useCartQuery();
   const {
-    items,
     getCartSummary,
     clearCart,
     applyCoupon,
@@ -399,15 +397,15 @@ export default function CheckoutPage() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+                <Link href="/">Trang chủ</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/cart">Giỏ hàng</BreadcrumbLink>
+                <Link href="/cart">Giỏ hàng</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/checkout">Thanh toán</BreadcrumbLink>
+                <Link href="/checkout">Thanh toán</Link>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
