@@ -24,25 +24,25 @@ import ReviewForm from "@/app/user/reviews/_component/ReviewForm";
 import ReviewList from "@/app/user/reviews/_component/ReviewList";
 import { useReviewStore } from "@/stores/reviewStore";
 import { Input } from "@/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
+import privateClient from "@/lib/axios";
 
 export default function ProductDetailPage() {
   const { productId } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isLoading, getProductById } = useProductStore();
-  const [product, setProduct] = useState<Product | null>(null);
-  useEffect(() => {
-    const fetchProduct = async () => {
-      if (productId) {
-        const product = await getProductById(parseInt(productId as string));
-        if (product) {
-          setProduct(product);
-        }
-      }
-    };
+  const {
+    data: product,
+    isLoading,
+  }: { data: Product | undefined; isLoading: boolean } = useQuery({
+    queryKey: ["product", parseInt(productId as string)],
+    queryFn: async () => {
+      const response = await privateClient.get(`/products/${productId}`);
+      return response.data?.data || response.data;
+    },
+    enabled: !!productId,
+  });
 
-    fetchProduct();
-  }, [productId, getProductById]);
   const { addToCart, buyNow } = useCartStore();
   const { fetchReviewsByProduct, reviews } = useReviewStore();
   const orderId = parseInt(searchParams.get("orderId") || "0", 10);

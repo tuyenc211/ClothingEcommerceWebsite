@@ -10,24 +10,25 @@ import { useProductStore } from "@/stores/productStore";
 import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
 import { useEffect } from "react";
+import {useProductsQuery} from "@/services/productService";
 export default function Home() {
-  const { fetchProducts } = useProductStore();
+    const { data: products = [], isLoading, error } = useProductsQuery();
   const { fetchColors } = useColorStore();
   const { fetchSizes } = useSizeStore();
 
   useEffect(() => {
-    fetchProducts();
+
     fetchColors();
     fetchSizes();
-  }, [fetchProducts, fetchColors, fetchSizes]);
+  }, [ fetchColors, fetchSizes]);
   return (
     <div className=" mx-auto">
       <Heroslide />
-      <FeaturedProducts />
+      <FeaturedProducts  products={products}/>
       <GridLetter />
-      <BestSellerProduct />
+      <BestSellerProduct   products={products}/>
       <OfferBanner />
-      <NewsProduct />
+      <NewsProduct   products={products}/>
       <ListPolicy />
     </div>
   );

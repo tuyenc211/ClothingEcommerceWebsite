@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { useProductStore } from "@/stores/productStore";
+import {Product, useProductStore} from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
@@ -16,6 +16,8 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import {productKeys} from "@/services/productService";
+import {queryClient} from "@/lib/react-query";
 
 interface Filters {
   priceRange: [number, number];
@@ -56,7 +58,7 @@ export default function SubCategoryPage() {
   // Filter and sort products
   const filteredProducts = useMemo(() => {
     // Start with published products
-    let filtered = getPublishedProducts();
+      let filtered = queryClient.getQueryData<Product[]>(productKeys.lists()) || [];
 
     // Filter by subcategory
     if (subCategory) {
