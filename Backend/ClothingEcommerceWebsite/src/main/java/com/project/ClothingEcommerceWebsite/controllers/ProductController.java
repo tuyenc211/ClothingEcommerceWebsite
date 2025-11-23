@@ -73,20 +73,19 @@ public class ProductController {
     public ResponseEntity<List<ProductResponse>> getAllProduct() {
         return ResponseEntity.ok(productService.getAllProduct());
     }
-    @GetMapping("/published")
-    public ResponseEntity<List<ProductResponse>> getAllProductIsPublished() {
-        return ResponseEntity.ok(productService.getAllProductIsPublished());
-    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getProductById(@PathVariable Long id) {
         ProductResponse product = productService.getProductById(id);
         return ResponseEntity.ok(product);
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody CreateProductVariantRequest request) {
         Product product = productService.updateProduct(id, request);
         return ResponseEntity.ok(product);
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);

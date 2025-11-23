@@ -1,7 +1,14 @@
 package com.project.ClothingEcommerceWebsite.dtos.respond;
 
+import lombok.*;
+
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ReviewResponse {
     private Long id;
     private Long productId;
