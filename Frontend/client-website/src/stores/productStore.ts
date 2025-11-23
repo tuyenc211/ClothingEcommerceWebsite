@@ -76,7 +76,7 @@ export const useProductStore = create<ProductState>()(
       fetchProducts: async () => {
         set({ isLoading: true, error: null });
         try {
-          const res = await privateClient.get("/products/published");
+          const res = await privateClient.get("/products");
           const data = Array.isArray(res.data?.data) ? res.data.data : res.data;
           console.log(data);
           set({
@@ -141,7 +141,7 @@ export const useProductStore = create<ProductState>()(
       },
       getPublishedProducts: () => {
         const { products } = get();
-        return products;
+        return products.filter((product) => product.isPublished === true);
       },
       setError: (error) => {
         set({ error });

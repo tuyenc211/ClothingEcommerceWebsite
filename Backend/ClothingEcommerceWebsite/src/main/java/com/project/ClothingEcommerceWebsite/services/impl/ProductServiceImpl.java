@@ -1,10 +1,7 @@
 package com.project.ClothingEcommerceWebsite.services.impl;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateProductVariantRequest;
-import com.project.ClothingEcommerceWebsite.dtos.respond.ColorResponse;
-import com.project.ClothingEcommerceWebsite.dtos.respond.ProductImageResponse;
-import com.project.ClothingEcommerceWebsite.dtos.respond.ProductResponse;
-import com.project.ClothingEcommerceWebsite.dtos.respond.SizeResponse;
+import com.project.ClothingEcommerceWebsite.dtos.respond.*;
 import com.project.ClothingEcommerceWebsite.exception.BadRequestException;
 import com.project.ClothingEcommerceWebsite.models.*;
 import com.project.ClothingEcommerceWebsite.repositories.*;
@@ -26,6 +23,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
+    private final ReviewRepository reviewRepository;
     private final ColorRepository colorRepository;
     private final CategoryRepository categoryRepository;
     private final SizeRepository sizeRepository;
@@ -90,6 +88,7 @@ public class ProductServiceImpl implements ProductService {
         List<ProductImage> allImages = productImageRepository.findAllByProductIdIn(productIds);
         List<ProductVariant> allVariants = productVariantRepository.findAllByProductIdIn(productIds);
         List<Inventory> allInventories = inventoryRepository.findAllByProductVariant_Product_IdIn(productIds);
+        List<Review> allReviews = reviewRepository.findAllByProduct_IdIn(productIds);
 
         Map<Long, List<ProductImage>> imagesByProduct = allImages.stream()
                 .collect(Collectors.groupingBy(img -> img.getProduct().getId()));
@@ -100,6 +99,8 @@ public class ProductServiceImpl implements ProductService {
         Map<Long, List<Inventory>> inventoriesByProduct = allInventories.stream()
                 .collect(Collectors.groupingBy(inv -> inv.getProductVariant().getProduct().getId()));
 
+        Map<Long, List<Review>> reviewsByProduct = allReviews.stream()
+                .collect(Collectors.groupingBy(r -> r.getProduct().getId()));
 
         return products.stream()
                 .map(product -> {
@@ -108,12 +109,27 @@ public class ProductServiceImpl implements ProductService {
                     List<ProductImage> images = imagesByProduct.getOrDefault(productId, Collections.emptyList());
                     List<ProductVariant> variants = variantsByProduct.getOrDefault(productId, Collections.emptyList());
                     List<Inventory> inventories = inventoriesByProduct.getOrDefault(productId, Collections.emptyList());
+                    List<Review> reviews = reviewsByProduct.getOrDefault(productId, Collections.emptyList());
 
                     List<ProductImageResponse> imageDTOs = images.stream()
                             .map(image -> ProductImageResponse.builder()
                                     .id(image.getId())
                                     .image_url(image.getImageUrl())
                                     .position(image.getPosition())
+                                    .build())
+                            .collect(Collectors.toList());
+
+
+                    List<ReviewResponse> reviewDTOs = reviews.stream()
+                            .map(review -> ReviewResponse.builder()
+                                    .id(review.getId())
+                                    .productId(review.getProduct().getId())
+                                    .userId(review.getUser().getId())
+                                    .userName(review.getUser().getFullName())
+                                    .rating(review.getRating())
+                                    .title(review.getTitle())
+                                    .content(review.getContent())
+                                    .createdAt(review.getCreatedAt())
                                     .build())
                             .collect(Collectors.toList());
 
@@ -152,85 +168,7 @@ public class ProductServiceImpl implements ProductService {
                             .sizes(sizeDTOs)
                             .colors(colorDTOs)
                             .images(imageDTOs)
-                            .build();
-        }).collect(Collectors.toList());
-    }
-
-    @Override
-    public List<ProductResponse> getAllProductIsPublished() {
-        List<Product> products = productRepository.findAll();
-        if (products.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<Long> productIds = products.stream()
-                .map(Product::getId)
-                .collect(Collectors.toList());
-
-        List<ProductImage> allImages = productImageRepository.findAllByProductIdIn(productIds);
-        List<ProductVariant> allVariants = productVariantRepository.findAllByProductIdIn(productIds);
-        List<Inventory> allInventories = inventoryRepository.findAllByProductVariant_Product_IdIn(productIds);
-
-        Map<Long, List<ProductImage>> imagesByProduct = allImages.stream()
-                .collect(Collectors.groupingBy(img -> img.getProduct().getId()));
-
-        Map<Long, List<ProductVariant>> variantsByProduct = allVariants.stream()
-                .collect(Collectors.groupingBy(v -> v.getProduct().getId()));
-
-        Map<Long, List<Inventory>> inventoriesByProduct = allInventories.stream()
-                .collect(Collectors.groupingBy(inv -> inv.getProductVariant().getProduct().getId()));
-
-        return products.stream()
-                .filter(Product::getIsPublished)
-                .map(product -> {
-                    Long productId = product.getId();
-
-                    List<ProductImage> images = imagesByProduct.getOrDefault(productId, Collections.emptyList());
-                    List<ProductVariant> variants = variantsByProduct.getOrDefault(productId, Collections.emptyList());
-                    List<Inventory> inventories = inventoriesByProduct.getOrDefault(productId, Collections.emptyList());
-
-                    List<ProductImageResponse> imageDTOs = images.stream()
-                            .map(image -> ProductImageResponse.builder()
-                                    .id(image.getId())
-                                    .image_url(image.getImageUrl())
-                                    .position(image.getPosition())
-                                    .build())
-                            .collect(Collectors.toList());
-
-                    Set<SizeResponse> sizeDTOs = variants.stream()
-                            .map(ProductVariant::getSize)
-                            .filter(Objects::nonNull)
-                            .map(size -> SizeResponse.builder()
-                                    .id(size.getId())
-                                    .name(size.getName())
-                                    .code(size.getCode())
-                                    .sortOrder(size.getSortOrder())
-                                    .build())
-                            .collect(Collectors.toSet());
-
-                    Set<ColorResponse> colorDTOs = variants.stream()
-                            .map(ProductVariant::getColor)
-                            .filter(Objects::nonNull)
-                            .map(color -> ColorResponse.builder()
-                                    .id(color.getId())
-                                    .name(color.getName())
-                                    .code(color.getCode())
-                                    .build())
-                            .collect(Collectors.toSet());
-
-                    return ProductResponse.builder()
-                            .id(product.getId())
-                            .sku(product.getSku())
-                            .name(product.getName())
-                            .slug(product.getSlug())
-                            .description(product.getDescription())
-                            .basePrice(product.getBasePrice())
-                            .category(product.getCategory())
-                            .isPublished(product.getIsPublished())
-                            .variants(variants)
-                            .inventories(inventories)
-                            .sizes(sizeDTOs)
-                            .colors(colorDTOs)
-                            .images(imageDTOs)
+                            .reviews(reviewDTOs)
                             .build();
         }).collect(Collectors.toList());
     }
@@ -358,17 +296,24 @@ public class ProductServiceImpl implements ProductService {
             removedVariantKeys.removeAll(newVariantKeys);
 
             if (!removedVariantKeys.isEmpty()) {
+                List<String> problematicVariants = new ArrayList<>();
+
                 for (ProductVariant variant : oldVariants) {
                     String key = variant.getSize().getId() + "-" + variant.getColor().getId();
                     if (removedVariantKeys.contains(key)) {
                         if (orderItemRepository.existsByVariantId(variant.getId())) {
-                            throw new BadRequestException(
-                                    "Không thể xóa biến thể Size " + variant.getSize().getName() +
-                                            ", Màu " + variant.getColor().getName() +
-                                            " vì đã có đơn hàng!!"
+                            problematicVariants.add(
+                                    "Size " + variant.getSize().getName() + " - Màu " + variant.getColor().getName()
                             );
                         }
                     }
+                }
+
+                if (!problematicVariants.isEmpty()) {
+                    throw new BadRequestException(
+                            "Không thể xóa các biến thể sau vì đã có đơn hàng: " +
+                                    String.join(", ", problematicVariants)
+                    );
                 }
             }
         }
@@ -480,7 +425,6 @@ public class ProductServiceImpl implements ProductService {
                 variant.setPrice(product.getBasePrice());
                 productVariantRepository.save(variant);
             }
-
         }
 
         return product;
@@ -498,9 +442,13 @@ public class ProductServiceImpl implements ProductService {
         productVariantRepository.deleteAllByProductId(product.getId());
         List<ProductImage> productImages = productImageRepository.findAllByProductId(product.getId());
         for (ProductImage image : productImages) {
-            cloudinaryService.deleteImage(CloudinaryUtil.extractPublicIdFromUrl(image.getImageUrl()));
-            productImageRepository.delete(image);
+            try {
+                cloudinaryService.deleteImage(CloudinaryUtil.extractPublicIdFromUrl(image.getImageUrl()));
+            } catch (Exception e) {
+                System.err.println("Warning: Could not delete image from Cloudinary: " + e.getMessage());
+            }
         }
+        productImageRepository.deleteAll(productImages);
         productRepository.delete(product);
     }
 

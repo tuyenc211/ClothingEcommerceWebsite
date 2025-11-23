@@ -25,6 +25,7 @@ public class ProductResponse {
     private List<ProductImageResponse> images;
     private List<ProductVariant> variants;
     private List<Inventory> inventories;
+    private List<ReviewResponse> reviews;
 
 }
 

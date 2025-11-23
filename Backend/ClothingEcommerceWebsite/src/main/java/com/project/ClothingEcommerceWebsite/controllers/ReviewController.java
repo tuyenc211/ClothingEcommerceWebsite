@@ -1,14 +1,10 @@
-// controllers/ReviewController.java
 package com.project.ClothingEcommerceWebsite.controllers;
 
 import com.project.ClothingEcommerceWebsite.dtos.request.*;
-import com.project.ClothingEcommerceWebsite.dtos.respond.ReviewResponse;
 import com.project.ClothingEcommerceWebsite.models.Review;
 import com.project.ClothingEcommerceWebsite.services.ReviewService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
