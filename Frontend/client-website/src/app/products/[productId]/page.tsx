@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Breadcrumb,
   BreadcrumbSeparator,
-  BreadcrumbLink,
+  Link,
   BreadcrumbItem,
   BreadcrumbList,
 } from "@/components/ui/breadcrumb";
@@ -247,27 +247,27 @@ export default function ProductDetailPage() {
           <Breadcrumb className="hidden sm:block">
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+                  <Link href="/">Trang chủ</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/categories">Danh mục</BreadcrumbLink>
+                <Link href="/categories">Danh mục</Link>
               </BreadcrumbItem>
               {product.category && (
                 <>
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>
-                    <BreadcrumbLink
+                    <Link
                       href={`/products?category=${product.category.id}`}
                     >
                       {product.category.name}
-                    </BreadcrumbLink>
+                    </Link>
                   </BreadcrumbItem>
                 </>
               )}
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink>{product.name}</BreadcrumbLink>
+                <Link>{product.name}</Link>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

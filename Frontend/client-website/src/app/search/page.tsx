@@ -8,7 +8,6 @@ import { Search, ArrowLeft } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
@@ -95,11 +94,11 @@ export default function SearchPage() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+                <Link href="/">Trang chủ</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/search">Tìm kiếm</BreadcrumbLink>
+                <Link href="/search">Tìm kiếm</Link>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
