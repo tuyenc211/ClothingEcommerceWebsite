@@ -137,7 +137,6 @@ const ProductItem: React.FC<ProductItemProps> = ({
             {formatPrice(basePrice)}
           </span>
         </div>
-        Rating
         <div className="flex items-center justify-center gap-1">
           <div className="flex text-yellow-400 text-sm">
             {renderStars(rating || 0)}
