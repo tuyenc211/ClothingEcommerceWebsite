@@ -17,8 +17,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { priceRanges } from "@/lib/utils";
-import { queryClient } from "@/lib/react-query";
-
 // Filter interface
 interface Filters {
   categoryId?: number;
