@@ -65,6 +65,7 @@ interface ProductState {
   searchProducts: (query: string) => Product[];
   getPublishedProducts: () => Product[];
   setError: (error: string | null) => void;
+  setProducts: (products: Product[]) => void;
   clearError: () => void;
 }
 export const useProductStore = create<ProductState>()(
@@ -142,6 +143,9 @@ export const useProductStore = create<ProductState>()(
       getPublishedProducts: () => {
         const { products } = get();
         return products.filter((product) => product.isPublished === true);
+      },
+      setProducts: (products: Product[]) => {
+        set({ products });
       },
       setError: (error) => {
         set({ error });

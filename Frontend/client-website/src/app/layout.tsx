@@ -5,6 +5,7 @@ import Header from "@/components/sections/Header";
 import Footer from "@/components/sections/Footer";
 import { Toaster } from "sonner";
 import ScrollToTopAndContactButton from "@/components/common/ScrollToTop";
+import ReactQueryProvider from "@/providers/ReactQueryProvider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -31,13 +32,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
-        <ScrollToTopAndContactButton />
-        <Toaster richColors={true} />
+        <ReactQueryProvider>
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
+          <ScrollToTopAndContactButton />
+          <Toaster richColors={true} />
+        </ReactQueryProvider>
       </body>
     </html>
   );

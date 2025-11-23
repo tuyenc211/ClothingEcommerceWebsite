@@ -10,24 +10,36 @@ import { useProductStore } from "@/stores/productStore";
 import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
 import { useEffect } from "react";
+import { useProductsQuery } from "@/services/productService";
 export default function Home() {
-  const { fetchProducts } = useProductStore();
   const { fetchColors } = useColorStore();
   const { fetchSizes } = useSizeStore();
-
   useEffect(() => {
-    fetchProducts();
     fetchColors();
     fetchSizes();
-  }, [fetchProducts, fetchColors, fetchSizes]);
+  }, [fetchColors, fetchSizes]);
+  const { data: products = [], isLoading, error } = useProductsQuery();
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative">
+            {/* Spinner */}
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
+          </div>
+          <p className="text-gray-600 text-lg font-medium">Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className=" mx-auto">
       <Heroslide />
-      <FeaturedProducts />
+      <FeaturedProducts products={products} />
       <GridLetter />
-      <BestSellerProduct />
+      <BestSellerProduct products={products} />
       <OfferBanner />
-      <NewsProduct />
+      <NewsProduct products={products} />
       <ListPolicy />
     </div>
   );
