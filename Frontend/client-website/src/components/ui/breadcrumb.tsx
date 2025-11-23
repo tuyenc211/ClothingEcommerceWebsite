@@ -31,7 +31,7 @@ function BreadcrumbItem({ className, ...props }: React.ComponentProps<"li">) {
   )
 }
 
-function BreadcrumbLink({
+function Link({
   asChild,
   className,
   ...props
@@ -102,7 +102,7 @@ export {
   Breadcrumb,
   BreadcrumbList,
   BreadcrumbItem,
-  BreadcrumbLink,
+  Link,
   BreadcrumbPage,
   BreadcrumbSeparator,
   BreadcrumbEllipsis,

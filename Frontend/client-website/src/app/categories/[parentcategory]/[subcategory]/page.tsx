@@ -9,10 +9,10 @@ import { useSizeStore } from "@/stores/sizeStore";
 import ProductGrid from "@/components/common/ProductGrid";
 import { convertProductToItemProps } from "@/components/common/ProductItem";
 import { formatPrice, priceRanges } from "@/lib/utils";
+import Link from "next/link";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
@@ -204,7 +204,7 @@ export default function SubCategoryPage() {
           <Breadcrumb className="hidden sm:block">
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+                <Link href="/">Trang chủ</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>{categoryTitle}</BreadcrumbItem>

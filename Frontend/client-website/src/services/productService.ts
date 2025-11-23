@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import privateClient from "@/lib/axios";
-import { Product } from "@/stores/productStore";
+import { Product, useProductStore } from "@/stores/productStore";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { queryClient } from "@/lib/react-query";
+import { useEffect } from "react";
 
 // Query key factory
 export const productKeys = {
@@ -20,14 +21,24 @@ export const productKeys = {
  * GET /products - Lấy tất cả sản phẩm
  */
 export const useProductsQuery = () => {
-  return useQuery({
+  const { setProducts } = useProductStore();
+  const query = useQuery({
     queryKey: productKeys.lists(),
     queryFn: async () => {
       const response = await privateClient.get("/products");
       return (response.data?.data || response.data || []) as Product[];
     },
     staleTime: 0,
+    refetchOnWindowFocus: false,
   });
+
+  useEffect(() => {
+    if (query.isSuccess && query.data) {
+      setProducts(query.data);
+    }
+  }, [query.isSuccess, query.data, setProducts]);
+
+  return query;
 };
 
 /**

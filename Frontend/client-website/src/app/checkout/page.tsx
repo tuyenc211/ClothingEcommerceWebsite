@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   Breadcrumb,
   BreadcrumbSeparator,
-  BreadcrumbLink,
   BreadcrumbItem,
   BreadcrumbList,
 } from "@/components/ui/breadcrumb";
@@ -398,15 +397,15 @@ export default function CheckoutPage() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+                <Link href="/">Trang chủ</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/cart">Giỏ hàng</BreadcrumbLink>
+                <Link href="/cart">Giỏ hàng</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/checkout">Thanh toán</BreadcrumbLink>
+                <Link href="/checkout">Thanh toán</Link>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

@@ -120,9 +120,9 @@ export default function Header() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <a href="/" className="text-2xl font-bold">
+              <Link href="/" className="text-2xl font-bold">
                 <Logo />
-              </a>
+              </Link>
             </div>
 
             {/* Desktop Navigation with NavigationMenu */}
@@ -131,11 +131,11 @@ export default function Header() {
                 <NavigationMenuList>
                   {/* Trang chủ */}
                   <NavigationMenuItem className="px-2">
-                    <a href="/">
+                    <Link href="/">
                       <NavigationMenuLink asChild>
                         <span className="uppercase font-bold">Trang chủ</span>
                       </NavigationMenuLink>
-                    </a>
+                    </Link>
                   </NavigationMenuItem>
 
                   {parentCategories.map((parent) => {

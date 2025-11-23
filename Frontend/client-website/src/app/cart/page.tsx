@@ -3,7 +3,6 @@
 import {
   Breadcrumb,
   BreadcrumbSeparator,
-  BreadcrumbLink,
   BreadcrumbItem,
   BreadcrumbList,
 } from "@/components/ui/breadcrumb";
@@ -94,11 +93,11 @@ export default function CartPage() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+                <Link href="/">Trang chủ</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/cart">Giỏ hàng</BreadcrumbLink>
+                <Link href="/cart">Giỏ hàng</Link>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
