@@ -227,8 +227,8 @@ export default function AddProductPage() {
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>Enter the basic details</CardDescription>
+              <CardTitle>Thông tin cơ bản</CardTitle>
+              <CardDescription>Nhập các chi tiết cơ bản</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">

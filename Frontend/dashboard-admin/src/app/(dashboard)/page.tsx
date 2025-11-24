@@ -75,22 +75,22 @@ export default function DashboardPage() {
 
   const statsCards = [
     {
-      title: "Total Revenue",
+      title: "Tổng doanh thu",
       value: formatCurrency(stats.totalRevenue),
       icon: DollarSign,
     },
     {
-      title: "Total Orders",
+      title: "Tổng đơn hàng",
       value: stats.totalOrders.toString(),
       icon: ShoppingCart,
     },
     {
-      title: "Total Customers",
+      title: "Tổng khách hàng",
       value: stats.totalCustomers.toString(),
       icon: Users,
     },
     {
-      title: "Total Products",
+      title: "Tổng sản phẩm",
       value: stats.totalProducts.toString(),
       icon: Package,
     },
@@ -116,7 +116,7 @@ export default function DashboardPage() {
       {/* Charts and Tables */}
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="overview">Tổng quan</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -129,11 +129,11 @@ export default function DashboardPage() {
             {/* Recent Sales */}
             <Card className="col-span-3">
               <CardHeader>
-                <CardTitle>Recent Sales</CardTitle>
+                <CardTitle>Bán hàng gần đây</CardTitle>
                 <CardDescription>
                   {recentOrders.length > 0
-                    ? `You made ${stats.totalOrders} sales this month.`
-                    : "No sales data available"}
+                    ? `Bạn đã có ${stats.totalOrders} đơn hàng trong tháng này.`
+                    : "Không có dữ liệu bán hàng"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -156,7 +156,7 @@ export default function DashboardPage() {
                     ))
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      No recent orders
+                      Không có đơn hàng gần đây
                     </p>
                   )}
                 </div>
@@ -165,19 +165,21 @@ export default function DashboardPage() {
           </div>
           <Card>
             <CardHeader>
-              <CardTitle>Recent Orders</CardTitle>
-              <CardDescription>A list of your recent orders.</CardDescription>
+              <CardTitle>Đơn hàng gần đây</CardTitle>
+              <CardDescription>
+                Danh sách các đơn hàng gần đây của bạn.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Order Code</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Products</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Discounted</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Mã đơn hàng</TableHead>
+                    <TableHead>Khách hàng</TableHead>
+                    <TableHead>Sản phẩm</TableHead>
+                    <TableHead>Tổng tiền</TableHead>
+                    <TableHead>Đã giảm giá</TableHead>
+                    <TableHead>Trạng thái</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
