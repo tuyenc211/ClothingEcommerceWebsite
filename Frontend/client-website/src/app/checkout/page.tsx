@@ -168,15 +168,15 @@ export default function CheckoutPage() {
     }
   }, [authUser]);
 
-  useEffect(() => {
-    if (!isLoadingCart && items.length === 0) {
-      const paymentStatus = searchParams?.get("status");
-      if (!paymentStatus) {
-        toast.error("Giỏ hàng trống");
-        router.push("/cart");
-      }
-    }
-  }, [items, router, searchParams, isLoadingCart]);
+  // useEffect(() => {
+  //   if (!isLoadingCart && items.length === 0) {
+  //     const paymentStatus = searchParams?.get("status");
+  //     if (!paymentStatus) {
+  //       toast.error("Giỏ hàng trống");
+  //       router.push("/cart");
+  //     }
+  //   }
+  // }, [items, router, searchParams, isLoadingCart]);
 
   // Handle VNPay payment callback
   useEffect(() => {
@@ -384,9 +384,36 @@ export default function CheckoutPage() {
       </div>
     );
   }
-
+  if (isLoadingCart) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative">
+            {/* Spinner */}
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
+          </div>
+          <p className="text-gray-600 text-lg font-medium">Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
   if (items.length === 0 && !searchParams?.get("status")) {
-    return null;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative">
+            {/* Empty Cart Icon */}
+            <div className="w-16 h-16 text-gray-300">
+              <MapPin className="w-16 h-16" />
+            </div>
+          </div>
+          <p className="text-gray-600 text-lg font-medium">Giỏ hàng trống</p>
+          <Button asChild onClick={() => router.push("/")}>
+            <Link href="/">Tiếp tục mua sắm</Link>
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
