@@ -59,17 +59,11 @@ import Link from "next/link";
 import { RoleGuard } from "@/components/auth/RoleGuard";
 import { usePagination } from "@/lib/usePagination";
 import PaginationBar from "@/components/common/PaginationBar";
+import { useUsers } from "@/hooks/useUsers";
 
 export default function UsersManagementPage() {
-  const {
-    users,
-    isLoading,
-    fetchUsers,
-    updateUser,
-    deleteUser,
-    toggleUserStatus,
-  } = useUserStore();
-
+  const { updateUser, deleteUser, toggleUserStatus } = useUserStore();
+  const { data: users = [], isLoading } = useUsers();
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | "all">("all");
   const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
@@ -77,10 +71,6 @@ export default function UsersManagementPage() {
   const [deletingUserName, setDeletingUserName] = useState("");
   const [togglingUserId, setTogglingUserId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
-
   useEffect(() => {
     setFilteredUsers(users);
   }, [users]);
@@ -137,19 +127,12 @@ export default function UsersManagementPage() {
   }, [selectedRole, setPage, searchTerm]);
 
   const handleUpdateUser = async (userId: number, userData: Partial<User>) => {
-    const success = await updateUser(userId, userData);
-    if (success) {
-      toast.success("Cập nhật tài khoản thành công!");
-    }
+    await updateUser(userId, userData);
   };
 
   const handleDeleteUser = async () => {
     if (!deletingUserId) return;
-
-    const success = await deleteUser(deletingUserId);
-    if (success) {
-      toast.success("Xóa tài khoản thành công!");
-    }
+    await deleteUser(deletingUserId);
     setDeletingUserId(null);
     setShowDeleteDialog(false);
   };

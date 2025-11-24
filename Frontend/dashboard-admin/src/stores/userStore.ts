@@ -253,10 +253,7 @@ export const useUserStore = create<UserState>()(
             : "Đã mở khóa tài khoản thành công!";
           toast.success(successMessage);
 
-          // Fetch lại toàn bộ users để đồng bộ với backend
-          await get().fetchUsers();
-
-          console.log("✅ User status toggled and users refreshed");
+          console.log("✅ User status toggled successfully");
           return true;
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
