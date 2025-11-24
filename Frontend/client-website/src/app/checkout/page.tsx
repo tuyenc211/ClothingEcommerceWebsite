@@ -169,14 +169,14 @@ export default function CheckoutPage() {
   }, [authUser]);
 
   useEffect(() => {
-    if (items.length === 0) {
+    if (!isLoadingCart && items.length === 0) {
       const paymentStatus = searchParams?.get("status");
       if (!paymentStatus) {
         toast.error("Giỏ hàng trống");
         router.push("/cart");
       }
     }
-  }, [items, router, searchParams]);
+  }, [items, router, searchParams, isLoadingCart]);
 
   // Handle VNPay payment callback
   useEffect(() => {
