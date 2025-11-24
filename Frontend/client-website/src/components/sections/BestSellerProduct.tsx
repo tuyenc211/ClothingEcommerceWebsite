@@ -12,6 +12,7 @@ interface BestSellerProductProps {
 export default function BestSellerProduct({ products }: BestSellerProductProps) {
     const bestSellerProducts = useMemo(() => {
         return products
+        .filter(p => p.isPublished)
             .map(convertProductToItemProps)
             .sort((a, b) => (b.rating || 0) - (a.rating || 0))
             .slice(0, 8);

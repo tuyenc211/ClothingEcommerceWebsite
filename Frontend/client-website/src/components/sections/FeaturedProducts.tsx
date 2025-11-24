@@ -13,7 +13,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     // Convert products to ProductItemProps format
-    const allProducts = products.map(convertProductToItemProps);
+    const allProducts = products.filter(p => p.isPublished).map(convertProductToItemProps);
     const displayedProducts = allProducts.slice(0, displayCount);
 
     const handleLoadMore = () => {
