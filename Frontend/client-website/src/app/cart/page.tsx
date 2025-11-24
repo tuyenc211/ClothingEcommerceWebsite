@@ -301,9 +301,8 @@ export default function CartPage() {
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-gray-600">
-                        Phí vận chuyển:{formatPrice(summary.shippingFee)}
-                      </span>
+                      <span>Phí vận chuyển:</span>
+                      <span>{formatPrice(summary.shippingFee)}</span>
                     </div>
                   </div>
 

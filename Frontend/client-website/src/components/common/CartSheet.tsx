@@ -209,12 +209,6 @@ export function CartSheet() {
                     <span>Tạm tính:</span>
                     <span>{formatPrice(summary.subtotal)}</span>
                   </div>
-                  {summary.discount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Giảm giá:</span>
-                      <span>-{formatPrice(summary.discount)}</span>
-                    </div>
-                  )}
                   <div className="flex justify-between">
                     <span>Phí vận chuyển:</span>
                     <span>{formatPrice(summary.shippingFee)}</span>
