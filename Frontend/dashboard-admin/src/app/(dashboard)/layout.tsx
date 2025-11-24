@@ -51,7 +51,7 @@ interface SidebarItem {
 }
 const sidebarItems: SidebarItem[] = [
   {
-    title: "Dashboard",
+    title: "Trang tổng quan",
     href: "/",
     icon: LayoutDashboard,
   },

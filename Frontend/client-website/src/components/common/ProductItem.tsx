@@ -141,7 +141,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
           <div className="flex text-yellow-400 text-sm">
             {renderStars(rating || 0)}
           </div>
-          <span className="text-xs text-gray-500">({reviewCount} Reviews)</span>
+          <span className="text-xs text-gray-500">({reviewCount} Đánh giá)</span>
         </div>
       </div>
     </div>
