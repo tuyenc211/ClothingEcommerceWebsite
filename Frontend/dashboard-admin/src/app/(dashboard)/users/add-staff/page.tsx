@@ -101,7 +101,7 @@ export default function AddStaffPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="fullName">Họ và tên</Label>
                 <Input
                   id="fullName"
@@ -120,7 +120,7 @@ export default function AddStaffPage() {
                 <ErrorText msg={errors.fullName?.message} />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -139,7 +139,7 @@ export default function AddStaffPage() {
                 <ErrorText msg={errors.email?.message} />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="phone">Số điện thoại (tuỳ chọn)</Label>
                 <Input
                   id="phone"
@@ -166,7 +166,7 @@ export default function AddStaffPage() {
               <CardDescription>Mật khẩu & xác nhận</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="password">Mật khẩu</Label>
                 <Input
                   id="password"
@@ -184,7 +184,7 @@ export default function AddStaffPage() {
                 <ErrorText msg={errors.password?.message} />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
                 <Input
                   id="confirmPassword"
@@ -212,10 +212,19 @@ export default function AddStaffPage() {
 
         {/* Submit */}
         <div className="flex justify-end space-x-4 pt-6">
-          <Button type="button" variant="outline" asChild className="hover:bg-gray-700 hover:text-white">
+          <Button
+            type="button"
+            variant="outline"
+            asChild
+            className="hover:bg-gray-700 hover:text-white"
+          >
             <Link href="/users">Hủy</Link>
           </Button>
-          <Button type="submit" disabled={isLoading} className="hover:bg-gray-800-700 hover:border-gray-800 hover:text-white">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="hover:bg-gray-800-700 hover:border-gray-800 hover:text-white"
+          >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
