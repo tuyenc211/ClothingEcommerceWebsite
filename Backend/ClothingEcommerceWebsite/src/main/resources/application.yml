@@ -37,9 +37,9 @@ spring:
     api-secret: FWuxg7Zf3kg9uwonLtBQ5AbeYqY
   vnpay:
     tmn-code: M5O0LLB4
-    secret-key: 9QPZCMNLUCBBFWPEWYVOENQM7LCKE6ND
+    secret-key: 5AG7WNH6INYKSRY4PB3XHI2BIWM2FSSV
     pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-#    return-url: http://localhost:8088/api/v1/payment/vn-pay-callback
+    # return-url: http://localhost:8088/api/v1/payment/vn-pay-callback
     return-url: http://clothingecommercewebsite.onrender.com/api/v1/payment/vn-pay-callback
     version: 2.1.0
     command: pay
