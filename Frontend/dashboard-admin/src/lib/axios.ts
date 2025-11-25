@@ -37,9 +37,10 @@ privateClient.interceptors.response.use(
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
-
+    const path = window.location.pathname;
+    const isAuthPage = path.startsWith("/login");
     // Đang gọi refresh endpoint -> clear token và reject (tránh loop)
-    if (originalRequest.url?.includes("/auth/refresh")) {
+    if (originalRequest.url?.includes("/auth/refresh") || isAuthPage) {
       useAuthStore.getState().setAccessToken(null);
       return Promise.reject(error);
     }
