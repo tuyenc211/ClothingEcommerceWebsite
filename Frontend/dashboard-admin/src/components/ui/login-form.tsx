@@ -95,7 +95,7 @@ export function LoginForm({
           {/* Ảnh bên phải */}
           <div className="bg-muted relative hidden md:block">
             <Image
-              src="/assets/login.jpg"
+              src="https://cdn2.fptshop.com.vn/unsafe/Uploads/images/tin-tuc/173451/Originals/qu%E1%BA%A3n%20tr%E1%BB%8B%20m%E1%BA%A1ng%203.jpg"
               alt="Image"
               className="absolute inset-0 object-cover
                          dark:brightness-[0.2] dark:grayscale"
