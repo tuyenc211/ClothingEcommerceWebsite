@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -106,6 +106,9 @@ export default function CheckoutPage() {
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Ref để track xem có đang thanh toán không (dùng trong cleanup)
+  const isCheckingOutRef = useRef(false);
   const [formData, setFormData] = useState<ShippingFormData>({
     fullName: "",
     phone: "",
@@ -142,6 +145,7 @@ export default function CheckoutPage() {
 
       if (defaultAddr) {
         setSelectedAddressId(defaultAddr.id);
+        setIsNewAddress(false);
         setFormData({
           fullName: authUser.fullName,
           phone: authUser.phone || "",
@@ -152,7 +156,9 @@ export default function CheckoutPage() {
           provinceCode: "",
         });
       } else {
-        setIsNewAddress(true);
+        if (!isLoadingAddresses) {
+          setIsNewAddress(true);
+        }
         setFormData({
           fullName: authUser.fullName,
           phone: authUser.phone || "",
@@ -166,7 +172,29 @@ export default function CheckoutPage() {
     } else {
       setIsNewAddress(true);
     }
-  }, [authUser]);
+  }, [authUser, authUser?.addresses, isLoadingAddresses]); // ✅ Thêm dependencies
+
+  // Update ref khi có thay đổi trạng thái thanh toán
+  useEffect(() => {
+    isCheckingOutRef.current = isSubmitting || isProcessingPayment;
+  }, [isSubmitting, isProcessingPayment]);
+
+  // Cleanup: Hủy mã giảm giá khi rời trang mà chưa thanh toán
+  useEffect(() => {
+    return () => {
+      // Lấy trạng thái hiện tại từ store
+      const currentCoupon = useCartStore.getState().appliedCoupon;
+      
+      // Chỉ hủy nếu:
+      // 1. Có mã giảm giá
+      // 2. Không đang checkout (user tự rời trang)
+      if (currentCoupon && !isCheckingOutRef.current) {
+        console.log("🧹 Hủy mã giảm giá khi rời trang checkout:", currentCoupon.code);
+        useCartStore.getState().removeCoupon();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps = chỉ chạy cleanup khi unmount
 
   // useEffect(() => {
   //   if (!isLoadingCart && items.length === 0) {

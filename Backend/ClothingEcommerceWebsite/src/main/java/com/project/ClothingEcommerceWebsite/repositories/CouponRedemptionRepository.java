@@ -21,14 +21,5 @@ public interface CouponRedemptionRepository extends JpaRepository<CouponRedempti
 
     Optional<CouponRedemption> findByOrderId(Long orderId);
 
-    @Query("SELECT cr FROM CouponRedemption cr " +
-            "JOIN FETCH cr.coupon " +
-            "WHERE cr.user.id = :userId " +
-            "ORDER BY cr.redeemedAt DESC")
-    List<CouponRedemption> findAllByUserIdWithCoupon(@Param("userId") Long userId);
-
-    @Query("SELECT COUNT(cr) FROM CouponRedemption cr " +
-            "WHERE cr.coupon.id = :couponId " +
-            "AND cr.order.status != 'CANCELLED'")
-    Long countActiveRedemptionsByCouponId(@Param("couponId") Long couponId);
+    void deleteByUserId(Long userId);
 }

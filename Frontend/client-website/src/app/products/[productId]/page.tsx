@@ -43,7 +43,7 @@ export default function ProductDetailPage() {
     enabled: !!productId,
   });
 
-  const { addToCart, buyNow } = useCartStore();
+  const { addToCart, buyNow, items } = useCartStore();
   const { fetchReviewsByProduct, reviews } = useReviewStore();
   const orderId = parseInt(searchParams.get("orderId") || "0", 10);
 
@@ -100,18 +100,42 @@ export default function ProductDetailPage() {
     if (!selectedVariant) return 0;
     return variantQuantityMap[selectedVariant.id] ?? 0;
   }, [selectedVariant, variantQuantityMap]);
-  const maxQuantity = selectedQuantity;
+  
+  // Tính số lượng đã có trong giỏ cho variant này
+  const quantityInCart = useMemo(() => {
+    if (!selectedVariant) return 0;
+    
+    const cartItem = items.find(item => item.variant?.id === selectedVariant.id);
+    return cartItem ? cartItem.quantity : 0;
+  }, [selectedVariant, items]);
+  
+  // maxQuantity = tồn kho - số lượng đã trong giỏ
+  const maxQuantity = useMemo(() => {
+    const stock = selectedQuantity || 0;
+    const remaining = stock - quantityInCart;
+    return Math.max(0, remaining);
+  }, [selectedQuantity, quantityInCart]);
+  
   const getStockStatus = () => {
     if (!selectedVariant) return null;
-    const qty = selectedQuantity;
-    if (qty === 0)
+    
+    const stock = selectedQuantity || 0;
+    
+    if (stock === 0) {
       return { text: "Hết hàng", class: "bg-red-100 text-red-800" };
-    if (qty <= 10)
+    }
+    
+    if (stock <= 10) {
       return {
-        text: `Còn hàng: ${qty}`,
+        text: `Còn hàng: ${stock}`,
         class: "bg-yellow-100 text-yellow-800",
       };
-    return { text: `Còn hàng: ${qty}`, class: "bg-green-100 text-green-800" };
+    }
+    
+    return {
+      text: `Còn hàng: ${stock}`,
+      class: "bg-green-100 text-green-800",
+    };
   };
 
   const stockStatus = getStockStatus();
@@ -143,9 +167,17 @@ export default function ProductDetailPage() {
       return;
     }
 
-    // Check inventory
-    if (selectedQuantity && selectedQuantity < quantity) {
-      toast.error(`Chỉ còn ${selectedQuantity} sản phẩm`);
+    // Check nếu đã thêm hết vào giỏ
+    if (maxQuantity === 0) {
+      toast.error("Bạn đã thêm hết số lượng có sẵn vào giỏ hàng");
+      return;
+    }
+
+    // Check số lượng muốn thêm
+    if (quantity > maxQuantity) {
+      toast.error(
+        `Chỉ có thể thêm tối đa ${maxQuantity} sản phẩm${quantityInCart > 0 ? ` (đã có ${quantityInCart} trong giỏ)` : ''}`
+      );
       return;
     }
 
@@ -155,7 +187,10 @@ export default function ProductDetailPage() {
     }
 
     addToCart(selectedVariant, quantity);
-    toast.success(`Đã thêm "${product?.name}" vào giỏ hàng!`);
+    toast.success(`Đã thêm ${quantity} sản phẩm vào giỏ hàng!`);
+    
+    // Reset quantity về 1 sau khi thêm
+    setQuantity(1);
   };
 
   const handleBuyNow = async () => {
@@ -172,7 +207,7 @@ export default function ProductDetailPage() {
       return;
     }
 
-    // Check inventory
+    // Check inventory (buy now dùng selectedQuantity vì sẽ clear cart)
     if (selectedQuantity && selectedQuantity < quantity) {
       toast.error(`Chỉ còn ${selectedQuantity} sản phẩm`);
       return;
@@ -424,6 +459,27 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
               </div>
+              
+              {/* Warning message when cart is full */}
+              {maxQuantity === 0 && quantityInCart > 0 && (
+                <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <p className="text-sm text-orange-800 font-medium">
+                    ⚠️ Bạn đã thêm hết số lượng có sẵn vào giỏ hàng ({quantityInCart}/{selectedQuantity})
+                  </p>
+                  <p className="text-xs text-orange-600 mt-1">
+                    Vui lòng xóa bớt trong giỏ hàng nếu muốn điều chỉnh số lượng
+                  </p>
+                </div>
+              )}
+              
+              {/* Info message when some items in cart */}
+              {maxQuantity > 0 && quantityInCart > 0 && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    ℹ️ Đã có {quantityInCart} sản phẩm trong giỏ. Có thể thêm tối đa {maxQuantity} sản phẩm nữa.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Add to Cart Button - RESPONSIVE */}

@@ -77,7 +77,6 @@ export default function UserProfilePage() {
         fullName: data.fullName.trim(),
         phone: data.phone?.trim(),
       });
-      toast.success("Cập nhật thông tin thành công");
       setIsEditing(false);
       // đồng bộ name ở header hiển thị
       setValue("fullName", data.fullName.trim());

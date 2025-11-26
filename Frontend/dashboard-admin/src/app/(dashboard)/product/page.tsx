@@ -81,7 +81,7 @@ export default function AddProductPage() {
       sku: "",
       description: "",
       basePrice: 0,
-      category: {},
+      category: undefined as any,
       colors: [],
       sizes: [],
       isPublished: true,
@@ -330,7 +330,16 @@ export default function AddProductPage() {
                 <Controller
                   control={control}
                   name="category"
-                  rules={{ required: "Danh mục sản phẩm là bắt buộc" }}
+                  rules={{ 
+                    required: "Danh mục sản phẩm là bắt buộc",
+                    validate: (value) => {
+                      // Kiểm tra xem có id không
+                      if (!value || !value.id) {
+                        return "Vui lòng chọn danh mục sản phẩm";
+                      }
+                      return true;
+                    }
+                  }}
                   render={({ field }) => (
                     <Select
                       value={field.value?.id ? String(field.value.id) : ""}

@@ -2,10 +2,12 @@ server:
   port: 8088
 spring:
   datasource:
-    url: jdbc:mysql://root:WxxYnviAdTLJKHpsvBnPvMsxtIicyAGE@maglev.proxy.rlwy.net:12850/clothingshop
+    # url: jdbc:mysql://root:WxxYnviAdTLJKHpsvBnPvMsxtIicyAGE@maglev.proxy.rlwy.net:12850/clothingshop
+    url: jdbc:mysql://localhost:3306/clothingshop?useSSL=false&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    password: WxxYnviAdTLJKHpsvBnPvMsxtIicyAGE
+    # password: WxxYnviAdTLJKHpsvBnPvMsxtIicyAGE
+    password: 20112004
   jpa:
     show-sql: no
     hibernate:
@@ -30,7 +32,7 @@ spring:
           starttls:
             enable: true
   sendgrid:
-    api-key: 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
+    api-key: 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
     from-email: hoductuyenqp@gmail.com
   cloudinary:
     api-key: 794879747219491
@@ -39,14 +41,14 @@ spring:
     tmn-code: M5O0LLB4
     secret-key: 5AG7WNH6INYKSRY4PB3XHI2BIWM2FSSV
     pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-    # return-url: http://localhost:8088/api/v1/payment/vn-pay-callback
-    return-url: http://clothingecommercewebsite.onrender.com/api/v1/payment/vn-pay-callback
+    return-url: http://localhost:8088/api/v1/payment/vn-pay-callback
+    # return-url: http://clothingecommercewebsite.onrender.com/api/v1/payment/vn-pay-callback
     version: 2.1.0
     command: pay
     order-type: other
 api:
   prefix: api/v1
 jwt:
-  accesstoken-expiration: 64000
-  refreshtoken-expiration: 64000
+  accesstoken-expiration: 3600
+  refreshtoken-expiration: 86400
   secretKey: TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=

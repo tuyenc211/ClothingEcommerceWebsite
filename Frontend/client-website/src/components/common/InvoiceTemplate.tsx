@@ -220,10 +220,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
               </p>
               <p className="text-sm text-gray-600">
                 Trạng thái thanh toán:{" "}
-                {order.paymentStatus === "PAID"
-                  ? "Đã thanh toán"
-                  : "Chưa thanh toán"}
-              </p>
+                {order.paymentStatus} </p>
             </div>
             <div className="text-right">
               <p className="text-sm md:text-lg text-gray-700 mb-2">

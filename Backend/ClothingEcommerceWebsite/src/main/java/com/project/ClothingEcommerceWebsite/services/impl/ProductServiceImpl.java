@@ -3,6 +3,7 @@ package com.project.ClothingEcommerceWebsite.services.impl;
 import com.project.ClothingEcommerceWebsite.dtos.request.CreateProductVariantRequest;
 import com.project.ClothingEcommerceWebsite.dtos.respond.*;
 import com.project.ClothingEcommerceWebsite.exception.BadRequestException;
+import com.project.ClothingEcommerceWebsite.exception.NotFoundException;
 import com.project.ClothingEcommerceWebsite.models.*;
 import com.project.ClothingEcommerceWebsite.repositories.*;
 import com.project.ClothingEcommerceWebsite.services.CategoryService;
@@ -37,7 +38,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public Product createProductWithVariants(CreateProductVariantRequest request) {
         Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new NotFoundException("Category not found"));
         if (productRepository.existsBySku(request.getSku())) {
             throw new BadRequestException("SKU đã tồn tại. Vui lòng sử dụng SKU khác!!");
         }
@@ -431,9 +432,24 @@ public class ProductServiceImpl implements ProductService {
                 variant.setPrice(product.getBasePrice());
                 productVariantRepository.save(variant);
             }
+            updateCartItemsPricesForProduct(product.getId(), product.getBasePrice());
         }
 
         return product;
+    }
+
+    private void updateCartItemsPricesForProduct(Long productId, Double newPrice) {
+        List<ProductVariant> variants = productVariantRepository.findAllByProductId(productId);
+        for (ProductVariant variant : variants) {
+            List<CartItem> cartItems = cartItemRepository.findByVariantId(variant.getId());
+
+            if (!cartItems.isEmpty()) {
+                for (CartItem item : cartItems) {
+                    item.setUnitPrice(newPrice);
+                    cartItemRepository.save(item);
+                }
+            }
+        }
     }
 
     @Override
