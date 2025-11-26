@@ -8,7 +8,7 @@ import { formatDate, formatPrice } from "@/lib/utils";
 import useAuthStore from "@/stores/useAuthStore";
 import { createVNPayPayment } from "@/services/paymentService";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
+import { Button } from "../../../../components/ui/button";
 interface InvoiceTemplateProps {
   order: Order;
 }

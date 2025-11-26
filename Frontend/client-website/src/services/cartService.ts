@@ -4,7 +4,7 @@ import { CartItem } from "@/stores/cartStore";
 import { toast } from "sonner";
 import useAuthStore from "@/stores/useAuthStore";
 import { AxiosError } from "axios";
-import { queryClient } from "@/lib/react-query";
+import {client} from "@/providers/ReactQueryProvider";
 
 export const useCartQuery = () => {
   const userId = useAuthStore((state) => state.authUser?.id);
@@ -40,7 +40,7 @@ export const useAddToCart = () => {
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart", userId] });
+      client.invalidateQueries({ queryKey: ["cart", userId] });
       toast.success("Đã thêm vào giỏ hàng");
     },
     onError: (error: AxiosError<{ message: string }>) => {
@@ -58,7 +58,7 @@ export const useRemoveFromCart = () => {
       return await privateClient.delete(`/carts/${userId}/remove/${itemId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart", userId] });
+      client.invalidateQueries({ queryKey: ["cart", userId] });
       toast.success("Đã xóa khỏi giỏ hàng");
     },
     onError: (error: AxiosError<{ message: string }>) => {
@@ -84,7 +84,7 @@ export const useUpdateCartQuantity = () => {
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart", userId] });
+      client.invalidateQueries({ queryKey: ["cart", userId] });
     },
     onError: (error: AxiosError<{ message: string }>) => {
       toast.error(error.response?.data?.message || "Lỗi khi cập nhật");
@@ -101,7 +101,7 @@ export const useClearCart = () => {
       return await privateClient.delete(`/carts/${userId}/clear`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart", userId] });
+      client.invalidateQueries({ queryKey: ["cart", userId] });
     },
     onError: (error: AxiosError<{ message: string }>) => {
       toast.error(error.response?.data?.message || "Lỗi khi xóa giỏ hàng");

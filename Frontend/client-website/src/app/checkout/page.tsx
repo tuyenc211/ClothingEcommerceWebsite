@@ -20,14 +20,15 @@ import { useCouponStore } from "@/stores/couponStore";
 import useAuthStore from "@/stores/useAuthStore";
 import { useAddress } from "@/hooks/useAddress";
 
-import ShippingAddressForm from "@/app/checkout/_component/ShippingAddressForm";
-import PaymentMethodSelector from "@/app/checkout/_component/PaymentMethodSelector";
-import OrderSummary from "@/app/checkout/_component/OrderSummary";
+import ShippingAddressForm from "@/app/checkout/_components/ShippingAddressForm";
+import PaymentMethodSelector from "@/app/checkout/_components/PaymentMethodSelector";
+import OrderSummary from "@/app/checkout/_components/OrderSummary";
 
 import { EnrichedCartItem } from "@/types/cart";
 import { PaymentMethod, useOrderStore } from "@/stores/orderStore";
 import { AxiosError } from "axios";
 import { createVNPayPayment } from "@/services/paymentService";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 interface ShippingFormData {
   fullName: string;
@@ -106,7 +107,7 @@ export default function CheckoutPage() {
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Ref để track xem có đang thanh toán không (dùng trong cleanup)
   const isCheckingOutRef = useRef(false);
   const [formData, setFormData] = useState<ShippingFormData>({
@@ -184,12 +185,15 @@ export default function CheckoutPage() {
     return () => {
       // Lấy trạng thái hiện tại từ store
       const currentCoupon = useCartStore.getState().appliedCoupon;
-      
+
       // Chỉ hủy nếu:
       // 1. Có mã giảm giá
       // 2. Không đang checkout (user tự rời trang)
       if (currentCoupon && !isCheckingOutRef.current) {
-        console.log("🧹 Hủy mã giảm giá khi rời trang checkout:", currentCoupon.code);
+        console.log(
+          "🧹 Hủy mã giảm giá khi rời trang checkout:",
+          currentCoupon.code
+        );
         useCartStore.getState().removeCoupon();
       }
     };
@@ -414,15 +418,7 @@ export default function CheckoutPage() {
   }
   if (isLoadingCart) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="relative">
-            {/* Spinner */}
-            <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
-          </div>
-          <p className="text-gray-600 text-lg font-medium">Đang tải...</p>
-        </div>
-      </div>
+      <LoadingSpinner/>
     );
   }
   if (items.length === 0 && !searchParams?.get("status")) {

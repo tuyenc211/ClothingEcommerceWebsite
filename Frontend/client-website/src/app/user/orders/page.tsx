@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { useOrderStore } from "@/stores/orderStore";
-import { OrderTable } from "@/components/common/OrderTable";
+import { OrderTable } from "@/app/user/orders/_components/OrderTable";
 import {
   Pagination,
   PaginationContent,
@@ -11,7 +11,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import UserLayout from "@/components/sections/UserLayout";
+import UserLayout from "@/components/layouts/UserLayout";
 import useAuthStore from "@/stores/useAuthStore";
 export default function OrdersPage() {
   const {

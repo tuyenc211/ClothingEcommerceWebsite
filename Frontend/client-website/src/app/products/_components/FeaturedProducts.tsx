@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import ProductGrid from "../common/ProductGrid";
-import { convertProductToItemProps } from "../common/ProductItem";
+import ProductGrid from "./ProductGrid";
+import { convertProductToItemProps } from "./ProductItem";
 import { Product } from "@/stores/productStore";
 
 interface FeaturedProductsProps {

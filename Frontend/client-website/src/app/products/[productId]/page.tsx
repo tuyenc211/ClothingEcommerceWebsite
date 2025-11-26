@@ -5,7 +5,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Heart, ShoppingCart, Plus, Minus, CreditCard } from "lucide-react";
 import { Product, useProductStore } from "@/stores/productStore";
 import { useCartStore } from "@/stores/cartStore";
-import ProductImageGallery from "@/components/common/ThumnailGallery";
+import ProductImageGallery from "@/components/features/images/ThumnailGallery";
 import { formatPrice } from "@/lib/utils";
 import { Color } from "@/stores/colorStore";
 import { Size } from "@/stores/sizeStore";
@@ -26,6 +26,7 @@ import { useReviewStore } from "@/stores/reviewStore";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import privateClient from "@/lib/axios";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 export default function ProductDetailPage() {
   const { productId } = useParams();
@@ -242,15 +243,7 @@ export default function ProductDetailPage() {
   };
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="relative">
-            {/* Spinner */}
-            <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
-          </div>
-          <p className="text-gray-600 text-lg font-medium">Đang tải...</p>
-        </div>
-      </div>
+    <LoadingSpinner/>
     );
   }
   if (!product) {

@@ -5,8 +5,8 @@ import { Product } from "@/stores/productStore";
 import { formatPrice } from "@/lib/utils";
 import { toast } from "sonner";
 import { Heart } from "lucide-react";
-import { Button } from "../ui/button";
-import { Rating, RatingButton } from "../ui/shadcn-io/rating";
+import { Button } from "../../../components/ui/button";
+import { Rating, RatingButton } from "../../../components/ui/shadcn-io/rating";
 
 export interface ProductItemProps {
   id: number;

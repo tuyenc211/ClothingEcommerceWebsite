@@ -110,7 +110,7 @@ export function CartSheet() {
                 Bạn chưa có sản phẩm nào trong giỏ hàng
               </p>
               <Button asChild onClick={() => setIsOpen(false)}>
-                <Link href="/">Tiếp tục mua sắm</Link>
+                <Link href="/public">Tiếp tục mua sắm</Link>
               </Button>
             </div>
           ) : (
