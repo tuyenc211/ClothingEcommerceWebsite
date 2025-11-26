@@ -59,11 +59,12 @@ import Link from "next/link";
 import { RoleGuard } from "@/components/auth/RoleGuard";
 import { usePagination } from "@/lib/usePagination";
 import PaginationBar from "@/components/common/PaginationBar";
-import { useUsers } from "@/hooks/useUsers";
+import { useUsers, useDeleteUser } from "@/hooks/useUsers";
 
 export default function UsersManagementPage() {
-  const { updateUser, deleteUser, toggleUserStatus } = useUserStore();
+  const { updateUser, toggleUserStatus } = useUserStore();
   const { data: users = [], isLoading } = useUsers();
+  const deleteUserMutation = useDeleteUser();
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | "all">("all");
   const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
@@ -132,21 +133,18 @@ export default function UsersManagementPage() {
 
   const handleDeleteUser = async () => {
     if (!deletingUserId) return;
-    await deleteUser(deletingUserId);
-    setDeletingUserId(null);
-    setShowDeleteDialog(false);
+    deleteUserMutation.mutate(deletingUserId, {
+      onSuccess: () => {
+        setDeletingUserId(null);
+        setShowDeleteDialog(false);
+      },
+    });
   };
 
   const handleToggleStatus = async (userId: number) => {
     setTogglingUserId(userId);
     const success = await toggleUserStatus(userId);
     setTogglingUserId(null);
-    if (success) {
-      const user = users.find((u) => u.id === userId);
-      const newStatus =
-        user?.isActive === true ? "không hoạt động" : "hoạt động";
-      toast.success(`Đã thay đổi trạng thái tài khoản thành ${newStatus}`);
-    }
   };
 
   const confirmDelete = (userId: number, userName: string) => {
@@ -369,7 +367,7 @@ export default function UsersManagementPage() {
                 {paginatedUsers.map((user, index) => (
                   <TableRow key={user.id}>
                     <TableCell>
-                      <div className="font-medium">{index}</div>
+                      <div className="font-medium">{ startIndex + index + 1}</div>
                     </TableCell>
                     <TableCell>
                       <div className="font-medium">{user.fullName}</div>
@@ -518,9 +516,9 @@ export default function UsersManagementPage() {
               <AlertDialogAction
                 onClick={handleDeleteUser}
                 className="bg-red-600 hover:bg-red-700"
-                disabled={isLoading}
+                disabled={deleteUserMutation.isPending}
               >
-                {isLoading ? (
+                {deleteUserMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : null}
                 Xóa tài khoản

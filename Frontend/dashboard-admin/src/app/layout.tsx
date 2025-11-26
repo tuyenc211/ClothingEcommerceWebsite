@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-// import TanstackQueryProvider from "@/lib/tanstack-query-provider";
+import TanstackQueryProvider from "@/lib/tanstack-query-provider";
 
 import "@/app/globals.css";
 import { Toaster } from "sonner";
@@ -22,10 +22,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        {/* <TanstackQueryProvider > */}
-        <TooltipProvider>{children}</TooltipProvider>
-        <Toaster richColors={true} />
-        {/* </TanstackQueryProvider> */}
+        <TanstackQueryProvider >
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster richColors={true} />
+        </TanstackQueryProvider>
       </body>
     </html>
   );

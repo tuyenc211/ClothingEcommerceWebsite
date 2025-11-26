@@ -59,14 +59,10 @@ export default function AddStaffPage() {
 
       const ok = await createStaff(payload);
       if (ok) {
-        toast.success("Tạo tài khoản nhân viên thành công");
         router.push("/users");
-      } else {
-        toast.error("Có lỗi xảy ra khi tạo tài khoản");
-      }
+      } 
     } catch (e) {
       console.error(e);
-      toast.error("Có lỗi xảy ra khi tạo tài khoản");
     }
   };
 

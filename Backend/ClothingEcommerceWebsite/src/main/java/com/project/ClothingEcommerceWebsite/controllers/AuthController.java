@@ -51,6 +51,9 @@ public class AuthController {
         if (user.isEmpty()) {
             throw new NotFoundException("Email chưa được đăng ký!!");
         }
+        if(user.get().getIsActive() == false) {
+            throw new NotFoundException("Email đã được đăng ký. Vui lòng xác thực email qua hộp thư!!");
+        }
         try {
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
@@ -61,7 +64,7 @@ public class AuthController {
                     .httpOnly(true)
                     .secure(true)
                     .path("/")
-                    .maxAge(64000)
+                    .maxAge(86400)
                     .sameSite("None")
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -88,7 +91,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(64000)
+                .maxAge(86400)
                 .sameSite("None")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

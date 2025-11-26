@@ -149,7 +149,7 @@ public class OrderServiceImpl implements OrderService {
         if (!order.getUser().getId().equals(userId)) {
             throw new RuntimeException("Order does not belong to this user");
         }
-        if (order.getStatus() != Enums.OrderStatus.NEW) {
+        if (order.getStatus() != Enums.OrderStatus.NEW && order.getStatus() != Enums.OrderStatus.CONFIRMED) {
             throw new RuntimeException("Cannot cancel order that is already " + order.getStatus());
         }
         order.setStatus(Enums.OrderStatus.CANCELLED);

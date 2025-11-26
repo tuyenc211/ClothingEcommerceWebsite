@@ -11,6 +11,7 @@ import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     boolean existsByUserIdAndOrderId(Long userId, Long orderId);
+    void deleteAllByUserId(Long userId);
     List<Review> findAllByProductId(Long productId);
     List<Review> findAllByUserId(Long userId);
     List<Review> findAllByProduct_IdIn(List<Long> productIds);

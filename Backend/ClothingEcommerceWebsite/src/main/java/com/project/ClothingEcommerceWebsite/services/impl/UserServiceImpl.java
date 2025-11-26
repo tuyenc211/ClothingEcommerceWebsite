@@ -6,10 +6,8 @@ import com.project.ClothingEcommerceWebsite.dtos.request.CreateUserRequest;
 import com.project.ClothingEcommerceWebsite.dtos.respond.MessageResponse;
 import com.project.ClothingEcommerceWebsite.exception.BadRequestException;
 import com.project.ClothingEcommerceWebsite.exception.NotFoundException;
-import com.project.ClothingEcommerceWebsite.models.Role;
-import com.project.ClothingEcommerceWebsite.models.User;
-import com.project.ClothingEcommerceWebsite.repositories.RoleRepository;
-import com.project.ClothingEcommerceWebsite.repositories.UserRepository;
+import com.project.ClothingEcommerceWebsite.models.*;
+import com.project.ClothingEcommerceWebsite.repositories.*;
 import com.project.ClothingEcommerceWebsite.services.EmailService;
 import com.project.ClothingEcommerceWebsite.services.UserService;
 import com.project.ClothingEcommerceWebsite.utils.JwtUtil;
@@ -19,6 +17,7 @@ import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -29,11 +28,14 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
 
     private final RoleRepository roleRepository;
-
     private final UserRepository userRepository;
-
+    private final CartRepository cartRepository;
+    private final AddressRepository addressRepository;
+    private final OrderRepository orderRepository;
+    private final CouponRedemptionRepository couponRedemptionRepository;
+    private final CartItemRepository cartItemRepository;
+    private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
-
     private final EmailService emailService;
 
     private final JwtUtil jwtUtil;
@@ -111,7 +113,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        List<Order> orders = orderRepository.findByUserId(id);
+
+        if (!orders.isEmpty()) {
+            userRepository.save(user);
+            throw new RuntimeException(
+                    "Không thể xóa tài khoản có " + orders.size() +
+                            " đơn hàng."
+            );
+        }
+        Optional<Cart> cart = cartRepository.findByUserId(id);
+        if (cart.isPresent()) {
+            cartItemRepository.deleteByCartId(cart.get().getId());
+        }
+        cartRepository.deleteByUserId(id);
+        addressRepository.deleteByUserId(id);
+        reviewRepository.deleteAllByUserId(id);
+        couponRedemptionRepository.deleteByUserId(id);
+        user.setRoles(new HashSet<>());
+        userRepository.save(user);
         userRepository.deleteById(id);
     }
 
@@ -184,3 +208,4 @@ public class UserServiceImpl implements UserService {
         return new MessageResponse("Account verified. You can now login.");
     }
 }
+

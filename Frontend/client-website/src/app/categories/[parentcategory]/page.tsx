@@ -34,7 +34,7 @@ export default function ParentCategoryPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   // Stores
-  const { getPublishedProducts, searchProducts } = useProductStore();
+  const { getPublishedProducts } = useProductStore();
   const { getCategoryBySlug, getChildCategories } = useCategoryStore();
   const { colors } = useColorStore();
   const { sizes } = useSizeStore();
@@ -47,8 +47,6 @@ export default function ParentCategoryPage() {
     sortBy: "newest",
     sortOrder: "desc",
   });
-
-  const [searchTerm, setSearchTerm] = useState("");
 
   // Get parent category from slug
   const parentCategory = useMemo(() => {
@@ -82,12 +80,6 @@ export default function ParentCategoryPage() {
         (product) =>
           product.category.id && categoryIds.includes(product.category.id)
       );
-    }
-
-    if (searchTerm) {
-      const searchResults = searchProducts(searchTerm);
-      const searchIds = searchResults.map((p) => p.id);
-      filtered = filtered.filter((product) => searchIds.includes(product.id));
     }
 
     // Apply category filter (specific child category)
@@ -151,9 +143,8 @@ export default function ParentCategoryPage() {
     getPublishedProducts,
     parentCategory,
     childCategories,
-    searchTerm,
     filters,
-    searchProducts,
+    products,
   ]);
 
   // Convert to ProductItemProps format and apply display limit
@@ -220,7 +211,6 @@ export default function ParentCategoryPage() {
       sortBy: "newest",
       sortOrder: "desc",
     });
-    setSearchTerm("");
     setDisplayCount(12);
   };
 
@@ -260,20 +250,6 @@ export default function ParentCategoryPage() {
             }`}
           >
             <div className="bg-white p-6 rounded-lg shadow">
-              {/* Search */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tìm kiếm
-                </label>
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Tìm sản phẩm..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
               {/* Categories */}
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-3">

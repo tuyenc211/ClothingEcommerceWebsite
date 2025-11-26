@@ -143,7 +143,7 @@ export const useUserStore = create<UserState>()(
             password: staffData.password,
             fullName: staffData.fullName,
             phone: staffData.phone,
-            roleIds: 1,
+            roleIds: [1],
           });
 
           const newUser = response.data?.data || response.data;
@@ -253,7 +253,10 @@ export const useUserStore = create<UserState>()(
             : "Đã mở khóa tài khoản thành công!";
           toast.success(successMessage);
 
-          console.log("✅ User status toggled successfully");
+          // Fetch lại toàn bộ users để đồng bộ với backend
+          await get().fetchUsers();
+          set({ isLoading: false });
+          console.log("✅ User status toggled and users refreshed");
           return true;
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
