@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useMemo } from "react";
-import ProductCarousel from "../common/ProductCarousel";
-import { convertProductToItemProps } from "../common/ProductItem";
+import ProductCarousel from "./ProductCarousel";
+import { convertProductToItemProps } from "./ProductItem";
 import { Product } from "@/stores/productStore";
 
 interface NewsProductProps {

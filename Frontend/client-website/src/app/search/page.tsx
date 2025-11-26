@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Category } from "@/stores/categoryStore";
 import { ProductImage } from "@/stores/productStore";
-import ProductGrid from "@/components/common/ProductGrid";
+import ProductGrid from "@/app/products/_components/ProductGrid";
 import { useCartStore } from "@/stores/cartStore";
 
 export interface SearchProduct {

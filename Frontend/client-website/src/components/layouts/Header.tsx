@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Search, Menu, X, Phone, Mail, User, Headphones } from "lucide-react";
-import { CartSheet } from "@/components/common/CartSheet";
+import { CartSheet } from "@/app/cart/_components/CartSheet";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import useAuthStore from "@/stores/useAuthStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import Logo from "../common/Logo";
-import SearchBar from "../common/SearchBar";
+import SearchBar from "../../app/search/_components/SearchBar";
 // Component ListItem
 const ListItem = ({
   className,

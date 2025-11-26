@@ -6,8 +6,8 @@ import { Product, useProductStore } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useColorStore } from "@/stores/colorStore";
 import { useSizeStore } from "@/stores/sizeStore";
-import ProductGrid from "@/components/common/ProductGrid";
-import { convertProductToItemProps } from "@/components/common/ProductItem";
+import ProductGrid from "@/app/products/_components/ProductGrid";
+import { convertProductToItemProps } from "@/app/products/_components/ProductItem";
 import { formatPrice, priceRanges } from "@/lib/utils";
 import Link from "next/link";
 import {

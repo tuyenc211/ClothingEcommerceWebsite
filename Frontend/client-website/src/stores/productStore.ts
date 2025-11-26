@@ -7,7 +7,6 @@ import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { Size } from "./sizeStore";
 import { Color } from "./colorStore";
-export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 
 export interface ProductImage {
   id: number;
@@ -60,8 +59,6 @@ interface ProductState {
   fetchProducts: () => Promise<void>;
   getProductById: (id: number) => Promise<Product | null>;
   getProduct: (id: number) => Product | undefined;
-  // getProductBySku: (sku: string) => Promise<Product | null>;
-  // getProductBySlug: (slug: string) => Promise<Product | null>;
   searchProducts: (query: string) => Product[];
   getPublishedProducts: () => Product[];
   setError: (error: string | null) => void;
@@ -69,7 +66,6 @@ interface ProductState {
   clearError: () => void;
 }
 export const useProductStore = create<ProductState>()(
-  persist(
     (set, get) => ({
       products: [],
       isLoading: false,
@@ -115,17 +111,6 @@ export const useProductStore = create<ProductState>()(
         const { products } = get();
         return products.find((product) => product.id === id);
       },
-      // getProductBySku: (sku) => {
-      //   const { products } = get();
-      //   return products.find((product) => product.sku === sku);
-      // },
-
-      // getProductBySlug: (slug) => {
-      //   const { products } = get();
-      //   return products.find((product) => product.slug === slug);
-      // },
-
-      // Product search and filtering
       searchProducts: (query) => {
         const { products } = get();
         const lowercaseQuery = query.toLowerCase();
@@ -155,8 +140,4 @@ export const useProductStore = create<ProductState>()(
         set({ error: null });
       },
     }),
-    {
-      name: "product-storage",
-    }
-  )
 );

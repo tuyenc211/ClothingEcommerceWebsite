@@ -1,4 +1,5 @@
-export default function Loading() {
+export default function LoadingSpinner
+() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-white">
       <div className="flex flex-col items-center space-y-4">

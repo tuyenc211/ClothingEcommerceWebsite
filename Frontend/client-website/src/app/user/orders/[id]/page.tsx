@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useOrderStore } from "@/stores/orderStore";
-import { InvoiceTemplate } from "@/components/common/InvoiceTemplate";
+import { InvoiceTemplate } from "@/app/user/orders/_components/InvoiceTemplate";
 import { CancelOrderDialog } from "@/components/common/CancelOrderDialog";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, XCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import UserLayout from "@/components/sections/UserLayout";
+import UserLayout from "@/components/layouts/UserLayout";
 import { OrderStatus } from "@/stores/orderStore";
 import { toast } from "sonner";
 import useAuthStore from "@/stores/useAuthStore";
