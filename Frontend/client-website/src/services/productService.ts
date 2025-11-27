@@ -4,7 +4,6 @@ import { Product, useProductStore } from "@/stores/productStore";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useEffect } from "react";
-import { client } from "@/providers/ReactQueryProvider";
 
 // Query key factory
 export const productKeys = {
@@ -48,6 +47,7 @@ export const useProductQuery = (productId: number | null) => {
 };
 
 export const useCreateProduct = () => {
+  const client = useQueryClient();
   return useMutation({
     mutationFn: async (productData: Omit<Product, "id">) => {
       const response = await privateClient.post("/products", productData);
@@ -67,6 +67,7 @@ export const useCreateProduct = () => {
  * Hook để cập nhật sản phẩm
  */
 export const useUpdateProduct = () => {
+  const client = useQueryClient();
   return useMutation({
     mutationFn: async ({
       productId,
@@ -98,6 +99,7 @@ export const useUpdateProduct = () => {
  * Hook để xóa sản phẩm
  */
 export const useDeleteProduct = () => {
+  const client = useQueryClient();
   return useMutation({
     mutationFn: async (productId: number) => {
       return await privateClient.delete(`/products/${productId}`);
@@ -116,6 +118,7 @@ export const useDeleteProduct = () => {
  * Hook để upload ảnh sản phẩm
  */
 export const useUploadProductImages = () => {
+  const client = useQueryClient();
   return useMutation({
     mutationFn: async ({
       productId,
@@ -156,6 +159,7 @@ export const useUploadProductImages = () => {
  * Hook để xóa ảnh sản phẩm
  */
 export const useDeleteProductImage = () => {
+  const client = useQueryClient();
   return useMutation({
     mutationFn: async ({
       productId,

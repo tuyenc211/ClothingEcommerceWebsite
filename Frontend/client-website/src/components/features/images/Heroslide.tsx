@@ -24,7 +24,7 @@ export default function Heroslide() {
 
     // Sử dụng coupon banners nếu có, không thì dùng banner mặc định
     // @ts-ignore
-    const displayBanners = couponBanners.length > 0 ? couponBanners : banner;
+    const displayBanners = couponBanners?.length > 0 ? couponBanners : banner;
 
     return (
     <AutoSwiper className="px-8 py-2 rounded-md">
