@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
-import { Order } from "@/stores/orderStore";
 import { OrderStatusBadge, PaymentMethodBadge } from "./StatusBadges";
 import { useRouter } from "next/navigation";
 import { formatDate, formatPrice } from "@/lib/utils";
+import {Order} from "@/services/orderService";
 interface OrderTableProps {
   orders: Order[];
 }

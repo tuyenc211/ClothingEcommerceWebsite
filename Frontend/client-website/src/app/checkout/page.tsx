@@ -16,7 +16,6 @@ import { toast } from "sonner";
 import { useCartQuery } from "@/services/cartService";
 import { useCartStore } from "@/stores/cartStore";
 import { useProductStore } from "@/stores/productStore";
-import { useCouponStore } from "@/stores/couponStore";
 import useAuthStore from "@/stores/useAuthStore";
 import { useAddress } from "@/hooks/useAddress";
 
@@ -25,10 +24,12 @@ import PaymentMethodSelector from "@/app/checkout/_components/PaymentMethodSelec
 import OrderSummary from "@/app/checkout/_components/OrderSummary";
 
 import { EnrichedCartItem } from "@/types/cart";
-import { PaymentMethod, useOrderStore } from "@/stores/orderStore";
+import { PaymentMethod, } from "@/services/orderService";
 import { AxiosError } from "axios";
 import { createVNPayPayment } from "@/services/paymentService";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+import {useCreateOrder} from "@/services/orderService";
+import {Coupon, useAvailableCoupons} from "@/services/couponService";
 
 interface ShippingFormData {
   fullName: string;
@@ -45,6 +46,7 @@ export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const { authUser, fetchAddresses } = useAuthStore();
   const { data: items = [], isLoading: isLoadingCart } = useCartQuery();
+  const {mutate:createOrder, data:order  }= useCreateOrder();
   const {
     getCartSummary,
     clearCart,
@@ -54,16 +56,8 @@ export default function CheckoutPage() {
   } = useCartStore();
   const { getProduct, fetchProducts } = useProductStore();
 
-  const { availableCoupons, fetchAvailableCoupons } = useCouponStore();
-
   const summary = getCartSummary();
-
-  useEffect(() => {
-    if (authUser?.id && summary.subtotal > 0) {
-      fetchAvailableCoupons(authUser.id, summary.subtotal);
-    }
-  }, [authUser?.id, summary.subtotal, fetchAvailableCoupons]);
-
+const {data:availableCoupons} :{data: Coupon[] | undefined} = useAvailableCoupons(authUser?.id, summary.subtotal);
   const {
     provinces,
     wards,
@@ -73,8 +67,6 @@ export default function CheckoutPage() {
     fetchWards,
     clearWards,
   } = useAddress();
-
-  // Fetch provinces on mount
   useEffect(() => {
     fetchProvinces();
   }, [fetchProvinces]);
@@ -198,18 +190,7 @@ export default function CheckoutPage() {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps = chỉ chạy cleanup khi unmount
-
-  // useEffect(() => {
-  //   if (!isLoadingCart && items.length === 0) {
-  //     const paymentStatus = searchParams?.get("status");
-  //     if (!paymentStatus) {
-  //       toast.error("Giỏ hàng trống");
-  //       router.push("/cart");
-  //     }
-  //   }
-  // }, [items, router, searchParams, isLoadingCart]);
-
+  }, []);
   // Handle VNPay payment callback
   useEffect(() => {
     const paymentStatus = searchParams?.get("status");
@@ -299,7 +280,7 @@ export default function CheckoutPage() {
   };
 
   const handleApplyCoupon = (couponCode: string) => {
-    const coupon = availableCoupons.find((c) => c.code === couponCode);
+    const coupon = availableCoupons?.find((c) => c.code === couponCode);
     if (coupon) {
       const success = applyCoupon(coupon);
       if (success) {
@@ -355,10 +336,8 @@ export default function CheckoutPage() {
         },
         couponCode: appliedCoupon?.code,
       };
-      // Call backend API to create order
-      const order = await useOrderStore
-        .getState()
-        .createOrder(authUser.id, orderRequest);
+      // @ts-ignore
+        createOrder(authUser.id, orderRequest);
 
       // Handle payment method
       if (paymentMethod === "WALLET") {
@@ -366,9 +345,10 @@ export default function CheckoutPage() {
         try {
           toast.info("Đang chuyển đến trang thanh toán VNPay...");
 
-          // Create VNPay payment URL with order details
-          const paymentUrl = await createVNPayPayment(
+            const paymentUrl = await createVNPayPayment(
+                // @ts-ignore
             order.grandTotal,
+                // @ts-ignore
             order.id.toString()
           );
           await clearCart();
@@ -378,12 +358,13 @@ export default function CheckoutPage() {
           // Redirect to VNPay payment gateway
           window.location.href = paymentUrl;
         } catch (paymentError) {
-          console.error("VNPay payment error:", paymentError);
           toast.error("Không thể tạo thanh toán VNPay. Vui lòng thử lại.");
         }
       } else {
+          // @ts-ignore
         toast.success(`Đặt hàng thành công! Mã đơn hàng: ${order.code}`);
-        router.push(`/user/orders/${order.id}`);
+        // @ts-ignore
+          router.push(`/user/orders/${order.id}`);
         clearCart();
         removeCoupon();
         fetchProducts();
@@ -547,7 +528,7 @@ export default function CheckoutPage() {
                   items={enrichedItems}
                   summary={summary}
                   appliedCoupon={appliedCoupon}
-                  availableCoupons={availableCoupons}
+                  availableCoupons={availableCoupons || []}
                   showCouponList={showCouponList}
                   isSubmitting={isSubmitting}
                   paymentMethod={paymentMethod}

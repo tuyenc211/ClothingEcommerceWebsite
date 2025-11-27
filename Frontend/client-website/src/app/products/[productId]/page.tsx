@@ -9,7 +9,6 @@ import ProductImageGallery from "@/components/features/images/ThumnailGallery";
 import { formatPrice } from "@/lib/utils";
 import { Color } from "@/stores/colorStore";
 import { Size } from "@/stores/sizeStore";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Breadcrumb,
   BreadcrumbSeparator,
@@ -20,13 +19,14 @@ import {
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import { Rating, RatingButton } from "@/components/ui/shadcn-io/rating";
-import ReviewForm from "@/app/user/reviews/_component/ReviewForm";
-import ReviewList from "@/app/user/reviews/_component/ReviewList";
-import { useReviewStore } from "@/stores/reviewStore";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import privateClient from "@/lib/axios";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+import ColorSelector from "@/app/products/_components/ColorsSelector";
+import SizeSelector from "@/app/products/_components/SizeSelector";
+import ProductTabs from "@/app/products/_components/ProductTabs";
+import {Review, useReviewsByProduct} from "@/services/reviewsService";
 
 export default function ProductDetailPage() {
   const { productId } = useParams();
@@ -43,40 +43,20 @@ export default function ProductDetailPage() {
     },
     enabled: !!productId,
   });
-
+  const { data: reviews }: { data: Review[] | undefined } = useReviewsByProduct(
+    product ? product.id : 0
+  );
   const { addToCart, buyNow, items } = useCartStore();
-  const { fetchReviewsByProduct, reviews } = useReviewStore();
   const orderId = parseInt(searchParams.get("orderId") || "0", 10);
-
-  // Fetch reviews when product loads
-  useEffect(() => {
-    if (product?.id) {
-      fetchReviewsByProduct(product.id);
-    }
-  }, [product?.id, fetchReviewsByProduct]);
-
-  // Check if should open review tab
   useEffect(() => {
     const shouldReview = searchParams.get("review");
     if (shouldReview === "true") {
       setActiveTab("reviews");
     }
   }, [searchParams]);
-
-  // Get product variants
-  const variants = useMemo(() => {
-    if (product) {
-      return product.variants || [];
-    }
-    return [];
-  }, [product]);
-  const availableColors = useMemo(() => {
-    return product?.colors || [];
-  }, [product]);
-
-  const availableSizes = useMemo(() => {
-    return product?.sizes || [];
-  }, [product]);
+  const variants = product?.variants || [];
+  const availableColors = product?.colors || [];
+  const availableSizes = product?.sizes || [];
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -90,7 +70,6 @@ export default function ProductDetailPage() {
     }
     return map;
   }, [product]);
-  // Get selected variant
   const selectedVariant = useMemo(() => {
     if (!selectedColor || !selectedSize) return null;
     return variants.find(
@@ -101,38 +80,40 @@ export default function ProductDetailPage() {
     if (!selectedVariant) return 0;
     return variantQuantityMap[selectedVariant.id] ?? 0;
   }, [selectedVariant, variantQuantityMap]);
-  
+
   // Tính số lượng đã có trong giỏ cho variant này
   const quantityInCart = useMemo(() => {
     if (!selectedVariant) return 0;
-    
-    const cartItem = items.find(item => item.variant?.id === selectedVariant.id);
+
+    const cartItem = items.find(
+      (item) => item.variant?.id === selectedVariant.id
+    );
     return cartItem ? cartItem.quantity : 0;
   }, [selectedVariant, items]);
-  
+
   // maxQuantity = tồn kho - số lượng đã trong giỏ
   const maxQuantity = useMemo(() => {
     const stock = selectedQuantity || 0;
     const remaining = stock - quantityInCart;
     return Math.max(0, remaining);
   }, [selectedQuantity, quantityInCart]);
-  
+
   const getStockStatus = () => {
     if (!selectedVariant) return null;
-    
+
     const stock = selectedQuantity || 0;
-    
+
     if (stock === 0) {
       return { text: "Hết hàng", class: "bg-red-100 text-red-800" };
     }
-    
+
     if (stock <= 10) {
       return {
         text: `Còn hàng: ${stock}`,
         class: "bg-yellow-100 text-yellow-800",
       };
     }
-    
+
     return {
       text: `Còn hàng: ${stock}`,
       class: "bg-green-100 text-green-800",
@@ -149,7 +130,17 @@ export default function ProductDetailPage() {
       setQuantity((prev) => prev - 1);
     }
   };
+  const handleColorSelect = (color: Color) => {
+    setSelectedColor(color);
+  };
 
+  const handleSizeSelect = (size: Size) => {
+    setSelectedSize(size);
+  };
+
+  const handleActiveTab = (tab: string) => {
+    setActiveTab(tab);
+  };
   const averageRating =
     reviews && reviews.length > 0
       ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
@@ -177,7 +168,9 @@ export default function ProductDetailPage() {
     // Check số lượng muốn thêm
     if (quantity > maxQuantity) {
       toast.error(
-        `Chỉ có thể thêm tối đa ${maxQuantity} sản phẩm${quantityInCart > 0 ? ` (đã có ${quantityInCart} trong giỏ)` : ''}`
+        `Chỉ có thể thêm tối đa ${maxQuantity} sản phẩm${
+          quantityInCart > 0 ? ` (đã có ${quantityInCart} trong giỏ)` : ""
+        }`
       );
       return;
     }
@@ -189,7 +182,7 @@ export default function ProductDetailPage() {
 
     addToCart(selectedVariant, quantity);
     toast.success(`Đã thêm ${quantity} sản phẩm vào giỏ hàng!`);
-    
+
     // Reset quantity về 1 sau khi thêm
     setQuantity(1);
   };
@@ -220,14 +213,10 @@ export default function ProductDetailPage() {
     }
 
     try {
-      // Use buyNow function which clears cart and adds only this item
       await buyNow(selectedVariant, quantity);
-
-      // Navigate to checkout immediately
       router.push("/checkout");
     } catch (error) {
       toast.error("Có lỗi xảy ra khi mua hàng");
-      console.error("Buy now error:", error);
     }
   };
   const isOutOfStock = selectedVariant && selectedQuantity === 0;
@@ -242,9 +231,7 @@ export default function ProductDetailPage() {
     );
   };
   if (isLoading) {
-    return (
-    <LoadingSpinner/>
-    );
+    return <LoadingSpinner />;
   }
   if (!product) {
     return (
@@ -275,7 +262,7 @@ export default function ProductDetailPage() {
           <Breadcrumb className="hidden sm:block">
             <BreadcrumbList>
               <BreadcrumbItem>
-                  <Link href="/">Trang chủ</Link>
+                <Link href="/">Trang chủ</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
@@ -285,9 +272,7 @@ export default function ProductDetailPage() {
                 <>
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>
-                    <Link
-                      href={`/products?category=${product.category.id}`}
-                    >
+                    <Link href={`/products?category=${product.category.id}`}>
                       {product.category.name}
                     </Link>
                   </BreadcrumbItem>
@@ -348,11 +333,10 @@ export default function ProductDetailPage() {
                   {averageRating.toFixed(1)}
                 </span>
                 <span className="text-gray-500 text-xs sm:text-sm">
-                  ({reviews.length || 0} đánh giá)
+                  ({reviews?.length || 0} đánh giá)
                 </span>
               </div>
             </div>
-
             {/* Price */}
             <div className="flex items-center gap-4">
               <span className="text-3xl font-bold">
@@ -366,52 +350,19 @@ export default function ProductDetailPage() {
                 </span>
               )}
             </div>
-
             {/* Color Selection - RESPONSIVE */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">
-                Màu sắc: {selectedColor?.name || "Chưa chọn"}
-              </h3>
-              <div className="flex flex-wrap gap-2 sm:gap-3">
-                {availableColors.map((color) => (
-                  <button
-                    key={color.id}
-                    onClick={() => setSelectedColor(color)}
-                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-1 transition-all ${
-                      selectedColor?.id === color.id
-                        ? "border-gray-900 border-2 ring-2 ring-gray-300"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                    style={{ backgroundColor: color.code }}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Size Selection - RESPONSIVE GRID */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">
-                Kích cỡ: {selectedSize?.code || "Chưa chọn"}
-              </h3>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
-                {availableSizes.map((size) => (
-                  <button
-                    key={size.id}
-                    onClick={() => setSelectedSize(size)}
-                    className={`py-2 sm:py-3 px-3 sm:px-4 border rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                      selectedSize?.id === size.id
-                        ? "border-gray-900 bg-gray-900 text-white"
-                        : "border-gray-300 hover:border-gray-400 bg-white text-gray-700"
-                    }`}
-                  >
-                    {size.code}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Quantity - RESPONSIVE */}
+            <ColorSelector
+              availableColors={availableColors}
+              selectedColor={selectedColor}
+              onSelectColor={handleColorSelect}
+            />
+            {/* Size Selection */}
+            <SizeSelector
+              availableSizes={availableSizes}
+              selectedSize={selectedSize}
+              onSelectSize={handleSizeSelect}
+            />
+            // Quantity
             <div>
               <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">
                 Số lượng
@@ -452,30 +403,31 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
               </div>
-              
+
               {/* Warning message when cart is full */}
               {maxQuantity === 0 && quantityInCart > 0 && (
                 <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                   <p className="text-sm text-orange-800 font-medium">
-                    ⚠️ Bạn đã thêm hết số lượng có sẵn vào giỏ hàng ({quantityInCart}/{selectedQuantity})
+                    ⚠️ Bạn đã thêm hết số lượng có sẵn vào giỏ hàng (
+                    {quantityInCart}/{selectedQuantity})
                   </p>
                   <p className="text-xs text-orange-600 mt-1">
                     Vui lòng xóa bớt trong giỏ hàng nếu muốn điều chỉnh số lượng
                   </p>
                 </div>
               )}
-              
+
               {/* Info message when some items in cart */}
               {maxQuantity > 0 && quantityInCart > 0 && (
                 <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    ℹ️ Đã có {quantityInCart} sản phẩm trong giỏ. Có thể thêm tối đa {maxQuantity} sản phẩm nữa.
+                    ℹ️ Đã có {quantityInCart} sản phẩm trong giỏ. Có thể thêm
+                    tối đa {maxQuantity} sản phẩm nữa.
                   </p>
                 </div>
               )}
             </div>
-
-            {/* Add to Cart Button - RESPONSIVE */}
+            {/* Add to Cart Button */}
             <div className="space-y-3 sm:space-y-4 pt-4 ">
               <Button
                 onClick={handleAddToCart}
@@ -500,106 +452,18 @@ export default function ProductDetailPage() {
                 </span>
               </Button>
             </div>
-
-            {/* Product Details - RESPONSIVE */}
+            {/* Product Details */}
           </div>
         </div>
 
         {/* Tabs Section - Description & Reviews */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="flex items-start w-full grid-cols-2 mx-auto">
-              <TabsTrigger value="description" className="text-sm sm:text-base">
-                Mô tả sản phẩm
-              </TabsTrigger>
-              <TabsTrigger value="reviews" className="text-sm sm:text-base">
-                Đánh giá ({reviews.length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="description" className="mt-8">
-              <div className="bg-white  p-6 shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                  Chi tiết sản phẩm
-                </h3>
-                <div className="prose prose-gray max-w-none">
-                  <p className="text-gray-600 leading-relaxed mb-4">
-                    {product.description ||
-                      "Chưa có mô tả chi tiết cho sản phẩm này."}
-                  </p>
-
-                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-3">
-                        Thông số kỹ thuật:
-                      </h4>
-                      <ul className="space-y-2 text-gray-600">
-                        <li>
-                          <strong>Mã SKU:</strong> {product.sku}
-                        </li>
-                        <li>
-                          <strong>Danh mục:</strong>{" "}
-                          {product.category?.name || "Không có"}
-                        </li>
-                        <li>
-                          <strong>Màu sắc:</strong>{" "}
-                          {availableColors.map((c) => c.name).join(", ") ||
-                            "Không có"}
-                        </li>
-                        <li>
-                          <strong>Kích cỡ:</strong>{" "}
-                          {availableSizes.map((s) => s.code).join(", ") ||
-                            "Không có"}
-                        </li>
-                        <li>
-                          <strong>Giá cơ bản:</strong>{" "}
-                          {formatPrice(product.basePrice)}
-                        </li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-3">
-                        Hướng dẫn sử dụng:
-                      </h4>
-                      <ul className="space-y-2 text-gray-600">
-                        <li>Giặt ở nhiệt độ dưới 30°C</li>
-                        <li>Không sử dụng chất tẩy</li>
-                        <li>Phơi trong bóng râm</li>
-                        <li>Ủi ở nhiệt độ thấp</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="reviews" className="mt-8">
-              <div className="space-y-6">
-                {/* Review Summary */}
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    Đánh giá của khách hàng
-                  </h3>
-                  {orderId > 0 && (
-                    <ReviewForm
-                      productId={product.id}
-                      orderId={orderId}
-                      onSuccess={() => {
-                        fetchReviewsByProduct(product.id);
-                      }}
-                    />
-                  )}
-                </div>
-                {/* Review List */}
-                <ReviewList productId={product.id} />
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+        <ProductTabs
+          product={product}
+          reviews={reviews || []}
+          orderId={orderId}
+          activeTab={activeTab}
+          setActiveTab={handleActiveTab}
+        />
       </div>
     </div>
   );

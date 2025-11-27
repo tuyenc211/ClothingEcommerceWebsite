@@ -1,12 +1,11 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { Category } from "./categoryStore";
-import { Review } from "./reviewStore";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { Size } from "./sizeStore";
 import { Color } from "./colorStore";
+import {Review} from "@/services/reviewsService";
 
 export interface ProductImage {
   id: number;

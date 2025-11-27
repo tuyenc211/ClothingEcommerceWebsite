@@ -1,36 +1,24 @@
 "use client";
-
-import { useEffect, useState } from "react";
 import { Star, Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useReviewStore, Review } from "@/stores/reviewStore";
 import useAuthStore from "@/stores/useAuthStore";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
+import {Review, useDeleteReview} from "@/services/reviewsService";
 interface ReviewListProps {
   productId: number;
+  reviews?: Review[];
 }
 
-export default function ReviewList({ productId }: ReviewListProps) {
+export default function ReviewList({ productId,reviews }: ReviewListProps) {
   const { authUser } = useAuthStore();
-  const { fetchReviewsByProduct, deleteReview, isLoading, reviews } =
-    useReviewStore();
-
-  useEffect(() => {
-    fetchReviewsByProduct(productId);
-  }, [productId]);
-
+    const {mutate: deleteReview, isPending:isLoading} = useDeleteReview()
   const handleDelete = async (reviewId: number) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa đánh giá này?")) {
-      return;
-    }
-
     try {
-      await deleteReview(reviewId);
+        deleteReview({ reviewId, userId: authUser?.id || 0} );
       toast.success("Đã xóa đánh giá");
-      fetchReviewsByProduct(productId);
     } catch (error) {
       console.error("Error deleting review:", error);
     }
@@ -73,7 +61,7 @@ export default function ReviewList({ productId }: ReviewListProps) {
     );
   }
 
-  if (reviews.length === 0) {
+  if (reviews?.length === 0) {
     return (
       <Card>
         <CardContent className="p-12 text-center">
@@ -89,7 +77,7 @@ export default function ReviewList({ productId }: ReviewListProps) {
 
   return (
     <div className="space-y-4">
-      {reviews.map((review) => (
+      {reviews?.map((review) => (
         <Card key={review.id}>
           <CardContent className="p-6">
             <div className="flex gap-4">

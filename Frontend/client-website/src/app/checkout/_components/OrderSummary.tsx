@@ -6,8 +6,8 @@ import { Ticket, Check, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { formatPrice } from "@/lib/utils";
 import { CartSummary } from "@/stores/cartStore";
-import { Coupon } from "@/stores/couponStore";
 import { EnrichedCartItem } from "@/types/cart";
+import {Coupon} from "@/services/couponService";
 
 interface OrderSummaryProps {
   items: EnrichedCartItem[];
@@ -207,14 +207,6 @@ export default function OrderSummary({
       <Button variant="ghost" className="w-full" onClick={onBackToCart}>
         Quay lại giỏ hàng
       </Button>
-
-      {/* Note */}
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-        <p className="text-xs text-amber-800">
-          Chúng tôi sẽ XÁC NHẬN đơn hàng bằng TIN NHẮN SMS. Bạn vui lòng kiểm
-          tra TIN NHẮN ngay khi đặt hàng thành công và CHỜ NHẬN HÀNG
-        </p>
-      </div>
     </div>
   );
 }
