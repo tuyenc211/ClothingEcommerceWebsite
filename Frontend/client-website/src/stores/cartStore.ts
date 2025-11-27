@@ -1,11 +1,10 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { ProductVariant } from "./productStore";
-import { Coupon } from "./couponStore";
 import privateClient from "@/lib/axios";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import useAuthStore from "./useAuthStore";
+import {Coupon} from "@/services/couponService";
 export interface Cart {
   id: number;
   userId: number;

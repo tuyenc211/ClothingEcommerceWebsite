@@ -1,15 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { useCouponStore } from "@/stores/couponStore";
 import { useMemo } from "react";
+import {useAllCoupons} from "@/services/couponService";
 export default function GridLetter() {
-  const { coupons } = useCouponStore();
+  const { data:coupons } = useAllCoupons();
 
   // Lấy các coupon active có ảnh
   const couponBanners = useMemo(() => {
     return coupons
-      .filter((coupon) => coupon.imageUrl && coupon.isActive) // Chỉ lấy coupon có ảnh
+      ?.filter((coupon) => coupon.imageUrl && coupon.isActive) // Chỉ lấy coupon có ảnh
       .map((coupon) => ({
         id: coupon.id,
         image: coupon.imageUrl!,
@@ -25,7 +25,7 @@ export default function GridLetter() {
   return (
     <div className="w-full px-4 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mx-auto">
-        {couponBanners.slice(0, 2).map((item, index) => (
+        {couponBanners?.slice(0, 2).map((item, index) => (
           <div
             key={item.id || index}
             className={`h-[400px] lg:h-[500px] rounded-2xl overflow-hidden relative group cursor-pointer ${

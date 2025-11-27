@@ -47,8 +47,6 @@ export default function ParentCategoryPage() {
     sortBy: "newest",
     sortOrder: "desc",
   });
-
-  // Get parent category from slug
   const parentCategory = useMemo(() => {
     if (typeof parentcategory === "string") {
       return getCategoryBySlug(parentcategory);
@@ -56,9 +54,8 @@ export default function ParentCategoryPage() {
     return null;
   }, [parentcategory, getCategoryBySlug]);
 
-  const categoryTitle = parentCategory?.name || "Danh mục";
+  const categoryTitle = parentCategory?.name ;
 
-  // Get child categories
   const childCategories = useMemo(() => {
     if (parentCategory) {
       return getChildCategories(parentCategory.id).filter(

@@ -22,9 +22,6 @@ interface ColorState {
   getColor: (id: number) => Color | undefined;
   clearError: () => void;
 }
-
-// Fashion colors for clothing store
-
 export const useColorStore = create<ColorState>()(
   persist(
     (set, get) => ({

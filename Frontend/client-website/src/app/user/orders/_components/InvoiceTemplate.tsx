@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Order } from "@/stores/orderStore";
 import { OrderStatusBadge } from "./StatusBadges";
-import { format } from "date-fns";
 import { formatDate, formatPrice } from "@/lib/utils";
 import useAuthStore from "@/stores/useAuthStore";
 import { createVNPayPayment } from "@/services/paymentService";
 import { toast } from "sonner";
 import { Button } from "../../../../components/ui/button";
+import {Order} from "@/services/orderService";
 interface InvoiceTemplateProps {
   order: Order;
 }

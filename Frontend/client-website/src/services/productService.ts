@@ -4,7 +4,7 @@ import { Product, useProductStore } from "@/stores/productStore";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useEffect } from "react";
-import {client} from "@/providers/ReactQueryProvider";
+import { client } from "@/providers/ReactQueryProvider";
 
 // Query key factory
 export const productKeys = {
@@ -14,12 +14,6 @@ export const productKeys = {
   detail: (id: number) => [...productKeys.details(), id] as const,
 };
 
-// ============= QUERIES =============
-
-/**
- * Hook để lấy danh sách tất cả sản phẩm (không có filter)
- * GET /products - Lấy tất cả sản phẩm
- */
 export const useProductsQuery = () => {
   const { setProducts } = useProductStore();
   const query = useQuery({
@@ -40,10 +34,6 @@ export const useProductsQuery = () => {
 
   return query;
 };
-
-/**
- * Hook để lấy chi tiết sản phẩm theo ID
- */
 export const useProductQuery = (productId: number | null) => {
   return useQuery({
     queryKey: productKeys.detail(productId!),
@@ -53,16 +43,10 @@ export const useProductQuery = (productId: number | null) => {
       return (response.data?.data || response.data) as Product;
     },
     enabled: !!productId,
-    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 };
 
-// ============= MUTATIONS (Chỉ dành cho admin) =============
-
-/**
- * Hook để tạo sản phẩm mới
- */
 export const useCreateProduct = () => {
   return useMutation({
     mutationFn: async (productData: Omit<Product, "id">) => {

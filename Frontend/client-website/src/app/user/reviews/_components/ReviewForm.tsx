@@ -13,53 +13,24 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useReviewStore } from "@/stores/reviewStore";
 import useAuthStore from "@/stores/useAuthStore";
 import { toast } from "sonner";
 import { Rating, RatingButton } from "@/components/ui/shadcn-io/rating";
+import { useCreateReview, useReviewsByUser } from "@/services/reviewsService";
 
 interface ReviewFormProps {
   productId: number;
   orderId?: number;
-  onSuccess?: () => void;
 }
 
-export default function ReviewForm({
-  productId,
-  orderId,
-  onSuccess,
-}: ReviewFormProps) {
+export default function ReviewForm({ productId, orderId }: ReviewFormProps) {
   const { authUser } = useAuthStore();
-  const { addReview, isLoading, reviews } = useReviewStore();
+  const { mutate: addReview, isPending: isLoading } = useCreateReview();
 
   const [isOpen, setIsOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [hasReviewed, setHasReviewed] = useState(false);
-
-  // Check if user has already reviewed this product for this order
-  useEffect(() => {
-    if (orderId) {
-      const hasReviewed = reviews.some(
-        (review) =>
-          review.product_id === productId &&
-          review.user_id === authUser?.id &&
-          review.order_id === orderId
-      );
-      setHasReviewed(hasReviewed);
-    } else {
-      // Fallback: check if user has reviewed this product at all
-      if (authUser && reviews) {
-        const userReview = reviews.find(
-          (review) =>
-            review.product_id === productId && review.user_id === authUser.id
-        );
-        setHasReviewed(!!userReview);
-      }
-    }
-  }, [authUser, reviews, productId, orderId]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -77,7 +48,7 @@ export default function ReviewForm({
     }
 
     try {
-      await addReview({
+      addReview({
         user_id: authUser.id,
         product_id: productId,
         order_id: orderId,
@@ -88,7 +59,6 @@ export default function ReviewForm({
       toast.success("Đánh giá của bạn đã được gửi thành công!");
       setIsOpen(false);
       resetForm();
-      onSuccess?.();
     } catch (error) {
       console.error("Error submitting review:", error);
     }
@@ -101,16 +71,6 @@ export default function ReviewForm({
   };
 
   if (!authUser) return null;
-
-  // If user has already reviewed this order, show a message instead
-  if (hasReviewed && orderId) {
-    return (
-      <div className="text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded-md border">
-        Bạn đã đánh giá sản phẩm này cho đơn hàng
-      </div>
-    );
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
