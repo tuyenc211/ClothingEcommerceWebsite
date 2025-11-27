@@ -4,7 +4,6 @@ import { CartItem } from "@/stores/cartStore";
 import { toast } from "sonner";
 import useAuthStore from "@/stores/useAuthStore";
 import { AxiosError } from "axios";
-import {client} from "@/providers/ReactQueryProvider";
 
 export const useCartQuery = () => {
   const userId = useAuthStore((state) => state.authUser?.id);
@@ -24,6 +23,7 @@ export const useCartQuery = () => {
 };
 
 export const useAddToCart = () => {
+  const client = useQueryClient();
   const userId = useAuthStore((state) => state.authUser?.id);
 
   return useMutation({
@@ -50,6 +50,7 @@ export const useAddToCart = () => {
 };
 
 export const useRemoveFromCart = () => {
+  const client = useQueryClient();
   const userId = useAuthStore((state) => state.authUser?.id);
 
   return useMutation({
@@ -68,6 +69,7 @@ export const useRemoveFromCart = () => {
 };
 
 export const useUpdateCartQuantity = () => {
+  const client = useQueryClient();
   const userId = useAuthStore((state) => state.authUser?.id);
 
   return useMutation({
@@ -93,6 +95,7 @@ export const useUpdateCartQuantity = () => {
 };
 
 export const useClearCart = () => {
+  const client = useQueryClient();
   const userId = useAuthStore((state) => state.authUser?.id);
 
   return useMutation({
