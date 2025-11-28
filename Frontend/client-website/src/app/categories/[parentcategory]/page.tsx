@@ -4,8 +4,6 @@ import React, { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { Product, useProductStore } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
-import { useColorStore } from "@/stores/colorStore";
-import { useSizeStore } from "@/stores/sizeStore";
 import ProductGrid from "@/app/products/_components/ProductGrid";
 import { productKeys, useProductsQuery } from "@/services/productService";
 import { convertProductToItemProps } from "@/app/products/_components/ProductItem";
@@ -17,6 +15,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { priceRanges } from "@/lib/utils";
+import { useColors } from "@/services/colorService";
+import { useSizes } from "@/services/sizeService";
 // Filter interface
 interface Filters {
   categoryId?: number;
@@ -32,12 +32,9 @@ export default function ParentCategoryPage() {
   const [displayCount, setDisplayCount] = useState(12);
   const [isLoading, setIsLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-
-  // Stores
-  const { getPublishedProducts } = useProductStore();
   const { getCategoryBySlug, getChildCategories } = useCategoryStore();
-  const { colors } = useColorStore();
-  const { sizes } = useSizeStore();
+  const { data: colors = [] } = useColors();
+  const { data: sizes = [] } = useSizes();
 
   // Filters state
   const [filters, setFilters] = useState<Filters>({
@@ -54,7 +51,7 @@ export default function ParentCategoryPage() {
     return null;
   }, [parentcategory, getCategoryBySlug]);
 
-  const categoryTitle = parentCategory?.name ;
+  const categoryTitle = parentCategory?.name;
 
   const childCategories = useMemo(() => {
     if (parentCategory) {
@@ -136,13 +133,7 @@ export default function ParentCategoryPage() {
     });
 
     return filtered;
-  }, [
-    getPublishedProducts,
-    parentCategory,
-    childCategories,
-    filters,
-    products,
-  ]);
+  }, [parentCategory, childCategories, filters, products]);
 
   // Convert to ProductItemProps format and apply display limit
   const displayedProducts = useMemo(() => {

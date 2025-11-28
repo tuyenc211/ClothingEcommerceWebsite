@@ -73,10 +73,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <Link
-              href="/public"
-              className="hover:text-gray-900 flex items-center"
-            >
+            <Link href="/" className="hover:text-gray-900 flex items-center">
               <Home className="h-4 w-4 mr-1" />
               Trang chủ
             </Link>
@@ -107,10 +104,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
               <nav className="space-y-1">
                 {sidebarItems.map((item) => {
                   const Icon = item.icon;
-                  const isActive =
-                    pathname === item.href ||
-                    (item.href !== "/user" && pathname?.startsWith(item.href));
-
+                  const isActive = pathname === item.href;
                   return (
                     <Link
                       key={item.href}
@@ -165,8 +159,6 @@ export default function UserLayout({ children }: UserLayoutProps) {
               </div>
             </div>
           </div>
-
-          {/* Main Content */}
           <div className="lg:col-span-9">
             <div>{children}</div>
           </div>

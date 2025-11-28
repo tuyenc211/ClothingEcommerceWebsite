@@ -2,10 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { Product, useProductStore } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
-import { useColorStore } from "@/stores/colorStore";
-import { useSizeStore } from "@/stores/sizeStore";
 import ProductGrid from "@/app/products/_components/ProductGrid";
 import { convertProductToItemProps } from "@/app/products/_components/ProductItem";
 import { formatPrice, priceRanges } from "@/lib/utils";
@@ -17,6 +14,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { productKeys, useProductsQuery } from "@/services/productService";
+import { useColors } from "@/services/colorService";
+import { Color } from "@/types";
+import { useSizes } from "@/services/sizeService";
 interface Filters {
   priceRange: [number, number];
   colorIds: number[];
@@ -31,13 +31,9 @@ export default function SubCategoryPage() {
   const [displayCount, setDisplayCount] = useState(12);
   const [isLoading, setIsLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-
-  // Stores
-  const { getPublishedProducts } = useProductStore();
   const { getCategoryBySlug } = useCategoryStore();
-  const { colors } = useColorStore();
-  const { sizes } = useSizeStore();
-  // Filters state
+  const { data: colors = [] } = useColors();
+  const { data: sizes = [] } = useSizes();
   const [filters, setFilters] = useState<Filters>({
     priceRange: [0, 5000000],
     colorIds: [],
@@ -116,7 +112,7 @@ export default function SubCategoryPage() {
     });
 
     return filtered;
-  }, [getPublishedProducts, subCategory, filters]);
+  }, [subCategory, filters]);
   const displayedProducts = useMemo(() => {
     return filteredProducts
       .slice(0, displayCount)

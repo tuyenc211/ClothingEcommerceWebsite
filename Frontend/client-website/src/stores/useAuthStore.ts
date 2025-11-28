@@ -57,10 +57,7 @@ interface AuthStore {
   deleteAddress: (id: number) => Promise<void>;
   setDefaultAddress: (id: number) => Promise<void>;
   getDefaultAddress: () => Address | undefined;
-
-  // Role management
   hasRole: (roleName: string) => boolean;
-  // Auth actions
   signup: (data: SignUpData) => Promise<void>;
   login: (data: LoginData) => Promise<void>;
   logout: () => Promise<void>;

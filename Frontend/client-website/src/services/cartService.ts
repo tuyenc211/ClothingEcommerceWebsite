@@ -5,16 +5,40 @@ import { toast } from "sonner";
 import useAuthStore from "@/stores/useAuthStore";
 import { AxiosError } from "axios";
 
+export const cartService = {
+  getCartItems: async (userId: number): Promise<CartItem[]> => {
+    if (!userId) return [];
+    const response = await privateClient.get(`/carts/${userId}`);
+    return (response.data?.data || response.data || []) as CartItem[];
+  },
+
+  addToCart: async (userId: number, variantId: number, quantity: number) => {
+    return await privateClient.post(
+      `/carts/${userId}/add?variantId=${variantId}&quantity=${quantity}`
+    );
+  },
+
+  removeFromCart: async (userId: number, itemId: number) => {
+    return await privateClient.delete(`/carts/${userId}/remove/${itemId}`);
+  },
+
+  updateQuantity: async (userId: number, itemId: number, quantity: number) => {
+    return await privateClient.put(
+      `/carts/${userId}/update?itemId=${itemId}&quantity=${quantity}`
+    );
+  },
+
+  clearCart: async (userId: number) => {
+    return await privateClient.delete(`/carts/${userId}/clear`);
+  },
+};
+
 export const useCartQuery = () => {
   const userId = useAuthStore((state) => state.authUser?.id);
 
   return useQuery({
     queryKey: ["cart", userId],
-    queryFn: async () => {
-      if (!userId) return [];
-      const response = await privateClient.get(`/carts/${userId}`);
-      return (response.data?.data || response.data || []) as CartItem[];
-    },
+    queryFn: () => cartService.getCartItems(userId!),
     enabled: !!userId,
     staleTime: 0, // Always fetch fresh data
     refetchOnMount: true,
@@ -35,9 +59,7 @@ export const useAddToCart = () => {
       quantity: number;
     }) => {
       if (!userId) throw new Error("User not authenticated");
-      return await privateClient.post(
-        `/carts/${userId}/add?variantId=${variantId}&quantity=${quantity}`
-      );
+      return await cartService.addToCart(userId, variantId, quantity);
     },
     onSuccess: () => {
       client.invalidateQueries({ queryKey: ["cart", userId] });
@@ -56,7 +78,7 @@ export const useRemoveFromCart = () => {
   return useMutation({
     mutationFn: async (itemId: number) => {
       if (!userId) throw new Error("User not authenticated");
-      return await privateClient.delete(`/carts/${userId}/remove/${itemId}`);
+      return await cartService.removeFromCart(userId, itemId);
     },
     onSuccess: () => {
       client.invalidateQueries({ queryKey: ["cart", userId] });
@@ -81,9 +103,7 @@ export const useUpdateCartQuantity = () => {
       quantity: number;
     }) => {
       if (!userId) throw new Error("User not authenticated");
-      return await privateClient.put(
-        `/carts/${userId}/update?itemId=${itemId}&quantity=${quantity}`
-      );
+      return await cartService.updateQuantity(userId, itemId, quantity);
     },
     onSuccess: () => {
       client.invalidateQueries({ queryKey: ["cart", userId] });
@@ -101,7 +121,7 @@ export const useClearCart = () => {
   return useMutation({
     mutationFn: async () => {
       if (!userId) throw new Error("User not authenticated");
-      return await privateClient.delete(`/carts/${userId}/clear`);
+      return await cartService.clearCart(userId);
     },
     onSuccess: () => {
       client.invalidateQueries({ queryKey: ["cart", userId] });
@@ -111,3 +131,5 @@ export const useClearCart = () => {
     },
   });
 };
+
+export default cartService;

@@ -7,8 +7,6 @@ import { Product, useProductStore } from "@/stores/productStore";
 import { useCartStore } from "@/stores/cartStore";
 import ProductImageGallery from "@/components/features/images/ThumnailGallery";
 import { formatPrice } from "@/lib/utils";
-import { Color } from "@/stores/colorStore";
-import { Size } from "@/stores/sizeStore";
 import {
   Breadcrumb,
   BreadcrumbSeparator,
@@ -27,6 +25,7 @@ import ColorSelector from "@/app/products/_components/ColorsSelector";
 import SizeSelector from "@/app/products/_components/SizeSelector";
 import ProductTabs from "@/app/products/_components/ProductTabs";
 import {Review, useReviewsByProduct} from "@/services/reviewsService";
+import {Color, Size} from "@/types";
 
 export default function ProductDetailPage() {
   const { productId } = useParams();

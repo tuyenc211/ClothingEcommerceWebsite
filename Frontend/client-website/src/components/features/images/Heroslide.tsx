@@ -4,29 +4,29 @@ import { banner } from "@/data/banner";
 import AutoSwiper from "./AutoSwiper";
 import { SwiperSlide } from "swiper/react";
 import Image from "next/image";
-import {useEffect, useMemo} from "react";
-import {useAllCoupons} from "@/services/couponService";
+import { useEffect, useMemo } from "react";
+import { useAllCoupons } from "@/services/couponService";
 
 export default function Heroslide() {
-    const { data:coupons  } = useAllCoupons();
-    // Lấy các coupon active có ảnh
-    const couponBanners = useMemo(() => {
-        return coupons?.filter((coupon) => coupon.imageUrl && coupon.isActive) // Chỉ lấy coupon có ảnh
-            .map((coupon) => ({
-                id: coupon.id,
-                image: coupon.imageUrl!,
-                title: coupon.name,
-                description: coupon.description || "",
-                code: coupon.code,
-                value: coupon.value,
-            }));
-    }, [coupons]);
+  const { data: coupons } = useAllCoupons();
+  const couponBanners = useMemo(() => {
+    return coupons
+      ?.filter((coupon) => coupon.imageUrl && coupon.isActive) // Chỉ lấy coupon có ảnh
+      .map((coupon) => ({
+        id: coupon.id,
+        image: coupon.imageUrl!,
+        title: coupon.name,
+        description: coupon.description || "",
+        code: coupon.code,
+        value: coupon.value,
+      }));
+  }, [coupons]);
 
-    // Sử dụng coupon banners nếu có, không thì dùng banner mặc định
-    // @ts-ignore
-    const displayBanners = couponBanners?.length > 0 ? couponBanners : banner;
+  // Sử dụng coupon banners nếu có, không thì dùng banner mặc định
+  // @ts-ignore
+  const displayBanners = couponBanners?.length > 0 ? couponBanners : banner;
 
-    return (
+  return (
     <AutoSwiper className="px-8 py-2 rounded-md">
       {displayBanners?.map((item) => (
         <SwiperSlide key={item.id}>

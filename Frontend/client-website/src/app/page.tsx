@@ -6,18 +6,9 @@ import OfferBanner from "@/components/features/images/OfferBanner";
 import FeaturedProducts from "@/app/products/_components/FeaturedProducts";
 import BestSellerProduct from "@/app/products/_components/BestSellerProduct";
 import NewsProduct from "@/app/products/_components/NewsProduct";
-import { useProductStore } from "@/stores/productStore";
-import { useColorStore } from "@/stores/colorStore";
-import { useSizeStore } from "@/stores/sizeStore";
-import { useEffect } from "react";
 import { useProductsQuery } from "@/services/productService";
+import { useColors } from "@/services/colorService";
 export default function Home() {
-  const { fetchColors } = useColorStore();
-  const { fetchSizes } = useSizeStore();
-  useEffect(() => {
-    fetchColors();
-    fetchSizes();
-  }, [fetchColors, fetchSizes]);
   const { data: products = [], isLoading, error } = useProductsQuery();
   if (isLoading) {
     return (

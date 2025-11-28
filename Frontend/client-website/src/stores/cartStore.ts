@@ -4,7 +4,7 @@ import privateClient from "@/lib/axios";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import useAuthStore from "./useAuthStore";
-import {Coupon} from "@/services/couponService";
+
 export interface Cart {
   id: number;
   userId: number;
@@ -31,28 +31,20 @@ export interface CartSummary {
 interface CartState {
   currentCart: Cart | null;
   items: CartItem[];
-  appliedCoupon: Coupon | null;
   shippingFee: number;
   isLoading: boolean;
   error: string | null;
 
-  // Cart management
   fetchCartItems: (userId: number) => Promise<void>;
   createCart: (userId: number) => void;
   clearCart: () => Promise<void>;
 
-  // Cart item actions - using variants
   addToCart: (variant: ProductVariant, quantity?: number) => Promise<void>;
   buyNow: (variant: ProductVariant, quantity?: number) => Promise<void>;
   removeFromCart: (itemId: number) => Promise<void>;
   updateQuantity: (itemId: number, quantity: number) => Promise<void>;
-  // Coupon actions
-  applyCoupon: (coupon: Coupon) => boolean;
-  removeCoupon: () => void;
-  // Calculation methods
   getCartSummary: () => CartSummary;
 
-  // Utility methods
   getTotalItems: () => number;
   setError: (error: string | null) => void;
   clearError: () => void;
@@ -64,7 +56,6 @@ const generateCartItemId = (variantId: number): number => {
 const initialState = {
   currentCart: null,
   items: [],
-  appliedCoupon: null,
   shippingFee: 30000,
   isLoading: false,
   error: null,
@@ -73,7 +64,6 @@ const initialState = {
 export const useCartStore = create<CartState>()((set, get) => ({
   ...initialState,
 
-  // Fetch cart items from backend
   fetchCartItems: async (userId: number) => {
     set({ isLoading: true, error: null });
     try {
@@ -94,7 +84,6 @@ export const useCartStore = create<CartState>()((set, get) => ({
     }
   },
 
-  // Cart management
   createCart: (userId) => {
     const newCart: Cart = {
       id: Date.now(),
@@ -130,7 +119,6 @@ export const useCartStore = create<CartState>()((set, get) => ({
     }
   },
 
-  // Cart item actions - using variants
   addToCart: async (variant, quantity = 1) => {
     // Lấy userId từ authStore thay vì currentCart
     const userId = useAuthStore.getState().authUser?.id;
@@ -262,78 +250,15 @@ export const useCartStore = create<CartState>()((set, get) => ({
     }
   },
 
-  applyCoupon: (coupon) => {
-    const { getCartSummary } = get();
-    const summary = getCartSummary();
-
-    // Check if coupon is valid
-    if (!coupon.isActive) {
-      set({ error: "Mã giảm giá không còn hiệu lực" });
-      return false;
-    }
-
-    if (coupon.endsAt && new Date(coupon.endsAt) < new Date()) {
-      set({ error: "Mã giảm giá đã hết hạn" });
-      return false;
-    }
-
-    if (coupon.minOrderTotal && summary.subtotal < coupon.minOrderTotal) {
-      set({
-        error: `Đơn hàng tối thiểu ${coupon.minOrderTotal.toLocaleString(
-          "vi-VN"
-        )} VNĐ để sử dụng mã này`,
-      });
-      return false;
-    }
-
-    set({
-      appliedCoupon: coupon,
-      error: null,
-    });
-    return true;
-  },
-
-  removeCoupon: () => {
-    set({ appliedCoupon: null });
-  },
-
   getCartSummary: (): CartSummary => {
-    const { items, appliedCoupon, shippingFee } = get();
+    const { items, shippingFee } = get();
 
     const subtotal = items.reduce(
       (total, item) => total + (item.unitPrice || 0) * item.quantity,
       0
     );
 
-    let discount = 0;
-
-    if (appliedCoupon && appliedCoupon.isActive) {
-      const now = new Date();
-
-      const startsAt = appliedCoupon.startsAt
-        ? new Date(appliedCoupon.startsAt)
-        : null;
-      const endsAt = appliedCoupon.endsAt
-        ? new Date(appliedCoupon.endsAt)
-        : null;
-
-      const isWithinDateRange =
-        (!startsAt || now >= startsAt) && (!endsAt || now <= endsAt);
-
-      const meetsMinTotal =
-        !appliedCoupon.minOrderTotal || subtotal >= appliedCoupon.minOrderTotal;
-
-      if (isWithinDateRange && meetsMinTotal) {
-        // Percentage discount calculation
-        discount = (subtotal * appliedCoupon.value) / 100;
-
-        // Không cho giảm quá số tiền đơn hàng
-        if (discount > subtotal) {
-          discount = subtotal;
-        }
-      }
-    }
-
+    const discount = 0;
     const subtotalAfterDiscount = subtotal - discount;
     const total = subtotalAfterDiscount + shippingFee;
 
