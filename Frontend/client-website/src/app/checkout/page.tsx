@@ -24,12 +24,13 @@ import PaymentMethodSelector from "@/app/checkout/_components/PaymentMethodSelec
 import OrderSummary from "@/app/checkout/_components/OrderSummary";
 
 import { EnrichedCartItem } from "@/types/cart";
-import { PaymentMethod, } from "@/services/orderService";
+import { PaymentMethod } from "@/services/orderService";
 import { AxiosError } from "axios";
 import { createVNPayPayment } from "@/services/paymentService";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
-import {useCreateOrder} from "@/services/orderService";
-import {Coupon, useAvailableCoupons} from "@/services/couponService";
+import { useCreateOrder } from "@/services/orderService";
+import { Coupon, useAvailableCoupons } from "@/services/couponService";
+import { useProductsQuery } from "@/services/productService";
 
 interface ShippingFormData {
   fullName: string;
@@ -46,18 +47,61 @@ export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const { authUser, fetchAddresses } = useAuthStore();
   const { data: items = [], isLoading: isLoadingCart } = useCartQuery();
-  const {mutate:createOrder, data:order  }= useCreateOrder();
-  const {
-    getCartSummary,
-    clearCart,
-    applyCoupon,
-    removeCoupon,
-    appliedCoupon,
-  } = useCartStore();
-  const { getProduct, fetchProducts } = useProductStore();
+  const { mutate: createOrder, data: order } = useCreateOrder();
+  const { getCartSummary, clearCart } = useCartStore();
+  const { fetchProducts } = useProductStore();
+  const { data: products } = useProductsQuery();
 
-  const summary = getCartSummary();
-const {data:availableCoupons} :{data: Coupon[] | undefined} = useAvailableCoupons(authUser?.id, summary.subtotal);
+  // Local state for coupon
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+
+  // Calculate summary locally to include coupon discount
+  const summary = useMemo(() => {
+    const baseSummary = getCartSummary();
+
+    // Recalculate if there's a coupon
+    if (appliedCoupon && appliedCoupon.isActive) {
+      const subtotal = baseSummary.subtotal;
+      let discount = 0;
+
+      const now = new Date();
+      const startsAt = appliedCoupon.startsAt
+        ? new Date(appliedCoupon.startsAt)
+        : null;
+      const endsAt = appliedCoupon.endsAt
+        ? new Date(appliedCoupon.endsAt)
+        : null;
+
+      const isWithinDateRange =
+        (!startsAt || now >= startsAt) && (!endsAt || now <= endsAt);
+      const meetsMinTotal =
+        !appliedCoupon.minOrderTotal || subtotal >= appliedCoupon.minOrderTotal;
+
+      if (isWithinDateRange && meetsMinTotal) {
+        // Percentage discount calculation
+        discount = (subtotal * appliedCoupon.value) / 100;
+
+        // Cap discount at subtotal
+        if (discount > subtotal) {
+          discount = subtotal;
+        }
+      }
+
+      const subtotalAfterDiscount = subtotal - discount;
+      const total = subtotalAfterDiscount + baseSummary.shippingFee;
+
+      return {
+        ...baseSummary,
+        discount,
+        total,
+      };
+    }
+
+    return baseSummary;
+  }, [getCartSummary, appliedCoupon]);
+
+  const { data: availableCoupons }: { data: Coupon[] | undefined } =
+    useAvailableCoupons(authUser?.id, summary.subtotal);
   const {
     provinces,
     wards,
@@ -98,7 +142,6 @@ const {data:availableCoupons} :{data: Coupon[] | undefined} = useAvailableCoupon
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Ref để track xem có đang thanh toán không (dùng trong cleanup)
   const isCheckingOutRef = useRef(false);
@@ -118,7 +161,9 @@ const {data:availableCoupons} :{data: Coupon[] | undefined} = useAvailableCoupon
         const variant = item.variant;
         if (!variant) return null;
 
-        const product = getProduct(variant.product?.id || variant.product_id);
+        const product = products?.find(
+          (product) => product.id === variant.product?.id || variant.product_id
+        );
 
         return {
           ...item,
@@ -128,7 +173,7 @@ const {data:availableCoupons} :{data: Coupon[] | undefined} = useAvailableCoupon
         } as EnrichedCartItem;
       })
       .filter((item): item is EnrichedCartItem => item !== null);
-  }, [items, getProduct]);
+  }, [items]);
 
   useEffect(() => {
     if (authUser) {
@@ -165,32 +210,11 @@ const {data:availableCoupons} :{data: Coupon[] | undefined} = useAvailableCoupon
     } else {
       setIsNewAddress(true);
     }
-  }, [authUser, authUser?.addresses, isLoadingAddresses]); // ✅ Thêm dependencies
-
-  // Update ref khi có thay đổi trạng thái thanh toán
+  }, [authUser, authUser?.addresses, isLoadingAddresses]);
   useEffect(() => {
     isCheckingOutRef.current = isSubmitting || isProcessingPayment;
   }, [isSubmitting, isProcessingPayment]);
 
-  // Cleanup: Hủy mã giảm giá khi rời trang mà chưa thanh toán
-  useEffect(() => {
-    return () => {
-      // Lấy trạng thái hiện tại từ store
-      const currentCoupon = useCartStore.getState().appliedCoupon;
-
-      // Chỉ hủy nếu:
-      // 1. Có mã giảm giá
-      // 2. Không đang checkout (user tự rời trang)
-      if (currentCoupon && !isCheckingOutRef.current) {
-        console.log(
-          "🧹 Hủy mã giảm giá khi rời trang checkout:",
-          currentCoupon.code
-        );
-        useCartStore.getState().removeCoupon();
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   // Handle VNPay payment callback
   useEffect(() => {
     const paymentStatus = searchParams?.get("status");
@@ -281,20 +305,19 @@ const {data:availableCoupons} :{data: Coupon[] | undefined} = useAvailableCoupon
 
   const handleApplyCoupon = (couponCode: string) => {
     const coupon = availableCoupons?.find((c) => c.code === couponCode);
-    if (coupon) {
-      const success = applyCoupon(coupon);
-      if (success) {
-        setShowCouponList(false);
-        toast.success(`Đã áp dụng mã giảm giá: ${couponCode}`);
-      } else {
-        toast.error("Không thể áp dụng mã giảm giá này");
-      }
+
+    if (!coupon) {
+      toast.error("Mã giảm giá không tồn tại");
+      return;
     }
+
+    setAppliedCoupon(coupon);
+    setShowCouponList(false);
+    toast.success(`Đã áp dụng mã giảm giá: ${couponCode}`);
   };
 
   const handleRemoveCoupon = () => {
-    removeCoupon();
-    toast.info("Đã hủy mã giảm giá");
+    setAppliedCoupon(null);
   };
   const validatePhone = (phone: string): boolean => {
     // Phone VN: 10 số, bắt đầu bằng 0
@@ -337,7 +360,7 @@ const {data:availableCoupons} :{data: Coupon[] | undefined} = useAvailableCoupon
         couponCode: appliedCoupon?.code,
       };
       // @ts-ignore
-        createOrder(authUser.id, orderRequest);
+      createOrder(authUser.id, orderRequest);
 
       // Handle payment method
       if (paymentMethod === "WALLET") {
@@ -345,14 +368,14 @@ const {data:availableCoupons} :{data: Coupon[] | undefined} = useAvailableCoupon
         try {
           toast.info("Đang chuyển đến trang thanh toán VNPay...");
 
-            const paymentUrl = await createVNPayPayment(
-                // @ts-ignore
+          const paymentUrl = await createVNPayPayment(
+            // @ts-ignore
             order.grandTotal,
-                // @ts-ignore
+            // @ts-ignore
             order.id.toString()
           );
           await clearCart();
-          removeCoupon();
+          setAppliedCoupon(null);
           await fetchProducts();
 
           // Redirect to VNPay payment gateway
@@ -361,12 +384,12 @@ const {data:availableCoupons} :{data: Coupon[] | undefined} = useAvailableCoupon
           toast.error("Không thể tạo thanh toán VNPay. Vui lòng thử lại.");
         }
       } else {
-          // @ts-ignore
+        // @ts-ignore
         toast.success(`Đặt hàng thành công! Mã đơn hàng: ${order.code}`);
         // @ts-ignore
-          router.push(`/user/orders/${order.id}`);
+        router.push(`/user/orders/${order.id}`);
         clearCart();
-        removeCoupon();
+        setAppliedCoupon(null);
         fetchProducts();
       }
     } catch (error) {
@@ -398,9 +421,7 @@ const {data:availableCoupons} :{data: Coupon[] | undefined} = useAvailableCoupon
     );
   }
   if (isLoadingCart) {
-    return (
-      <LoadingSpinner/>
-    );
+    return <LoadingSpinner />;
   }
   if (items.length === 0 && !searchParams?.get("status")) {
     return (

@@ -30,7 +30,7 @@ export function CartSheet() {
     createCart,
     fetchCartItems,
   } = useCartStore();
-  const { getProduct } = useProductStore();
+  const { products } = useProductStore();
   const { authUser } = useAuthStore();
   const itemCount = getTotalItems();
   const summary = getCartSummary();
@@ -40,13 +40,12 @@ export function CartSheet() {
       fetchCartItems(authUser.id);
     }
   }, [authUser?.id, fetchCartItems, createCart]);
-  // Enrich cart items with full product, color, and size info
   const enrichedItems = useMemo(() => {
     return items
       .map((item) => {
         const variant = item.variant;
         if (!variant) return null;
-        const product = getProduct(variant.product?.id || variant.product_id);
+          const product = products?.find((product) => product.id === variant.product?.id || variant.product_id);
         let maxStock = Infinity; // fallback an toàn
         if (product?.inventories) {
           const inv = product.inventories.find(
@@ -65,7 +64,7 @@ export function CartSheet() {
         };
       })
       .filter(Boolean);
-  }, [items, getProduct]);
+  }, [items]);
 
   const handleQuantityChange = (itemId: number, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -136,7 +135,7 @@ export function CartSheet() {
                         />
                       </div>
 
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 ">
                         <h4 className="font-medium text-sm text-gray-900 truncate">
                           {item.product.name}
                         </h4>
