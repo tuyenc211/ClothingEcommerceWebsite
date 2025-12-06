@@ -76,6 +76,11 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/coupons/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/payment/**").permitAll()
+                                .requestMatchers(
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html"
+                                ).permitAll()
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
