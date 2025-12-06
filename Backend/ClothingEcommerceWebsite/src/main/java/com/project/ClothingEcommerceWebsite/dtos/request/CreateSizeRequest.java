@@ -1,11 +1,10 @@
 package com.project.ClothingEcommerceWebsite.dtos.request;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import javax.validation.constraints.PositiveOrZero;
-
-import javax.validation.constraints.NotBlank;
 
 @Data
 @AllArgsConstructor

@@ -10,11 +10,11 @@ import com.project.ClothingEcommerceWebsite.repositories.ProductRepository;
 import com.project.ClothingEcommerceWebsite.repositories.ReviewRepository;
 import com.project.ClothingEcommerceWebsite.repositories.UserRepository;
 import com.project.ClothingEcommerceWebsite.services.ReviewService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 

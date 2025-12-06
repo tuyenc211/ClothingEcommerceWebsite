@@ -6,10 +6,10 @@ import com.project.ClothingEcommerceWebsite.models.ProductVariant;
 import com.project.ClothingEcommerceWebsite.repositories.InventoryRepository;
 import com.project.ClothingEcommerceWebsite.repositories.ProductVariantRepository;
 import com.project.ClothingEcommerceWebsite.services.InventoryService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.List;
 
 @Service

@@ -10,11 +10,11 @@ import com.project.ClothingEcommerceWebsite.services.CategoryService;
 import com.project.ClothingEcommerceWebsite.services.ProductService;
 import com.project.ClothingEcommerceWebsite.utils.CloudinaryUtil;
 import com.project.ClothingEcommerceWebsite.utils.SlugUtil;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
