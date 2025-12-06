@@ -3,7 +3,6 @@ import privateClient from "@/lib/axios";
 import { Product, useProductStore } from "@/stores/productStore";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
-import { queryClient } from "@/lib/react-query";
 import { useEffect } from "react";
 
 // Query key factory
@@ -14,12 +13,6 @@ export const productKeys = {
   detail: (id: number) => [...productKeys.details(), id] as const,
 };
 
-// ============= QUERIES =============
-
-/**
- * Hook để lấy danh sách tất cả sản phẩm (không có filter)
- * GET /products - Lấy tất cả sản phẩm
- */
 export const useProductsQuery = () => {
   const { setProducts } = useProductStore();
   const query = useQuery({
@@ -40,10 +33,6 @@ export const useProductsQuery = () => {
 
   return query;
 };
-
-/**
- * Hook để lấy chi tiết sản phẩm theo ID
- */
 export const useProductQuery = (productId: number | null) => {
   return useQuery({
     queryKey: productKeys.detail(productId!),
@@ -53,24 +42,19 @@ export const useProductQuery = (productId: number | null) => {
       return (response.data?.data || response.data) as Product;
     },
     enabled: !!productId,
-    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 };
 
-// ============= MUTATIONS (Chỉ dành cho admin) =============
-
-/**
- * Hook để tạo sản phẩm mới
- */
 export const useCreateProduct = () => {
+  const client = useQueryClient();
   return useMutation({
     mutationFn: async (productData: Omit<Product, "id">) => {
       const response = await privateClient.post("/products", productData);
       return response.data?.data || response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
+      client.invalidateQueries({ queryKey: productKeys.lists() });
       toast.success("Tạo sản phẩm thành công");
     },
     onError: (error: AxiosError<{ message: string }>) => {
@@ -83,6 +67,7 @@ export const useCreateProduct = () => {
  * Hook để cập nhật sản phẩm
  */
 export const useUpdateProduct = () => {
+  const client = useQueryClient();
   return useMutation({
     mutationFn: async ({
       productId,
@@ -98,8 +83,8 @@ export const useUpdateProduct = () => {
       return response.data?.data || response.data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
-      queryClient.invalidateQueries({
+      client.invalidateQueries({ queryKey: productKeys.lists() });
+      client.invalidateQueries({
         queryKey: productKeys.detail(variables.productId),
       });
       toast.success("Cập nhật sản phẩm thành công");
@@ -114,12 +99,13 @@ export const useUpdateProduct = () => {
  * Hook để xóa sản phẩm
  */
 export const useDeleteProduct = () => {
+  const client = useQueryClient();
   return useMutation({
     mutationFn: async (productId: number) => {
       return await privateClient.delete(`/products/${productId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
+      client.invalidateQueries({ queryKey: productKeys.lists() });
       toast.success("Xóa sản phẩm thành công");
     },
     onError: (error: AxiosError<{ message: string }>) => {
@@ -132,6 +118,7 @@ export const useDeleteProduct = () => {
  * Hook để upload ảnh sản phẩm
  */
 export const useUploadProductImages = () => {
+  const client = useQueryClient();
   return useMutation({
     mutationFn: async ({
       productId,
@@ -157,7 +144,7 @@ export const useUploadProductImages = () => {
       return response.data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
+      client.invalidateQueries({
         queryKey: productKeys.detail(variables.productId),
       });
       toast.success("Upload ảnh thành công");
@@ -172,6 +159,7 @@ export const useUploadProductImages = () => {
  * Hook để xóa ảnh sản phẩm
  */
 export const useDeleteProductImage = () => {
+  const client = useQueryClient();
   return useMutation({
     mutationFn: async ({
       productId,
@@ -185,7 +173,7 @@ export const useDeleteProductImage = () => {
       );
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
+      client.invalidateQueries({
         queryKey: productKeys.detail(variables.productId),
       });
       toast.success("Xóa ảnh thành công");

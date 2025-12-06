@@ -2,16 +2,16 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import UserLayout from "@/components/sections/UserLayout";
+import UserLayout from "@/components/layouts/UserLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Star, Package, MessageSquare } from "lucide-react";
 import useAuthStore from "@/stores/useAuthStore";
-import { useOrderStore } from "@/stores/orderStore";
-import { useReviewStore } from "@/stores/reviewStore";
+
 import { formatPrice } from "@/lib/utils";
-import { Review } from "@/stores/reviewStore";
+import {useReviewsByUser} from "@/services/reviewsService";
+import {Order, useUserOrders} from "@/services/orderService";
 interface ReviewableProduct {
   orderId: number;
   orderCode: string;
@@ -27,23 +27,8 @@ interface ReviewableProduct {
 export default function ReviewsPage() {
   const router = useRouter();
   const { authUser } = useAuthStore();
-  const { orders, fetchUserOrders, isLoading } = useOrderStore();
-  const { reviews, fetchReviewsByUser } = useReviewStore();
-  const [userReviews, setUserReviews] = useState<Review[]>([]);
-
-  useEffect(() => {
-    if (authUser?.id) {
-      fetchUserOrders(authUser.id);
-    }
-  }, [authUser, fetchUserOrders]);
-
-  useEffect(() => {
-    if (authUser?.id) {
-      fetchReviewsByUser(authUser.id).then(setUserReviews);
-    }
-  }, [authUser, fetchReviewsByUser]);
-
-  // Get all reviewable products from DELIVERED orders
+    const {data: orders, }:{ data: Order[] | undefined } =useUserOrders({ userId: authUser?.id });
+    const {data:userReviews = [], isLoading} = useReviewsByUser(authUser?.id);
   const reviewableProducts = useMemo(() => {
     if (!orders || orders.length === 0) return [];
 

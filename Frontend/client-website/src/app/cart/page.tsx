@@ -26,6 +26,7 @@ import {
 import { useRouter } from "next/navigation";
 import { EnrichedCartItem } from "@/types/cart";
 import { useCartQuery } from "@/services/cartService";
+import {useProductsQuery} from "@/services/productService";
 
 export default function CartPage() {
   const { data: items = [], isLoading: isLoadingCart } = useCartQuery();
@@ -38,11 +39,7 @@ export default function CartPage() {
     fetchCartItems,
     createCart,
   } = useCartStore();
-
-  const { authUser } = useAuthStore();
-
-  // Get stores to populate variant info
-  const { getProduct } = useProductStore();
+  const {data:products} = useProductsQuery();
   const itemCount = getTotalItems();
   const summary = getCartSummary();
   const router = useRouter();
@@ -53,8 +50,7 @@ export default function CartPage() {
       .map((item) => {
         const variant = item.variant;
         if (!variant) return null;
-
-        const product = getProduct(variant.product?.id || variant.product_id);
+        const product = products?.find((product) => product.id === variant.product?.id || variant.product_id);
         let maxStock = Infinity;
         if (product?.inventories) {
           const inv = product.inventories.find(
@@ -74,7 +70,7 @@ export default function CartPage() {
         } as EnrichedCartItem;
       })
       .filter((item): item is EnrichedCartItem => item !== null);
-  }, [items, getProduct]);
+  }, [items]);
   const hasRawItems = items.length > 0;
   const isEnriching = hasRawItems && enrichedItems.length === 0;
   const handleQuantityChange = (itemId: number, newQuantity: number) => {

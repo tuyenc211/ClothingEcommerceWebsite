@@ -1,6 +1,6 @@
 "use client";
 
-import { ForgotPasswordForm } from "@/components/ui/forgot-password-form";
+import { ForgotPasswordForm } from "@/app/user/forgot-password/_components/forgot-password-form";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import useAuthStore from "@/stores/useAuthStore";

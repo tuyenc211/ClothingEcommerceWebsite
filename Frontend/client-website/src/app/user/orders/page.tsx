@@ -1,7 +1,5 @@
 "use client";
-import { useEffect } from "react";
-import { useOrderStore } from "@/stores/orderStore";
-import { OrderTable } from "@/components/common/OrderTable";
+import { OrderTable } from "@/app/user/orders/_components/OrderTable";
 import {
   Pagination,
   PaginationContent,
@@ -11,47 +9,36 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import UserLayout from "@/components/sections/UserLayout";
+import UserLayout from "@/components/layouts/UserLayout";
 import useAuthStore from "@/stores/useAuthStore";
+import {Order, useUserOrders} from "@/services/orderService";
+import {useState} from "react";
 export default function OrdersPage() {
-  const {
-    orders,
-    isLoading,
-    currentPage,
-    itemsPerPage,
-    setPage,
-    fetchUserOrders,
-  } = useOrderStore();
   const { authUser } = useAuthStore();
-
-  useEffect(() => {
-    if (authUser?.id) {
-      fetchUserOrders(authUser.id);
-    }
-  }, [fetchUserOrders, authUser?.id]);
-
+  const {data: orders, isLoading}:{ data: Order[] | undefined; isLoading: boolean } =useUserOrders({ userId: authUser?.id });
   // Sort orders by created_at (newest first)
-  const sortedOrders = [...orders].sort((a, b) => {
+  const sortedOrders = orders?.sort((a, b) => {
     return (
       new Date(b.createdAt || 0).getTime() -
       new Date(a.createdAt || 0).getTime()
     );
   });
-
-  // Pagination calculation
-  const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+  // @ts-ignore
+    const totalPages = Math.ceil(sortedOrders?.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedOrders = sortedOrders.slice(startIndex, endIndex);
+  const paginatedOrders = sortedOrders?.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
-    setPage(page);
+    setCurrentPage(page);
   };
 
   // Generate page numbers for pagination
   const getPageNumbers = () => {
     const pages = [];
-    const showPages = 5; // Show 5 page numbers at most
+    const showPages = 5;
     const half = Math.floor(showPages / 2);
 
     let start = Math.max(1, currentPage - half);
@@ -97,11 +84,11 @@ export default function OrdersPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Đơn hàng</h1>
           <p className="text-gray-600">
-            Quản lý và theo dõi đơn hàng ({orders.length} tổng cộng)
+            Quản lý và theo dõi đơn hàng ({orders?.length} tổng cộng)
           </p>
         </div>
         {/* Orders Table */}
-        <OrderTable orders={paginatedOrders} />
+        <OrderTable orders={paginatedOrders || []} />
 
         {/* Pagination */}
         {totalPages > 1 && (
@@ -147,8 +134,8 @@ export default function OrdersPage() {
 
         {/* Results info */}
         <div className="mt-4 text-center text-sm text-gray-500">
-          Hiển thị {startIndex + 1}-{Math.min(endIndex, sortedOrders.length)}{" "}
-          trong {sortedOrders.length} đơn hàng
+          Hiển thị {startIndex + 1}-{Math.min(endIndex, sortedOrders?.length as number)}{" "}
+          trong {sortedOrders?.length} đơn hàng
         </div>
       </div>
     </UserLayout>
