@@ -3,11 +3,11 @@ package com.project.ClothingEcommerceWebsite.controllers;
 import com.project.ClothingEcommerceWebsite.dtos.request.*;
 import com.project.ClothingEcommerceWebsite.models.Review;
 import com.project.ClothingEcommerceWebsite.services.ReviewService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController

@@ -2,7 +2,7 @@ package com.project.ClothingEcommerceWebsite.models;
 
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,7 +26,7 @@ public class Coupon {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false, precision = 12, scale = 2)
+    @Column(nullable = false)
     private Double value;
 
     @Column(name = "max_uses")
@@ -35,7 +35,7 @@ public class Coupon {
     @Column(name = "max_uses_per_user")
     private Integer maxUsesPerUser;
 
-    @Column(name = "min_order_total", precision = 12, scale = 2)
+    @Column(name = "min_order_total")
     private Double minOrderTotal;
 
     @Column(name = "starts_at")

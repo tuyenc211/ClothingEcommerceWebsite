@@ -1,7 +1,7 @@
 package com.project.ClothingEcommerceWebsite.models;
 
 import lombok.*;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
