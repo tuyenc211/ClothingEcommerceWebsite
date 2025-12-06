@@ -4,18 +4,41 @@ import { CartItem } from "@/stores/cartStore";
 import { toast } from "sonner";
 import useAuthStore from "@/stores/useAuthStore";
 import { AxiosError } from "axios";
-import { queryClient } from "@/lib/react-query";
+
+export const cartService = {
+  getCartItems: async (userId: number): Promise<CartItem[]> => {
+    if (!userId) return [];
+    const response = await privateClient.get(`/carts/${userId}`);
+    return (response.data?.data || response.data || []) as CartItem[];
+  },
+
+  addToCart: async (userId: number, variantId: number, quantity: number) => {
+    return await privateClient.post(
+      `/carts/${userId}/add?variantId=${variantId}&quantity=${quantity}`
+    );
+  },
+
+  removeFromCart: async (userId: number, itemId: number) => {
+    return await privateClient.delete(`/carts/${userId}/remove/${itemId}`);
+  },
+
+  updateQuantity: async (userId: number, itemId: number, quantity: number) => {
+    return await privateClient.put(
+      `/carts/${userId}/update?itemId=${itemId}&quantity=${quantity}`
+    );
+  },
+
+  clearCart: async (userId: number) => {
+    return await privateClient.delete(`/carts/${userId}/clear`);
+  },
+};
 
 export const useCartQuery = () => {
   const userId = useAuthStore((state) => state.authUser?.id);
 
   return useQuery({
     queryKey: ["cart", userId],
-    queryFn: async () => {
-      if (!userId) return [];
-      const response = await privateClient.get(`/carts/${userId}`);
-      return (response.data?.data || response.data || []) as CartItem[];
-    },
+    queryFn: () => cartService.getCartItems(userId!),
     enabled: !!userId,
     staleTime: 0, // Always fetch fresh data
     refetchOnMount: true,
@@ -24,6 +47,7 @@ export const useCartQuery = () => {
 };
 
 export const useAddToCart = () => {
+  const client = useQueryClient();
   const userId = useAuthStore((state) => state.authUser?.id);
 
   return useMutation({
@@ -35,12 +59,10 @@ export const useAddToCart = () => {
       quantity: number;
     }) => {
       if (!userId) throw new Error("User not authenticated");
-      return await privateClient.post(
-        `/carts/${userId}/add?variantId=${variantId}&quantity=${quantity}`
-      );
+      return await cartService.addToCart(userId, variantId, quantity);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart", userId] });
+      client.invalidateQueries({ queryKey: ["cart", userId] });
       toast.success("Đã thêm vào giỏ hàng");
     },
     onError: (error: AxiosError<{ message: string }>) => {
@@ -50,15 +72,16 @@ export const useAddToCart = () => {
 };
 
 export const useRemoveFromCart = () => {
+  const client = useQueryClient();
   const userId = useAuthStore((state) => state.authUser?.id);
 
   return useMutation({
     mutationFn: async (itemId: number) => {
       if (!userId) throw new Error("User not authenticated");
-      return await privateClient.delete(`/carts/${userId}/remove/${itemId}`);
+      return await cartService.removeFromCart(userId, itemId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart", userId] });
+      client.invalidateQueries({ queryKey: ["cart", userId] });
       toast.success("Đã xóa khỏi giỏ hàng");
     },
     onError: (error: AxiosError<{ message: string }>) => {
@@ -68,6 +91,7 @@ export const useRemoveFromCart = () => {
 };
 
 export const useUpdateCartQuantity = () => {
+  const client = useQueryClient();
   const userId = useAuthStore((state) => state.authUser?.id);
 
   return useMutation({
@@ -79,12 +103,10 @@ export const useUpdateCartQuantity = () => {
       quantity: number;
     }) => {
       if (!userId) throw new Error("User not authenticated");
-      return await privateClient.put(
-        `/carts/${userId}/update?itemId=${itemId}&quantity=${quantity}`
-      );
+      return await cartService.updateQuantity(userId, itemId, quantity);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart", userId] });
+      client.invalidateQueries({ queryKey: ["cart", userId] });
     },
     onError: (error: AxiosError<{ message: string }>) => {
       toast.error(error.response?.data?.message || "Lỗi khi cập nhật");
@@ -93,18 +115,21 @@ export const useUpdateCartQuantity = () => {
 };
 
 export const useClearCart = () => {
+  const client = useQueryClient();
   const userId = useAuthStore((state) => state.authUser?.id);
 
   return useMutation({
     mutationFn: async () => {
       if (!userId) throw new Error("User not authenticated");
-      return await privateClient.delete(`/carts/${userId}/clear`);
+      return await cartService.clearCart(userId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart", userId] });
+      client.invalidateQueries({ queryKey: ["cart", userId] });
     },
     onError: (error: AxiosError<{ message: string }>) => {
       toast.error(error.response?.data?.message || "Lỗi khi xóa giỏ hàng");
     },
   });
 };
+
+export default cartService;

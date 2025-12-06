@@ -1,13 +1,11 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { Category } from "./categoryStore";
-import { Review } from "./reviewStore";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
-import { Size } from "./sizeStore";
-import { Color } from "./colorStore";
-export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
+
+import {Review} from "@/services/reviewsService";
+import {Color, Size} from "@/types";
 
 export interface ProductImage {
   id: number;
@@ -22,8 +20,8 @@ export interface ProductVariant {
   size: Size;
   color: Color;
   price: number;
-  product?: Product; // Populated from backend join (optional)
-  inventory?: Inventory; // Populated from backend join (optional)
+  product?: Product;
+  inventory?: Inventory;
 }
 export interface Inventory {
   id: number;
@@ -58,18 +56,11 @@ interface ProductState {
   isLoading: boolean;
   error: string | null;
   fetchProducts: () => Promise<void>;
-  getProductById: (id: number) => Promise<Product | null>;
-  getProduct: (id: number) => Product | undefined;
-  // getProductBySku: (sku: string) => Promise<Product | null>;
-  // getProductBySlug: (slug: string) => Promise<Product | null>;
-  searchProducts: (query: string) => Product[];
-  getPublishedProducts: () => Product[];
   setError: (error: string | null) => void;
   setProducts: (products: Product[]) => void;
   clearError: () => void;
 }
 export const useProductStore = create<ProductState>()(
-  persist(
     (set, get) => ({
       products: [],
       isLoading: false,
@@ -94,56 +85,6 @@ export const useProductStore = create<ProductState>()(
           throw error;
         }
       },
-      getProductById: async (id: number) => {
-        set({ isLoading: true, error: null });
-        try {
-          const response = await privateClient.get(`/products/${id}`);
-          const product = response.data?.data || response.data;
-          return product;
-        } catch (error) {
-          const axiosError = error as AxiosError<{ message: string }>;
-          const message =
-            axiosError?.response?.data?.message || "Lỗi khi tải sản phẩm";
-          set({ error: message, isLoading: false });
-          toast.error(message);
-          throw error;
-        } finally {
-          set({ isLoading: false });
-        }
-      },
-      getProduct: (id: number) => {
-        const { products } = get();
-        return products.find((product) => product.id === id);
-      },
-      // getProductBySku: (sku) => {
-      //   const { products } = get();
-      //   return products.find((product) => product.sku === sku);
-      // },
-
-      // getProductBySlug: (slug) => {
-      //   const { products } = get();
-      //   return products.find((product) => product.slug === slug);
-      // },
-
-      // Product search and filtering
-      searchProducts: (query) => {
-        const { products } = get();
-        const lowercaseQuery = query.toLowerCase();
-        return products.filter(
-          (product) =>
-            product.name?.toLowerCase().includes(lowercaseQuery) ||
-            product.description?.toLowerCase().includes(lowercaseQuery) ||
-            product.sku?.toLowerCase().includes(lowercaseQuery) ||
-            product.category?.name?.toLowerCase().includes(lowercaseQuery) ||
-            product.variants?.some(
-              (variant) => variant.color.id || variant.size.id
-            )
-        );
-      },
-      getPublishedProducts: () => {
-        const { products } = get();
-        return products.filter((product) => product.isPublished === true);
-      },
       setProducts: (products: Product[]) => {
         set({ products });
       },
@@ -155,8 +96,4 @@ export const useProductStore = create<ProductState>()(
         set({ error: null });
       },
     }),
-    {
-      name: "product-storage",
-    }
-  )
 );

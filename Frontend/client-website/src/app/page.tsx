@@ -1,23 +1,14 @@
 "use client";
 import GridLetter from "@/components/common/GridLetter";
-import Heroslide from "@/components/common/Heroslide";
+import Heroslide from "@/components/features/images/Heroslide";
 import ListPolicy from "@/components/common/ListPolicy";
-import OfferBanner from "@/components/common/OfferBanner";
-import FeaturedProducts from "@/components/sections/FeaturedProducts";
-import BestSellerProduct from "@/components/sections/BestSellerProduct";
-import NewsProduct from "@/components/sections/NewsProduct";
-import { useProductStore } from "@/stores/productStore";
-import { useColorStore } from "@/stores/colorStore";
-import { useSizeStore } from "@/stores/sizeStore";
-import { useEffect } from "react";
+import OfferBanner from "@/components/features/images/OfferBanner";
+import FeaturedProducts from "@/app/products/_components/FeaturedProducts";
+import BestSellerProduct from "@/app/products/_components/BestSellerProduct";
+import NewsProduct from "@/app/products/_components/NewsProduct";
 import { useProductsQuery } from "@/services/productService";
+import { useColors } from "@/services/colorService";
 export default function Home() {
-  const { fetchColors } = useColorStore();
-  const { fetchSizes } = useSizeStore();
-  useEffect(() => {
-    fetchColors();
-    fetchSizes();
-  }, [fetchColors, fetchSizes]);
   const { data: products = [], isLoading, error } = useProductsQuery();
   if (isLoading) {
     return (
