@@ -26,14 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Package, AlertTriangle, Search, Filter, Edit } from "lucide-react";
 import Link from "next/link";
 import { useProductStore, StockStatus } from "@/stores/productStore";
@@ -42,6 +34,8 @@ import { useInventoryStore } from "@/stores/inventoryStore";
 import { formatCurrency } from "@/lib/utils";
 import { RoleGuard } from "@/components/auth/RoleGuard";
 import StatCard from "@/components/common/StatCard";
+import {usePagination} from "@/lib/usePagination";
+import PaginationBar from "@/components/common/PaginationBar";
 
 export default function InventoryOverviewPage() {
   const { products, fetchProducts } = useProductStore();
@@ -58,9 +52,6 @@ export default function InventoryOverviewPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StockStatus | "all">("all");
   const [categoryFilter, setCategoryFilter] = useState<number | "all">("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
   // Tính toán dữ liệu tồn kho từ inventories
   const inventoryData = useMemo(() => {
     return products.map((product) => {
@@ -118,42 +109,20 @@ export default function InventoryOverviewPage() {
     return filtered;
   }, [inventoryData, searchTerm, statusFilter, categoryFilter]);
 
-  // Pagination calculation
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedData = filteredData.slice(startIndex, endIndex);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  // Generate page numbers for pagination
-  const getPageNumbers = () => {
-    const pages = [];
-    const showPages = 5;
-    const half = Math.floor(showPages / 2);
-
-    let start = Math.max(1, currentPage - half);
-    const end = Math.min(totalPages, start + showPages - 1);
-
-    if (end - start < showPages - 1) {
-      start = Math.max(1, end - showPages + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-
-    return pages;
-  };
-
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter, categoryFilter]);
-
-  // Tính stats
+    const {
+        currentPage,
+        setPage,
+        totalPages,
+        startIndex,
+        endIndex,
+        pageNumbers,
+        slice,
+    } = usePagination({
+        totalItems: filteredData.length,
+        itemsPerPage: 10,
+        showPages: 5,
+    });
+  const paginatedData = slice(filteredData)
   const stats = useMemo(() => {
     const totalProducts = inventoryData.length;
     const totalStock = inventoryData.reduce((sum, p) => sum + p.totalStock, 0);
@@ -391,47 +360,12 @@ export default function InventoryOverviewPage() {
           </CardContent>
         </Card>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-6 flex justify-center">
-            <Pagination>
-              <PaginationContent>
-                {/* Previous Button */}
-                {currentPage > 1 && (
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      className="cursor-pointer"
-                    />
-                  </PaginationItem>
-                )}
-
-                {/* Page Numbers */}
-                {getPageNumbers().map((pageNum) => (
-                  <PaginationItem key={pageNum}>
-                    <PaginationLink
-                      onClick={() => handlePageChange(pageNum)}
-                      isActive={pageNum === currentPage}
-                      className="cursor-pointer"
-                    >
-                      {pageNum}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
-
-                {/* Next Button */}
-                {currentPage < totalPages && (
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      className="cursor-pointer"
-                    />
-                  </PaginationItem>
-                )}
-              </PaginationContent>
-            </Pagination>
-          </div>
-        )}
+          <PaginationBar
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageNumbers={pageNumbers}
+              onPageChange={setPage}
+          />
 
         {/* Results info */}
         {filteredData.length > 0 && (

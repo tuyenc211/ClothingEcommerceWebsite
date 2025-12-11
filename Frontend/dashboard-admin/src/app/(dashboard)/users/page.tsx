@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -41,7 +40,6 @@ import {
   MoreHorizontal,
   Users,
   UserCheck,
-  Shield,
   User as UserIcon,
   Plus,
   Edit,
@@ -59,17 +57,17 @@ import Link from "next/link";
 import { RoleGuard } from "@/components/auth/RoleGuard";
 import { usePagination } from "@/lib/usePagination";
 import PaginationBar from "@/components/common/PaginationBar";
-import { useUsers, useDeleteUser } from "@/hooks/useUsers";
+import {useUsers, useDeleteUser, useToggleUserStatus, useUpdateUser} from "@/hooks/useUsers";
 
 export default function UsersManagementPage() {
-  const { updateUser, toggleUserStatus } = useUserStore();
   const { data: users = [], isLoading } = useUsers();
   const deleteUserMutation = useDeleteUser();
+  const toggleUserStatus = useToggleUserStatus();
+  const updateUser = useUpdateUser();
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | "all">("all");
   const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [deletingUserName, setDeletingUserName] = useState("");
   const [togglingUserId, setTogglingUserId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => {
@@ -128,7 +126,8 @@ export default function UsersManagementPage() {
   }, [selectedRole, setPage, searchTerm]);
 
   const handleUpdateUser = async (userId: number, userData: Partial<User>) => {
-    await updateUser(userId, userData);
+    if(!userId) return;
+            updateUser.mutate({ userId, userData });
   };
 
   const handleDeleteUser = async () => {
@@ -143,37 +142,18 @@ export default function UsersManagementPage() {
 
   const handleToggleStatus = async (userId: number) => {
     setTogglingUserId(userId);
-    const success = await toggleUserStatus(userId);
-    setTogglingUserId(null);
+    toggleUserStatus.mutate(userId, {
+        onSuccess: () => {
+            setTogglingUserId(null);
+        }
+    });
   };
 
-  const confirmDelete = (userId: number, userName: string) => {
+  const confirmDelete = (userId: number) => {
     setDeletingUserId(userId);
-    setDeletingUserName(userName);
     setShowDeleteDialog(true);
   };
 
-  // Hiển thị badge cho vai trò
-  const getRoleBadge = (role: Role) => {
-    switch (role.name) {
-      case "STAFF":
-        return (
-          <Badge className="bg-blue-500 hover:bg-blue-600 text-white">
-            Nhân viên
-          </Badge>
-        );
-      case "CUSTOMER":
-        return (
-          <Badge className="bg-green-500 hover:bg-green-600 text-white">
-            Khách hàng
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{role.name}</Badge>;
-    }
-  };
-
-  // Tính stats theo role
   const getStatsData = () => {
     const customers = users.filter((u) =>
       u.roles?.some((role) => role.name === "CUSTOMER")
@@ -385,7 +365,7 @@ export default function UsersManagementPage() {
                             key={role.id}
                             className="flex items-center gap-1"
                           >
-                            {getRoleBadge(role)}
+                              <Badge variant="outline">{role.name}</Badge>
                           </div>
                         ))}
                       </div>
@@ -417,8 +397,7 @@ export default function UsersManagementPage() {
                             user={user}
                             onSubmit={handleUpdateUser}
                             trigger={
-                              <DropdownMenuItem
-                                onSelect={(e) => e.preventDefault()}
+                              <DropdownMenuItem asChild
                               >
                                 <Edit className="mr-2 h-4 w-4" />
                                 Chỉnh sửa
@@ -454,7 +433,7 @@ export default function UsersManagementPage() {
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 onClick={() =>
-                                  confirmDelete(user.id, user.fullName)
+                                  confirmDelete(user.id)
                                 }
                                 className="text-red-600"
                               >
@@ -495,9 +474,7 @@ export default function UsersManagementPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Xác nhận xóa tài khoản</AlertDialogTitle>
               <AlertDialogDescription>
-                Bạn có chắc chắn muốn xóa tài khoản{" "}
-                <strong>&ldquo;{deletingUserName}&rdquo;</strong>?
-                <br />
+                Bạn có chắc chắn muốn xóa tài khoản này không.
                 <br />
                 Hành động này không thể hoàn tác. Tài khoản sẽ bị xóa vĩnh viễn
                 khỏi hệ thống.
@@ -507,7 +484,6 @@ export default function UsersManagementPage() {
               <AlertDialogCancel
                 onClick={() => {
                   setDeletingUserId(null);
-                  setDeletingUserName("");
                   setShowDeleteDialog(false);
                 }}
               >

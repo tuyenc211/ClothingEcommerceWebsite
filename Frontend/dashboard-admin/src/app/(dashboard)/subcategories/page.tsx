@@ -34,6 +34,8 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Category, useCategoryStore } from "@/stores/categoryStore";
 import { toast } from "sonner";
+import {usePagination} from "@/lib/usePagination";
+import PaginationBar from "@/components/common/PaginationBar";
 
 export default function SubcategoriesPage() {
   const { categories, deleteCategory, getCategory, fetchCategories } =
@@ -48,9 +50,6 @@ export default function SubcategoriesPage() {
     categoryId: null,
     categoryName: "",
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
@@ -86,35 +85,21 @@ export default function SubcategoriesPage() {
   };
 
   // Pagination calculation
-  const totalPages = Math.ceil(subcategories.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedSubcategories = subcategories.slice(startIndex, endIndex);
+    const {
+        currentPage,
+        setPage,
+        totalPages,
+        startIndex,
+        endIndex,
+        pageNumbers,
+        slice,
+    } = usePagination({
+        totalItems: subcategories.length,
+        itemsPerPage: 10,
+        showPages: 5,
+    });
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  // Generate page numbers for pagination
-  const getPageNumbers = () => {
-    const pages = [];
-    const showPages = 5;
-    const half = Math.floor(showPages / 2);
-
-    let start = Math.max(1, currentPage - half);
-    const end = Math.min(totalPages, start + showPages - 1);
-
-    if (end - start < showPages - 1) {
-      start = Math.max(1, end - showPages + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-
-    return pages;
-  };
-
+  const paginatedSubcategories = slice(subcategories);
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -201,47 +186,12 @@ export default function SubcategoriesPage() {
       </Card>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-6 flex justify-center">
-          <Pagination>
-            <PaginationContent>
-              {/* Previous Button */}
-              {currentPage > 1 && (
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    className="cursor-pointer"
-                  />
-                </PaginationItem>
-              )}
-
-              {/* Page Numbers */}
-              {getPageNumbers().map((pageNum) => (
-                <PaginationItem key={pageNum}>
-                  <PaginationLink
-                    onClick={() => handlePageChange(pageNum)}
-                    isActive={pageNum === currentPage}
-                    className="cursor-pointer"
-                  >
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-
-              {/* Next Button */}
-              {currentPage < totalPages && (
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    className="cursor-pointer"
-                  />
-                </PaginationItem>
-              )}
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
-
+        {totalPages > 1 && <PaginationBar
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageNumbers={pageNumbers}
+            onPageChange={setPage}
+        />}
       {/* Results info */}
       {subcategories.length > 0 && (
         <div className="mt-4 text-center text-sm text-gray-500">

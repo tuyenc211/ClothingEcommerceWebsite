@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { toast } from "sonner";
-import { LoginData } from "@/types";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { persist } from "zustand/middleware";
@@ -8,6 +7,10 @@ import { persist } from "zustand/middleware";
 export interface Role {
   id: number;
   name: string;
+}
+export interface LoginData {
+    email: string;
+    password: string;
 }
 export interface Address {
   id: number;
