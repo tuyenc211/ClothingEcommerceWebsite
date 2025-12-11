@@ -143,7 +143,6 @@ const useAuthStore = create<AuthStore>()(
           useCartStore.setState({ 
             items: [], 
             currentCart: null,
-            appliedCoupon: null,
             error: null 
           });
           toast.success("Đăng xuất thành công");

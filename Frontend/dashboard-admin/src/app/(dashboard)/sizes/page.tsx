@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/pagination";
 import { Plus, Edit, Trash2, Ruler } from "lucide-react";
 import Link from "next/link";
+import {usePagination} from "@/lib/usePagination";
+import PaginationBar from "@/components/common/PaginationBar";
 
 export default function SizeListPage() {
   const { sizes, deleteSize, fetchSizes, isLoading } = useSizeStore();
@@ -45,9 +47,6 @@ export default function SizeListPage() {
     sizeId: null,
     sizeName: "",
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
   const handleDeleteClick = (id: number, name: string) => {
     setDeleteModal({
       open: true,
@@ -66,45 +65,30 @@ export default function SizeListPage() {
   const handleDeleteCancel = () => {
     setDeleteModal({ open: false, sizeId: null, sizeName: "" });
   };
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
+
   const sortedSizes = [...sizes].sort((a, b) => a.sortOrder - b.sortOrder);
 
-  // Pagination calculation
-  const totalPages = Math.ceil(sortedSizes.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedSizes = sortedSizes.slice(startIndex, endIndex);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  // Generate page numbers for pagination
-  const getPageNumbers = () => {
-    const pages = [];
-    const showPages = 5;
-    const half = Math.floor(showPages / 2);
-
-    let start = Math.max(1, currentPage - half);
-    const end = Math.min(totalPages, start + showPages - 1);
-
-    if (end - start < showPages - 1) {
-      start = Math.max(1, end - showPages + 1);
+    const {
+        currentPage,
+        setPage,
+        totalPages,
+        startIndex,
+        endIndex,
+        pageNumbers,
+        slice,
+    } = usePagination({
+        totalItems: sizes.length,
+        itemsPerPage: 10,
+        showPages: 5,
+    });
+    const paginatedSizes = slice(sortedSizes);
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+        );
     }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-
-    return pages;
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -206,46 +190,12 @@ export default function SizeListPage() {
       </Card>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-6 flex justify-center">
-          <Pagination>
-            <PaginationContent>
-              {/* Previous Button */}
-              {currentPage > 1 && (
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    className="cursor-pointer"
-                  />
-                </PaginationItem>
-              )}
-
-              {/* Page Numbers */}
-              {getPageNumbers().map((pageNum) => (
-                <PaginationItem key={pageNum}>
-                  <PaginationLink
-                    onClick={() => handlePageChange(pageNum)}
-                    isActive={pageNum === currentPage}
-                    className="cursor-pointer"
-                  >
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-
-              {/* Next Button */}
-              {currentPage < totalPages && (
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    className="cursor-pointer"
-                  />
-                </PaginationItem>
-              )}
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
+        {totalPages > 1 && <PaginationBar
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageNumbers={pageNumbers}
+            onPageChange={setPage}
+        />}
 
       {/* Results info */}
       {sizes.length > 0 && (

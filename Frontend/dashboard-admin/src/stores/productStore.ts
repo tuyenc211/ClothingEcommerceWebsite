@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Category } from "./categoryStore";
-import { Review } from "./reviewStore";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -47,7 +46,6 @@ export interface Product {
   // Relationships (populated from joins)
   images?: ProductImage[];
   variants?: ProductVariant[];
-  reviews?: Review[];
   colors?: Array<{ id: number; name: string; code: string }>;
   sizes?: Array<{ id: number; name: string; code: string; sortOrder: number }>;
   // Computed fields
@@ -76,16 +74,7 @@ interface ProductState {
   ) => Promise<void>;
   deleteProduct: (id: number) => Promise<void>;
   getProduct: (id: number) => Product | undefined;
-  getProductBySku: (sku: string) => Product | undefined;
-  getProductBySlug: (slug: string) => Product | undefined;
-
-  // Product search and filtering
-  searchProducts: (query: string) => Product[];
-  getPublishedProducts: () => Product[];
   getVariantById: (variantId: number) => ProductVariant | undefined;
-  // Utility methods
-  setError: (error: string | null) => void;
-  clearError: () => void;
 }
 export const useProductStore = create<ProductState>()(
   persist(
@@ -259,35 +248,6 @@ export const useProductStore = create<ProductState>()(
         return products.find((product) => product.id === id);
       },
 
-      getProductBySku: (sku) => {
-        const { products } = get();
-        return products.find((product) => product.sku === sku);
-      },
-
-      getProductBySlug: (slug) => {
-        const { products } = get();
-        return products.find((product) => product.slug === slug);
-      },
-
-      // Product search and filtering
-      searchProducts: (query) => {
-        const { products } = get();
-        const lowercaseQuery = query.toLowerCase();
-        return products.filter(
-          (product) =>
-            product.name?.toLowerCase().includes(lowercaseQuery) ||
-            product.description?.toLowerCase().includes(lowercaseQuery) ||
-            product.sku?.toLowerCase().includes(lowercaseQuery) ||
-            product.variants?.some(
-              (variant) => variant.color_id || variant.size_id
-            )
-        );
-      },
-
-      getPublishedProducts: () => {
-        const { products } = get();
-        return products.filter((product) => product.isPublished);
-      },
 
       // Variant management
       getVariantById: (variantId) => {
@@ -297,14 +257,6 @@ export const useProductStore = create<ProductState>()(
           if (variant) return variant;
         }
         return undefined;
-      },
-
-      setError: (error) => {
-        set({ error });
-      },
-
-      clearError: () => {
-        set({ error: null });
       },
     }),
     {

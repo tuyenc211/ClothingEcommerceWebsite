@@ -44,42 +44,15 @@ export const useToggleUserStatus = () => {
 
       return { userId, wasActive: currentUser.isActive };
     },
-    onMutate: async (userId) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["users"] });
-
-      // Snapshot the previous value
-      const previousUsers = queryClient.getQueryData<User[]>(["users"]);
-
-      // Optimistically update the cache
-      queryClient.setQueryData<User[]>(["users"], (old) => {
-        if (!old) return old;
-        return old.map((user) =>
-          user.id === userId ? { ...user, isActive: !user.isActive } : user
-        );
-      });
-
-      return { previousUsers };
-    },
     onError: (error, userId, context) => {
-      // Rollback on error
-      if (context?.previousUsers) {
-        queryClient.setQueryData(["users"], context.previousUsers);
-      }
-
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =
         axiosError?.response?.data?.message || "Lỗi khi thay đổi trạng thái";
-
       toast.error(errorMessage);
     },
     onSuccess: (data) => {
-      const newStatus = data.wasActive ? "không hoạt động" : "hoạt động";
-      toast.success(`Đã thay đổi trạng thái tài khoản thành ${newStatus}`);
-    },
-    onSettled: () => {
-      // Refetch after error or success to ensure sync
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+        queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success('Đã thay đổi trạng thái tài khoản thành công');
     },
   });
 };
@@ -93,34 +66,16 @@ export const useDeleteUser = () => {
       await privateClient.delete(`/users/${userId}`);
       return userId;
     },
-    onMutate: async (userId) => {
-      await queryClient.cancelQueries({ queryKey: ["users"] });
-      const previousUsers = queryClient.getQueryData<User[]>(["users"]);
+      onSuccess: (_, variables) =>{
 
-      // Optimistically remove the user
-      queryClient.setQueryData<User[]>(["users"], (old) => {
-        if (!old) return old;
-        return old.filter((user) => user.id !== userId);
-      });
-
-      return { previousUsers };
-    },
+        queryClient.invalidateQueries({ queryKey: ["users"] });
+        toast.success("Xóa tài khoản thành công!");
+      },
     onError: (error, userId, context) => {
-      if (context?.previousUsers) {
-        queryClient.setQueryData(["users"], context.previousUsers);
-      }
-
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =
         axiosError?.response?.data?.message || "Lỗi khi xóa tài khoản";
-
       toast.error(errorMessage);
-    },
-    onSuccess: () => {
-      toast.success("Xóa tài khoản thành công!");
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 };
@@ -143,42 +98,15 @@ export const useUpdateUser = () => {
       });
       return { userId, userData };
     },
-    onMutate: async ({ userId, userData }) => {
-      await queryClient.cancelQueries({ queryKey: ["users"] });
-      const previousUsers = queryClient.getQueryData<User[]>(["users"]);
-
-      // Optimistically update the user
-      queryClient.setQueryData<User[]>(["users"], (old) => {
-        if (!old) return old;
-        return old.map((user) =>
-          user.id === userId
-            ? {
-                ...user,
-                fullName: userData.fullName || user.fullName,
-                phone: userData.phone || user.phone,
-              }
-            : user
-        );
-      });
-
-      return { previousUsers };
-    },
     onError: (error, variables, context) => {
-      if (context?.previousUsers) {
-        queryClient.setQueryData(["users"], context.previousUsers);
-      }
-
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =
         axiosError?.response?.data?.message || "Lỗi khi cập nhật tài khoản";
-
       toast.error(errorMessage);
     },
     onSuccess: () => {
-      toast.success("Cập nhật tài khoản thành công!");
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+        queryClient.invalidateQueries({ queryKey: ["users"] });
+        toast.success("Cập nhật tài khoản thành công!");
     },
   });
 };
