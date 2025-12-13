@@ -1,61 +1,19 @@
 "use client";
-
-import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useOrderStore, OrderStatus } from "@/stores/orderStore";
 import { InvoiceTemplate } from "@/components/orders/InvoiceTemplate";
-import { CancelOrderDialog } from "@/components/orders/CancelOrderDialog";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, XCircle } from "lucide-react";
+import { ArrowLeft, } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
+import {useOrderById} from "@/services/orderService";
 
 export default function OrderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const orderId = parseInt(params.id as string, 10);
-
-  const { currentOrder, isLoading, isUpdating, fetchOrderById, cancelOrder } =
-    useOrderStore();
-
-  // Local state
-  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-
-  useEffect(() => {
-    if (orderId && !isNaN(orderId)) {
-      fetchOrderById(orderId);
-    }
-  }, [orderId, fetchOrderById]);
-
+const {data: order, isLoading} = useOrderById(orderId)
   const handleGoBack = () => {
     router.push("/orders");
   };
-
-  // Check if order can be cancelled (only NEW or CONFIRMED)
-  const canCancelOrder = (status: OrderStatus): boolean => {
-    return status === "NEW" || status === "CONFIRMED";
-  };
-  // Handle cancel order
-  const handleCancelOrder = async () => {
-    try {
-      await cancelOrder(currentOrder?.userId || 0, orderId);
-      setIsCancelDialogOpen(false);
-      toast.success("Đơn hàng đã được hủy thành công!");
-
-      // Show refund info if payment was made
-      if (
-        currentOrder?.paymentMethod === "WALLET" &&
-        currentOrder?.paymentStatus === "PAID"
-      ) {
-        toast.info("Quy trình hoàn tiền đã được khởi tạo.");
-      }
-    } catch (error) {
-      toast.error("Không thể hủy đơn hàng. Vui lòng thử lại!");
-      console.error("Error cancelling order:", error);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
@@ -68,7 +26,7 @@ export default function OrderDetailPage() {
     );
   }
 
-  if (!currentOrder) {
+  if (!order) {
     return (
       <div className="p-6 max-w-4xl mx-auto text-center">
         <div className="mt-12">
@@ -99,46 +57,14 @@ export default function OrderDetailPage() {
             </Button>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Hóa đơn</h1>
-              <p className="text-gray-600">Order #{currentOrder.code}</p>
+              <p className="text-gray-600">Order #{order.code}</p>
             </div>
           </div>
-
-          {/* Action Buttons */}
-          {/* <div className="flex flex-wrap gap-2">
-            {canCancelOrder(currentOrder.status) && (
-              <Button
-                variant="destructive"
-                onClick={() => setIsCancelDialogOpen(true)}
-                disabled={isUpdating}
-              >
-                <XCircle className="h-4 w-4 mr-2" />
-                Hủy đơn hàng
-              </Button>
-            )}
-
-            {!canCancelOrder(currentOrder.status) &&
-              currentOrder.status !== "CANCELLED" && (
-                <p className="text-sm text-gray-500 italic flex items-center">
-                  <span className="mr-2">🚫</span>
-                  Đơn hàng không thể hủy ở trạng thái này
-                </p>
-              )}
-          </div> */}
         </div>
       </div>
 
       {/* Invoice Content */}
-      <InvoiceTemplate order={currentOrder} />
-
-      {/* <CancelOrderDialog
-        open={isCancelDialogOpen}
-        onOpenChange={setIsCancelDialogOpen}
-        onConfirm={handleCancelOrder}
-        isLoading={isUpdating}
-        orderCode={currentOrder.code}
-        paymentMethod={currentOrder.paymentMethod}
-        paymentStatus={currentOrder.status}
-      /> */}
+      <InvoiceTemplate order={order} />
     </div>
   );
 }

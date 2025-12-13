@@ -33,6 +33,7 @@ import {
 import { Plus, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Coupon, useCouponStore } from "@/stores/couponStore";
+import CustomModal from "@/components/common/CustomModal";
 
 export default function CouponListPage() {
   const { coupons, deleteCoupon, getCouponStatus, fetchCoupons, isLoading } =
@@ -303,34 +304,10 @@ export default function CouponListPage() {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog
-        open={deleteDialog.open}
-        onOpenChange={(open) => setDeleteDialog((prev) => ({ ...prev, open }))}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận xóa mã giảm giá</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa mã giảm giá &ldquo;
-              {deleteDialog.couponCode}&rdquo;?
-              <br />
-              <br />
-              Hành động này không thể hoàn tác.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleDeleteCancel}>
-              Hủy
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Xóa
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <CustomModal open={deleteDialog.open} onClose={()=> setDeleteDialog({open:false, couponId: null,couponCode:""})} onConfirm={handleDeleteConfirm} title={"Xo max giảm giá"}  description="Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác."
+                     confirmText="Xóa"
+                     cancelText="Hủy"
+                     variant="destructive"/>
     </div>
   );
 }

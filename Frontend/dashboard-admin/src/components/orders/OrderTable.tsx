@@ -9,10 +9,10 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
-import { useOrderStore, Order, OrderStatus } from "@/stores/orderStore";
 import { OrderStatusBadge, PaymentMethodBadge } from "./StatusBadges";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
+import {Order, OrderStatus, useUpdateOrderStatus} from "@/services/orderService";
 
 interface OrderTableProps {
   orders: Order[];
@@ -34,7 +34,7 @@ export const formatDate = (dateString: string) => {
 
 export function OrderTable({ orders }: OrderTableProps) {
   const router = useRouter();
-  const { updateOrderStatus } = useOrderStore();
+  const { mutate: updateOrderStatus } = useUpdateOrderStatus();
 
   // Get valid next statuses based on current status
   const getValidNextStatuses = (currentStatus: OrderStatus): OrderStatus[] => {
@@ -134,7 +134,10 @@ export function OrderTable({ orders }: OrderTableProps) {
                 <select
                   value={order.status}
                   onChange={(e) =>
-                    updateOrderStatus(order.id, e.target.value as OrderStatus)
+                    updateOrderStatus({
+                      orderId: order.id,
+                      status: e.target.value as OrderStatus,
+                    })
                   }
                   className={`rounded-md px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors ${getStatusSelectClass(
                     order.status

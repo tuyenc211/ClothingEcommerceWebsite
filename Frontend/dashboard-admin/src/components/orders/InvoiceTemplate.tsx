@@ -1,10 +1,10 @@
 "use client";
 
-import { Order } from "@/stores/orderStore";
 import { OrderStatusBadge } from "./StatusBadges";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
 import { useUserStore } from "@/stores/userStore";
+import {Order} from "@/services/orderService";
 interface InvoiceTemplateProps {
   order: Order;
 }
@@ -144,11 +144,6 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
                   </td>
                   <td className="py-4 px-2 text-sm text-gray-900 font-medium">
                     {item.productName}
-                    {item.attributesSnapshot && (
-                      <div className="text-xs text-gray-500">
-                        {JSON.stringify(item.attributesSnapshot)}
-                      </div>
-                    )}
                   </td>
                   <td className="py-4 px-2 text-sm text-gray-900 text-center">
                     {item.quantity}
@@ -219,28 +214,6 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
           </div>
         </div>
       </div>
-
-      {/* Shipment Info */}
-      {/*{order.shipments && order.shipments.length > 0 && (*/}
-      {/*  <div className="mt-8 p-4 bg-blue-50 rounded-lg">*/}
-      {/*    <h3 className="text-sm font-semibold text-gray-700 mb-2">*/}
-      {/*      SHIPMENT INFO*/}
-      {/*    </h3>*/}
-      {/*    {order.shipments.map((shipment) => (*/}
-      {/*      <div key={shipment.id} className="text-sm text-gray-600 space-y-1">*/}
-      {/*        <p>Carrier: {shipment.carrier || "N/A"}</p>*/}
-      {/*        <p>Tracking: {shipment.tracking_number || "N/A"}</p>*/}
-      {/*        <p>Status: {shipment.status || "N/A"}</p>*/}
-      {/*        {shipment.shipped_at && (*/}
-      {/*          <p>Shipped: {formatDate(shipment.shipped_at)}</p>*/}
-      {/*        )}*/}
-      {/*        {shipment.delivered_at && (*/}
-      {/*          <p>Delivered: {formatDate(shipment.delivered_at)}</p>*/}
-      {/*        )}*/}
-      {/*      </div>*/}
-      {/*    ))}*/}
-      {/*  </div>*/}
-      {/*)}*/}
     </div>
   );
 }

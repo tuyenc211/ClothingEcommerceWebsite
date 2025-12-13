@@ -34,6 +34,7 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { toast } from "sonner";
+import CustomModal from "@/components/common/CustomModal";
 
 export default function CategoriesPage() {
   const { deleteCategory, categories, fetchCategories, isLoading, error } =
@@ -257,37 +258,17 @@ export default function CategoriesPage() {
           trong số {rootCategories.length} danh mục chính
         </div>
       )}
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog
-        open={deleteDialog.open}
-        onOpenChange={(open) => setDeleteDialog((prev) => ({ ...prev, open }))}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận xóa danh mục chính</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa danh mục &ldquo;
-              {deleteDialog.categoryName}&rdquo;?
-              <br />
-              <br />
-              Hành động này sẽ xóa cả danh mục nhỏ bên trong và không thể hoàn
-              tác.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleDeleteCancel}>
-              Hủy
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Xóa
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <CustomModal
+            open={deleteDialog.open}
+            onClose={handleDeleteCancel}
+            onConfirm={handleDeleteConfirm}
+            title={`Bạn có chắc chắn muốn xóa danh mục này không?`}
+            description="Hành động này không thể hoàn tác"
+            confirmText="Xóa"
+            cancelText="Hủy"
+            variant="destructive"
+        />
     </div>
+
   );
 }
