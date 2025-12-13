@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import privateClient from "@/lib/axios";
-import { Order } from "./orderStore";
 import { Role, User } from "./useAuthStore";
+import {Order} from "@/services/orderService";
 
 // Dashboard statistics interfaces
 export interface DashboardStats {

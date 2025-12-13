@@ -36,6 +36,7 @@ import { Category, useCategoryStore } from "@/stores/categoryStore";
 import { toast } from "sonner";
 import {usePagination} from "@/lib/usePagination";
 import PaginationBar from "@/components/common/PaginationBar";
+import CustomModal from "@/components/common/CustomModal";
 
 export default function SubcategoriesPage() {
   const { categories, deleteCategory, getCategory, fetchCategories } =
@@ -199,36 +200,16 @@ export default function SubcategoriesPage() {
           trong số {subcategories.length} danh mục nhỏ
         </div>
       )}
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog
-        open={deleteDialog.open}
-        onOpenChange={(open) => setDeleteDialog((prev) => ({ ...prev, open }))}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận xóa danh mục con</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa danh mục con &ldquo;
-              {deleteDialog.categoryName}&rdquo;?
-              <br />
-              <br />
-              Hành động này không thể hoàn tác.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleDeleteCancel}>
-              Hủy
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Xóa
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <CustomModal
+            open={deleteDialog.open}
+            onClose={handleDeleteCancel}
+            onConfirm={handleDeleteConfirm}
+            title={`Bạn có chắc chắn muốn xóa danh mục này không?`}
+            description="Hành động này không thể hoàn tác"
+            confirmText="Xóa"
+            cancelText="Hủy"
+            variant="destructive"
+        />
     </div>
   );
 }

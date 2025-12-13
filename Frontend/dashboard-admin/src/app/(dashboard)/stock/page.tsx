@@ -32,7 +32,6 @@ import { useProductStore, StockStatus } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useInventoryStore } from "@/stores/inventoryStore";
 import { formatCurrency } from "@/lib/utils";
-import { RoleGuard } from "@/components/auth/RoleGuard";
 import StatCard from "@/components/common/StatCard";
 import {usePagination} from "@/lib/usePagination";
 import PaginationBar from "@/components/common/PaginationBar";
@@ -195,7 +194,6 @@ export default function InventoryOverviewPage() {
     },
   ];
   return (
-    <RoleGuard requireStaff>
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -375,6 +373,5 @@ export default function InventoryOverviewPage() {
           </div>
         )}
       </div>
-    </RoleGuard>
   );
 }

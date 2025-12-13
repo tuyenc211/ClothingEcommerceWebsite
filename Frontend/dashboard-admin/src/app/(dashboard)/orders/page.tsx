@@ -1,61 +1,56 @@
 "use client";
-import { useEffect } from "react";
-import { useOrderStore } from "@/stores/orderStore";
-import { OrderStatsCards } from "@/components/orders/OrderStatsCards";
 import { OrderTable } from "@/components/orders/OrderTable";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { Skeleton } from "@/components/ui/skeleton";
-
+import {CheckCircle, Clock, DollarSign, ShoppingBag} from "lucide-react";
+import {formatCurrency} from "@/lib/utils";
+import StatCard from "@/components/common/StatCard";
+import {usePagination} from "@/lib/usePagination";
+import PaginationBar from "@/components/common/PaginationBar";
+import { useAllOrder} from "@/services/orderService";
 export default function OrdersPage() {
   const {
-    orders,
+   data: orders =[],
     isLoading,
-    currentPage,
-    itemsPerPage,
-    setPage,
-    fetchAllOrders,
-  } = useOrderStore();
-
-  useEffect(() => {
-    fetchAllOrders();
-  }, [fetchAllOrders]);
-
-  // Pagination calculation
-  const totalPages = Math.ceil(orders.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedOrders = orders.slice(startIndex, endIndex);
-
-  const handlePageChange = (page: number) => {
-    setPage(page);
-  };
-
-  // Generate page numbers for pagination
-  const getPageNumbers = () => {
-    const pages = [];
-    const showPages = 5; // Show 5 page numbers at most
-    const half = Math.floor(showPages / 2);
-
-    let start = Math.max(1, currentPage - half);
-    const end = Math.min(totalPages, start + showPages - 1);
-
-    if (end - start < showPages - 1) {
-      start = Math.max(1, end - showPages + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-
-    return pages;
-  };
+  } = useAllOrder();
+    const totalOrders = orders.length;
+    const totalRevenue = orders.filter((o) => o.status === "DELIVERED").reduce((sum, o) => sum + o.grandTotal, 0);
+    const pendingOrders = orders.filter((o) => o.status === "NEW").length;
+    const deliveredOrders = orders.filter((o) => o.status === "DELIVERED");
+    const statscard = [
+        {
+            title: "Tổng đơn hàng",
+            value: totalOrders.toString(),
+            icon: ShoppingBag,
+        },
+        {
+            title: "Tổng doanh thu",
+            value: formatCurrency(totalRevenue),
+            icon: DollarSign,
+        },
+        {
+            title: "Đơn chờ xử lý",
+            value: pendingOrders.toLocaleString(),
+            icon: Clock,
+        },
+        {
+            title: "Đơn hoàn thành",
+            value: deliveredOrders.toLocaleString(),
+            icon: CheckCircle,
+        },
+    ];
+    const {
+        currentPage,
+        setPage,
+        totalPages,
+        startIndex,
+        endIndex,
+        pageNumbers,
+        slice,
+    } = usePagination({
+        totalItems: orders.length,
+        itemsPerPage: 10,
+        showPages: 5,
+    });
+  const paginatedOrders = slice(orders);
 
   if (isLoading) {
     return (
@@ -82,50 +77,22 @@ export default function OrdersPage() {
       </div>
 
       {/* Stats Cards */}
-      <OrderStatsCards />
+        <div className="grid gap-4 md:grid-cols-4">
+            {statscard.map((stat, index) => (
+                <StatCard key={index} {...stat} />
+            ))}
+        </div>
       {/* Orders Table */}
-      <OrderTable orders={paginatedOrders} />
+      <OrderTable orders={paginatedOrders || []} />
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-6 flex justify-center">
-          <Pagination>
-            <PaginationContent>
-              {/* Previous Button */}
-              {currentPage > 1 && (
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    className="cursor-pointer"
-                  />
-                </PaginationItem>
-              )}
-
-              {/* Page Numbers */}
-              {getPageNumbers().map((pageNum) => (
-                <PaginationItem key={pageNum}>
-                  <PaginationLink
-                    onClick={() => handlePageChange(pageNum)}
-                    isActive={pageNum === currentPage}
-                    className="cursor-pointer"
-                  >
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-
-              {/* Next Button */}
-              {currentPage < totalPages && (
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    className="cursor-pointer"
-                  />
-                </PaginationItem>
-              )}
-            </PaginationContent>
-          </Pagination>
-        </div>
+          <PaginationBar
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageNumbers={pageNumbers}
+              onPageChange={setPage}
+          />
       )}
 
       {/* Results info */}

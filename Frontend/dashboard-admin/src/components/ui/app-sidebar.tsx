@@ -131,7 +131,7 @@ export function AppSidebar() {
             <Collapsible defaultOpen className="group/collapsible">
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel className="text-lg font-bold text uppercase mb-6">  Atino Dashboard</SidebarGroupLabel>
+                    <SidebarGroupLabel className="text-lg font-bold text-black uppercase mb-6">  Atino Dashboard</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {sidebarItems.map((item) => (

@@ -20,14 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Plus, Edit, Trash2, Ruler } from "lucide-react";
 import Link from "next/link";
 import {usePagination} from "@/lib/usePagination";
