@@ -17,19 +17,9 @@ interface UserState {
   isLoading: boolean;
   isFetching: boolean;
   error: string | null;
-
-  fetchUsers: () => Promise<void>;
-  fetchUserById: (id: number) => Promise<User | null>;
-  addUser: (userData: Omit<User, "id">) => Promise<boolean>;
   createStaff: (staffData: CreateStaffData) => Promise<boolean>;
   assignRoles: (id: number, role: Role) => Promise<boolean>;
-
-  clearError: () => void;
-  getUserById: (id: number) => User | undefined;
-  getUsersByRole: (roleName: string) => User[];
-  searchUsers: (term: string) => User[];
 }
-
 export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({
@@ -86,34 +76,6 @@ export const useUserStore = create<UserState>()(
           return null;
         }
       },
-
-      addUser: async (userData: Omit<User, "id">) => {
-        set({ isLoading: true, error: null });
-
-        try {
-          const response = await privateClient.post("/users", userData);
-          const newUser = response.data?.data || response.data;
-
-          set((state) => ({
-            users: [newUser, ...state.users],
-            isLoading: false,
-          }));
-
-          toast.success("Tạo tài khoản thành công!");
-          console.log("✅ User created:", newUser);
-          return true;
-        } catch (error) {
-          const axiosError = error as AxiosError<{ message: string }>;
-          const errorMessage =
-            axiosError?.response?.data?.message || "Lỗi khi tạo tài khoản";
-
-          set({ error: errorMessage, isLoading: false });
-          console.error("❌ Create user error:", errorMessage);
-          toast.error(errorMessage);
-          return false;
-        }
-      },
-
       createStaff: async (staffData: CreateStaffData) => {
         set({ isLoading: true, error: null });
 
@@ -186,35 +148,6 @@ export const useUserStore = create<UserState>()(
           toast.error(errorMessage);
           return false;
         }
-      },
-
-      clearError: () => set({ error: null }),
-
-      getUserById: (id: number) => {
-        return get().users.find((user) => user.id === id);
-      },
-
-      getUsersByRole: (roleName: string) => {
-        return get().users.filter((user) =>
-          user.roles?.some(
-            (role) => role.name.toLowerCase() === roleName.toLowerCase()
-          )
-        );
-      },
-
-      searchUsers: (term: string) => {
-        if (!term.trim()) return get().users;
-
-        const searchTerm = term.toLowerCase();
-        return get().users.filter(
-          (user) =>
-            user.fullName.toLowerCase().includes(searchTerm) ||
-            user.email.toLowerCase().includes(searchTerm) ||
-            (user.phone && user.phone.includes(searchTerm)) ||
-            user.roles?.some((role) =>
-              role.name.toLowerCase().includes(searchTerm)
-            )
-        );
       },
     }),
     {

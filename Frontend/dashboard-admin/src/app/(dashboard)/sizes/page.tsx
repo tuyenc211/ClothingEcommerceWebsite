@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSizeStore } from "@/stores/sizeStore";
+import { useState } from "react";
+import { useSizes, useDeleteSize } from "@/services/sizeService";
 import {
   Card,
   CardContent,
@@ -22,14 +22,13 @@ import {
 } from "@/components/ui/table";
 import { Plus, Edit, Trash2, Ruler } from "lucide-react";
 import Link from "next/link";
-import {usePagination} from "@/lib/usePagination";
+import { usePagination } from "@/lib/usePagination";
 import PaginationBar from "@/components/common/PaginationBar";
 
 export default function SizeListPage() {
-  const { sizes, deleteSize, fetchSizes, isLoading } = useSizeStore();
-  useEffect(() => {
-    fetchSizes();
-  }, [fetchSizes]);
+  const { data: sizes = [], isLoading } = useSizes();
+  const deleteSizeMutation = useDeleteSize();
+
   const [deleteModal, setDeleteModal] = useState<{
     open: boolean;
     sizeId: number | null;
@@ -47,9 +46,9 @@ export default function SizeListPage() {
     });
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deleteModal.sizeId) {
-      deleteSize(deleteModal.sizeId);
+      await deleteSizeMutation.mutateAsync(deleteModal.sizeId);
       setDeleteModal({ open: false, sizeId: null, sizeName: "" });
     }
   };
@@ -60,27 +59,27 @@ export default function SizeListPage() {
 
   const sortedSizes = [...sizes].sort((a, b) => a.sortOrder - b.sortOrder);
 
-    const {
-        currentPage,
-        setPage,
-        totalPages,
-        startIndex,
-        endIndex,
-        pageNumbers,
-        slice,
-    } = usePagination({
-        totalItems: sizes.length,
-        itemsPerPage: 10,
-        showPages: 5,
-    });
-    const paginatedSizes = slice(sortedSizes);
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
-    }
+  const {
+    currentPage,
+    setPage,
+    totalPages,
+    startIndex,
+    endIndex,
+    pageNumbers,
+    slice,
+  } = usePagination({
+    totalItems: sizes.length,
+    itemsPerPage: 10,
+    showPages: 5,
+  });
+  const paginatedSizes = slice(sortedSizes);
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -182,12 +181,14 @@ export default function SizeListPage() {
       </Card>
 
       {/* Pagination */}
-        {totalPages > 1 && <PaginationBar
-            currentPage={currentPage}
-            totalPages={totalPages}
-            pageNumbers={pageNumbers}
-            onPageChange={setPage}
-        />}
+      {totalPages > 1 && (
+        <PaginationBar
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageNumbers={pageNumbers}
+          onPageChange={setPage}
+        />
+      )}
 
       {/* Results info */}
       {sizes.length > 0 && (

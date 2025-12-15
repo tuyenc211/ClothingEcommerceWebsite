@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useColorStore } from "@/stores/colorStore";
+import { useState } from "react";
+import { useColors, useDeleteColor } from "@/services/colorService";
 import {
   Card,
   CardContent,
@@ -20,24 +20,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Plus, Edit, Trash2, Palette } from "lucide-react";
 import Link from "next/link";
 import PaginationBar from "@/components/common/PaginationBar";
-import {usePagination} from "@/lib/usePagination";
+import { usePagination } from "@/lib/usePagination";
 
 export default function ColorListPage() {
-  const { colors, deleteColor, fetchColors, isLoading } = useColorStore();
-  useEffect(() => {
-    fetchColors();
-  }, [fetchColors]);
+  const { data: colors = [], isLoading } = useColors();
+  const deleteColorMutation = useDeleteColor();
+
   const [deleteModal, setDeleteModal] = useState<{
     open: boolean;
     colorId: number | null;
@@ -57,7 +48,7 @@ export default function ColorListPage() {
 
   const handleDeleteConfirm = async () => {
     if (deleteModal.colorId) {
-      await deleteColor(deleteModal.colorId);
+      await deleteColorMutation.mutateAsync(deleteModal.colorId);
       setDeleteModal({ open: false, colorId: null, colorName: "" });
     }
   };
@@ -66,29 +57,28 @@ export default function ColorListPage() {
     setDeleteModal({ open: false, colorId: null, colorName: "" });
   };
 
-
-    const {
-        currentPage,
-        setPage,
-        totalPages,
-        startIndex,
-        endIndex,
-        pageNumbers,
-        slice,
-    } = usePagination({
-        totalItems: colors.length,
-        itemsPerPage: 10,
-        showPages: 5,
-    });
-    const paginatedColors = slice(colors);
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
-    }
+  const {
+    currentPage,
+    setPage,
+    totalPages,
+    startIndex,
+    endIndex,
+    pageNumbers,
+    slice,
+  } = usePagination({
+    totalItems: colors.length,
+    itemsPerPage: 10,
+    showPages: 5,
+  });
+  const paginatedColors = slice(colors);
+  if (isLoading) {
     return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+  return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -204,14 +194,16 @@ export default function ColorListPage() {
       </Card>
 
       {/* Pagination */}
-      {totalPages > 1 && <PaginationBar
+      {totalPages > 1 && (
+        <PaginationBar
           currentPage={currentPage}
           totalPages={totalPages}
           pageNumbers={pageNumbers}
           onPageChange={setPage}
-      />}
+        />
+      )}
 
-        {colors.length > 0 && (
+      {colors.length > 0 && (
         <div className="mt-4 text-center text-sm text-gray-500">
           Hiển thị {startIndex + 1}-{Math.min(endIndex, colors.length)} trong số{" "}
           {colors.length} màu sắc
