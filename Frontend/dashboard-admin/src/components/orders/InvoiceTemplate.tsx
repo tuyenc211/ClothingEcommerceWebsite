@@ -3,15 +3,15 @@
 import { OrderStatusBadge } from "./StatusBadges";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
-import { useUserStore } from "@/stores/userStore";
-import {Order} from "@/services/orderService";
+import { Order } from "@/services/orderService";
+import { useUserById } from "@/services/usersService";
+
 interface InvoiceTemplateProps {
   order: Order;
 }
 
 export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
-  const { getUserById } = useUserStore(); 
-  const user = getUserById(order.userId|| order.user?.id ||0);
+  const { data: user } = useUserById(order.userId || order.user?.id || 0);
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "dd/MM/yyyy");
@@ -23,16 +23,16 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
   // Parse shipping address snapshot
   const getShippingInfo = () => {
     if (!order.shippingAddressSnapshot) return null;
-    
+
     try {
       let addr: Record<string, string>;
-      
+
       if (typeof order.shippingAddressSnapshot === "string") {
         addr = JSON.parse(order.shippingAddressSnapshot);
       } else {
         addr = order.shippingAddressSnapshot as Record<string, string>;
       }
-      
+
       return addr;
     } catch (error) {
       console.error("Error parsing shipping address:", error);
@@ -41,18 +41,18 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
   };
 
   const shippingInfo = getShippingInfo();
-  
+
   const formatAddress = () => {
     if (!shippingInfo) return "N/A";
-    
+
     const parts = [
-     shippingInfo.line,
+      shippingInfo.line,
       shippingInfo.ward,
       shippingInfo.district,
       shippingInfo.province,
-      shippingInfo.country
+      shippingInfo.country,
     ].filter(Boolean);
-    
+
     return parts.length > 0 ? parts.join(", ") : "N/A";
   };
 
@@ -87,7 +87,9 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <div>
           <h3 className="text-sm font-semibold text-gray-700 mb-2">Ngày</h3>
-          <p className="text-gray-900">{order.createdAt ? formatDate(order.createdAt) : "N/A"}</p>
+          <p className="text-gray-900">
+            {order.createdAt ? formatDate(order.createdAt) : "N/A"}
+          </p>
         </div>
         <div>
           <h3 className="text-sm font-semibold text-gray-700 mb-2">
@@ -176,9 +178,7 @@ export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
             <h3 className="text-sm font-semibold text-gray-700 mb-2">
               Phí vận chuyển
             </h3>
-            <p className="text-gray-900">
-              {formatCurrency(order.shippingFee)}
-            </p>
+            <p className="text-gray-900">{formatCurrency(order.shippingFee)}</p>
           </div>
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-2">

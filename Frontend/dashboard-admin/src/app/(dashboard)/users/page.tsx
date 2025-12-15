@@ -26,16 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import CustomModal from "@/components/common/CustomModal";
 import {
   MoreHorizontal,
   Users,
@@ -57,10 +48,15 @@ import Link from "next/link";
 import { RoleGuard } from "@/components/auth/RoleGuard";
 import { usePagination } from "@/lib/usePagination";
 import PaginationBar from "@/components/common/PaginationBar";
-import {useUsers, useDeleteUser, useToggleUserStatus, useUpdateUser} from "@/hooks/useUsers";
+import {
+  useDeleteUser,
+  useToggleUserStatus,
+  useUpdateUser,
+  useAllUsers,
+} from "@/services/usersService";
 
 export default function UsersManagementPage() {
-  const { data: users = [], isLoading } = useUsers();
+  const { data: users = [], isLoading } = useAllUsers();
   const deleteUserMutation = useDeleteUser();
   const toggleUserStatus = useToggleUserStatus();
   const updateUser = useUpdateUser();
@@ -126,8 +122,8 @@ export default function UsersManagementPage() {
   }, [selectedRole, setPage, searchTerm]);
 
   const handleUpdateUser = async (userId: number, userData: Partial<User>) => {
-    if(!userId) return;
-            updateUser.mutate({ userId, userData });
+    if (!userId) return;
+    updateUser.mutate({ userId, userData });
   };
 
   const handleDeleteUser = async () => {
@@ -143,9 +139,9 @@ export default function UsersManagementPage() {
   const handleToggleStatus = async (userId: number) => {
     setTogglingUserId(userId);
     toggleUserStatus.mutate(userId, {
-        onSuccess: () => {
-            setTogglingUserId(null);
-        }
+      onSuccess: () => {
+        setTogglingUserId(null);
+      },
     });
   };
 
@@ -347,7 +343,9 @@ export default function UsersManagementPage() {
                 {paginatedUsers.map((user, index) => (
                   <TableRow key={user.id}>
                     <TableCell>
-                      <div className="font-medium">{ startIndex + index + 1}</div>
+                      <div className="font-medium">
+                        {startIndex + index + 1}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="font-medium">{user.fullName}</div>
@@ -365,7 +363,7 @@ export default function UsersManagementPage() {
                             key={role.id}
                             className="flex items-center gap-1"
                           >
-                              <Badge variant="outline">{role.name}</Badge>
+                            <Badge variant="outline">{role.name}</Badge>
                           </div>
                         ))}
                       </div>
@@ -397,8 +395,7 @@ export default function UsersManagementPage() {
                             user={user}
                             onSubmit={handleUpdateUser}
                             trigger={
-                              <DropdownMenuItem asChild
-                              >
+                              <DropdownMenuItem asChild>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Chỉnh sửa
                               </DropdownMenuItem>
@@ -432,9 +429,7 @@ export default function UsersManagementPage() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() =>
-                                  confirmDelete(user.id)
-                                }
+                                onClick={() => confirmDelete(user.id)}
                                 className="text-red-600"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -469,39 +464,18 @@ export default function UsersManagementPage() {
         )}
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Xác nhận xóa tài khoản</AlertDialogTitle>
-              <AlertDialogDescription>
-                Bạn có chắc chắn muốn xóa tài khoản này không.
-                <br />
-                Hành động này không thể hoàn tác. Tài khoản sẽ bị xóa vĩnh viễn
-                khỏi hệ thống.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel
-                onClick={() => {
-                  setDeletingUserId(null);
-                  setShowDeleteDialog(false);
-                }}
-              >
-                Hủy
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteUser}
-                className="bg-red-600 hover:bg-red-700"
-                disabled={deleteUserMutation.isPending}
-              >
-                {deleteUserMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : null}
-                Xóa tài khoản
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <CustomModal
+          open={showDeleteDialog}
+          onClose={() => {
+            setDeletingUserId(null);
+            setShowDeleteDialog(false);
+          }}
+          onConfirm={handleDeleteUser}
+          title="Xác nhận xóa tài khoản"
+          description="Bạn có chắc chắn muốn xóa tài khoản này không. Hành động này không thể hoàn tác."
+          confirmText="Xóa tài khoản"
+          variant="destructive"
+        />
       </div>
     </RoleGuard>
   );

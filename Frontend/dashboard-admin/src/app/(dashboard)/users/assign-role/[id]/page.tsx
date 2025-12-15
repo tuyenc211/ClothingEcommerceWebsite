@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useUserById } from "@/services/usersService";
 
 interface RoleOption {
   id: number;
@@ -59,28 +60,12 @@ export default function AssignRolePage() {
   const router = useRouter();
   const params = useParams();
   const id = Number(params?.id);
-  const { getUserById, assignRoles, isLoading } = useUserStore();
+  const { assignRoles, isLoading } = useUserStore();
+  const { data: user } = useUserById(id);
   const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    if (id) {
-      const user = getUserById(id);
-      if (user) {
-        setCurrentUser(user);
-        // Set current role as default
-        if (user.roles && user.roles.length > 0) {
-          setSelectedRoleId(user.roles[0].id);
-        }
-      } else {
-        // User not found, redirect to users list
-        router.push("/users");
-      }
-    }
-  }, [id, getUserById, router]);
 
   const handleAssignRole = async () => {
-    if (!selectedRoleId || !currentUser) return;
+    if (!selectedRoleId || !user) return;
 
     try {
       const selectedRole = availableRoles.find(
@@ -96,11 +81,11 @@ export default function AssignRolePage() {
         id: selectedRole.id,
         name: selectedRole.name.toUpperCase(),
       };
-      const success = await assignRoles(currentUser.id, roleToAssign);
+      const success = await assignRoles(user.id, roleToAssign);
 
       if (success) {
         toast.success(
-          `Đã phân quyền ${selectedRole.name} cho ${currentUser.fullName}`
+          `Đã phân quyền ${selectedRole.name} cho ${user.fullName}`
         );
         router.push("/users");
       } else {
@@ -112,7 +97,7 @@ export default function AssignRolePage() {
     }
   };
 
-  if (!currentUser) {
+  if (!user) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -123,7 +108,7 @@ export default function AssignRolePage() {
   const selectedRole = availableRoles.find(
     (role) => role.id === selectedRoleId
   );
-  const currentRole = currentUser.roles?.[0];
+  const currentRole = user.roles?.[0];
 
   return (
     <div className="space-y-6">
@@ -154,15 +139,15 @@ export default function AssignRolePage() {
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
               <span className="text-lg font-semibold">
-                {currentUser.fullName
+                {user.fullName
                   .split(" ")
                   .map((n: string) => n[0])
                   .join("")}
               </span>
             </div>
             <div>
-              <h3 className="font-semibold text-lg">{currentUser.fullName}</h3>
-              <p className="text-muted-foreground">{currentUser.email}</p>
+              <h3 className="font-semibold text-lg">{user.fullName}</h3>
+              <p className="text-muted-foreground">{user.email}</p>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-sm text-muted-foreground">
                   Vai trò hiện tại:

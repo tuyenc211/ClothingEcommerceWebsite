@@ -23,13 +23,13 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useProductStore } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
-import { useColorStore } from "@/stores/colorStore";
-import { useSizeStore } from "@/stores/sizeStore";
 import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useForm, Controller } from "react-hook-form";
 import { Category } from "@/stores/categoryStore";
+import { useColors } from "@/services/colorService";
+import { useSizes } from "@/services/sizeService";
 
 interface ProductFormValues {
   name: string;
@@ -55,8 +55,8 @@ export default function AddProductPage() {
   const params = useParams();
   const isEdit = !!params?.id;
 
-  const { colors } = useColorStore();
-  const { sizes } = useSizeStore();
+  const { data: colors = [] } = useColors();
+  const { data: sizes = [], isLoading } = useSizes();
   const { categories, fetchCategories } = useCategoryStore();
   const { addProductWithVariants, updateProduct, getProduct } =
     useProductStore();
@@ -330,7 +330,7 @@ export default function AddProductPage() {
                 <Controller
                   control={control}
                   name="category"
-                  rules={{ 
+                  rules={{
                     required: "Danh mục sản phẩm là bắt buộc",
                     validate: (value) => {
                       // Kiểm tra xem có id không
@@ -338,7 +338,7 @@ export default function AddProductPage() {
                         return "Vui lòng chọn danh mục sản phẩm";
                       }
                       return true;
-                    }
+                    },
                   }}
                   render={({ field }) => (
                     <Select
