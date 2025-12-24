@@ -10,6 +10,7 @@ import com.project.ClothingEcommerceWebsite.models.Product;
 import com.project.ClothingEcommerceWebsite.models.Role;
 import com.project.ClothingEcommerceWebsite.models.User;
 import com.project.ClothingEcommerceWebsite.services.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +22,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("${api.prefix}/users")
 @RequiredArgsConstructor
+@Tag(name = "User Controller")
 public class UserController {
 
     private final UserService userService;
