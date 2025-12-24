@@ -1,17 +1,16 @@
 package com.project.ClothingEcommerceWebsite.dtos.respond;
 
-import com.project.ClothingEcommerceWebsite.models.*;
+import com.project.ClothingEcommerceWebsite.models.Category;
 import lombok.*;
 
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductResponse {
+public class ProductListResponse {
     private Long id;
     private String sku;
     private String name;
@@ -20,12 +19,6 @@ public class ProductResponse {
     private Double basePrice;
     private Boolean isPublished;
     private Category category;
-    private Set<SizeResponse> sizes;
-    private Set<ColorResponse> colors;
     private List<ProductImageResponse> images;
-    private List<ProductVariant> variants;
-    private List<Inventory> inventories;
-    private List<ReviewResponse> reviews;
-
+    private int totalStock;
 }
-
