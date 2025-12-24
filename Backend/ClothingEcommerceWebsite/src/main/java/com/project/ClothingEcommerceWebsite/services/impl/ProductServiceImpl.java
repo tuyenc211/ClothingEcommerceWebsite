@@ -6,12 +6,10 @@ import com.project.ClothingEcommerceWebsite.exception.BadRequestException;
 import com.project.ClothingEcommerceWebsite.exception.NotFoundException;
 import com.project.ClothingEcommerceWebsite.models.*;
 import com.project.ClothingEcommerceWebsite.repositories.*;
-import com.project.ClothingEcommerceWebsite.services.CategoryService;
 import com.project.ClothingEcommerceWebsite.services.ProductService;
 import com.project.ClothingEcommerceWebsite.utils.CloudinaryUtil;
 import com.project.ClothingEcommerceWebsite.utils.SlugUtil;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -80,86 +78,43 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> getAllProduct(Pageable pageable) {
+    public List<ProductListResponse> getAllProduct(Pageable pageable) {
         Page<Product> pageProduct = productRepository.findAll(pageable);
         List<Product> products = pageProduct.getContent();
-        if (products.isEmpty()) {
-            return Collections.emptyList();
-        }
+
         List<Long> productIds = products.stream()
                 .map(Product::getId)
                 .collect(Collectors.toList());
 
         List<ProductImage> allImages = productImageRepository.findAllByProductIdIn(productIds);
-        List<ProductVariant> allVariants = productVariantRepository.findAllByProductIdIn(productIds);
         List<Inventory> allInventories = inventoryRepository.findAllByProductVariant_Product_IdIn(productIds);
-        List<Review> allReviews = reviewRepository.findAllByProduct_IdIn(productIds);
 
         Map<Long, List<ProductImage>> imagesByProduct = allImages.stream()
                 .collect(Collectors.groupingBy(img -> img.getProduct().getId()));
 
-        Map<Long, List<ProductVariant>> variantsByProduct = allVariants.stream()
-                .collect(Collectors.groupingBy(v -> v.getProduct().getId()));
-
-        Map<Long, List<Inventory>> inventoriesByProduct = allInventories.stream()
-                .collect(Collectors.groupingBy(inv -> inv.getProductVariant().getProduct().getId()));
-
-        Map<Long, List<Review>> reviewsByProduct = allReviews.stream()
-                .collect(Collectors.groupingBy(r -> r.getProduct().getId()));
+        Map<Long, Integer> totalStockByProduct = allInventories.stream()
+                .collect(Collectors.groupingBy(
+                        inv -> inv.getProductVariant().getProduct().getId(),
+                        Collectors.summingInt(Inventory::getQuantity)
+                ));
 
         return products.stream()
                 .map(product -> {
                     Long productId = product.getId();
 
+                    // Images
                     List<ProductImage> images = imagesByProduct.getOrDefault(productId, Collections.emptyList());
-                    List<ProductVariant> variants = variantsByProduct.getOrDefault(productId, Collections.emptyList());
-                    List<Inventory> inventories = inventoriesByProduct.getOrDefault(productId, Collections.emptyList());
-                    List<Review> reviews = reviewsByProduct.getOrDefault(productId, Collections.emptyList());
-
                     List<ProductImageResponse> imageDTOs = images.stream()
-                            .map(image -> ProductImageResponse.builder()
-                                    .id(image.getId())
-                                    .image_url(image.getImageUrl())
-                                    .position(image.getPosition())
+                            .map(img -> ProductImageResponse.builder()
+                                    .id(img.getId())
+                                    .image_url(img.getImageUrl())
+                                    .position(img.getPosition())
                                     .build())
                             .collect(Collectors.toList());
 
+                    Integer totalStock = totalStockByProduct.getOrDefault(productId, 0);
 
-                    List<ReviewResponse> reviewDTOs = reviews.stream()
-                            .map(review -> ReviewResponse.builder()
-                                    .id(review.getId())
-                                    .productId(review.getProduct().getId())
-                                    .userId(review.getUser().getId())
-                                    .userName(review.getUser().getFullName())
-                                    .rating(review.getRating())
-                                    .title(review.getTitle())
-                                    .content(review.getContent())
-                                    .createdAt(review.getCreatedAt())
-                                    .build())
-                            .collect(Collectors.toList());
-
-                    Set<SizeResponse> sizeDTOs = variants.stream()
-                            .map(ProductVariant::getSize)
-                            .filter(Objects::nonNull)
-                            .map(size -> SizeResponse.builder()
-                                    .id(size.getId())
-                                    .name(size.getName())
-                                    .code(size.getCode())
-                                    .sortOrder(size.getSortOrder())
-                                    .build())
-                            .collect(Collectors.toSet());
-
-                    Set<ColorResponse> colorDTOs = variants.stream()
-                            .map(ProductVariant::getColor)
-                            .filter(Objects::nonNull)
-                            .map(color -> ColorResponse.builder()
-                                    .id(color.getId())
-                                    .name(color.getName())
-                                    .code(color.getCode())
-                                    .build())
-                            .collect(Collectors.toSet());
-
-                    return ProductResponse.builder()
+                    return ProductListResponse.builder()
                             .id(product.getId())
                             .sku(product.getSku())
                             .name(product.getName())
@@ -168,22 +123,18 @@ public class ProductServiceImpl implements ProductService {
                             .basePrice(product.getBasePrice())
                             .category(product.getCategory())
                             .isPublished(product.getIsPublished())
-                            .variants(variants)
-                            .inventories(inventories)
-                            .sizes(sizeDTOs)
-                            .colors(colorDTOs)
                             .images(imageDTOs)
-                            .reviews(reviewDTOs)
+                            .totalStock(totalStock)
                             .build();
-        }).collect(Collectors.toList());
+                }).collect(Collectors.toList());
     }
 
     @Override
-    public List<ProductResponse> searchByName(String name) {
+    public List<ProductDetailResponse> searchByName(String name) {
         List<Product> products = productRepository.findByNameContainingIgnoreCase(name);
         return products.stream()
                 .filter(Product::getIsPublished)
-                .map(p -> ProductResponse.builder()
+                .map(p -> ProductDetailResponse.builder()
                         .id(p.getId())
                         .sku(p.getSku())
                         .name(p.getName())
@@ -204,7 +155,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse getProductById(Long id) {
+    public ProductDetailResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
         List<Inventory> inventories = inventoryRepository.findAllByProductVariant_Product_Id(product.getId());
@@ -240,7 +191,7 @@ public class ProductServiceImpl implements ProductService {
                         .build())
                 .collect(Collectors.toSet());
 
-        return ProductResponse.builder()
+        return ProductDetailResponse.builder()
                 .id(product.getId())
                 .sku(product.getSku())
                 .name(product.getName())
