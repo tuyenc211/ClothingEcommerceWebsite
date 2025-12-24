@@ -8,6 +8,8 @@ import com.project.ClothingEcommerceWebsite.services.ProductImageService;
 import com.project.ClothingEcommerceWebsite.services.ProductService;
 import com.project.ClothingEcommerceWebsite.services.impl.CloudinaryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +18,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("${api.prefix}/products")
@@ -70,8 +73,16 @@ public class ProductController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<ProductResponse>> getAllProduct() {
-        return ResponseEntity.ok(productService.getAllProduct());
+    public ResponseEntity<List<ProductResponse>> getAllProduct(
+            @RequestParam("current") Optional<String> currentOptional,
+            @RequestParam("pageSize") Optional<String> pageSizeOptional
+    ) {
+        String sCurrent = currentOptional.isPresent() ? currentOptional.get() : "";
+        String sPageSize = pageSizeOptional.isPresent() ? pageSizeOptional.get() : "";
+        int current = Integer.parseInt(sCurrent);
+        int pageSize = Integer.parseInt(sPageSize);
+        Pageable pageable = PageRequest.of(current - 1, pageSize);
+        return ResponseEntity.ok(productService.getAllProduct(pageable));
     }
 
     @GetMapping("/{id}")

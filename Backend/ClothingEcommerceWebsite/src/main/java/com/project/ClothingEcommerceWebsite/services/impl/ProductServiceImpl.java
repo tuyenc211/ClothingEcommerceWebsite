@@ -13,6 +13,8 @@ import com.project.ClothingEcommerceWebsite.utils.SlugUtil;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -78,8 +80,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> getAllProduct() {
-        List<Product> products = productRepository.findAll();
+    public List<ProductResponse> getAllProduct(Pageable pageable) {
+        Page<Product> pageProduct = productRepository.findAll(pageable);
+        List<Product> products = pageProduct.getContent();
         if (products.isEmpty()) {
             return Collections.emptyList();
         }
