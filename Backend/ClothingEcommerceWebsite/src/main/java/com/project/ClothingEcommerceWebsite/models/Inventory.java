@@ -20,6 +20,7 @@ public class Inventory {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "variant_id")
+    @JsonIgnoreProperties({"product"})
     private ProductVariant productVariant;
 
     @Column(nullable = false)
