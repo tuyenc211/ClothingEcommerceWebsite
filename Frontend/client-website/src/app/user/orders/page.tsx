@@ -1,4 +1,5 @@
 "use client";
+import { compareDesc } from "date-fns";
 import { OrderTable } from "@/app/user/orders/_components/OrderTable";
 import {
   Pagination,
@@ -11,22 +12,25 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import UserLayout from "@/components/layouts/UserLayout";
 import useAuthStore from "@/stores/useAuthStore";
-import {Order, useUserOrders} from "@/services/orderService";
-import {useState} from "react";
+import { Order, useUserOrders } from "@/services/orderService";
+import { useState } from "react";
 export default function OrdersPage() {
   const { authUser } = useAuthStore();
-  const {data: orders, isLoading}:{ data: Order[] | undefined; isLoading: boolean } =useUserOrders({ userId: authUser?.id });
+  const {
+    data: orders,
+    isLoading,
+  }: { data: Order[] | undefined; isLoading: boolean } = useUserOrders({
+    userId: authUser?.id,
+  });
+
   // Sort orders by created_at (newest first)
   const sortedOrders = orders?.sort((a, b) => {
-    return (
-      new Date(b.createdAt || 0).getTime() -
-      new Date(a.createdAt || 0).getTime()
-    );
+    return compareDesc(new Date(a.createdAt || 0), new Date(b.createdAt || 0));
   });
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   // @ts-ignore
-    const totalPages = Math.ceil(sortedOrders?.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedOrders?.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedOrders = sortedOrders?.slice(startIndex, endIndex);
@@ -134,8 +138,9 @@ export default function OrdersPage() {
 
         {/* Results info */}
         <div className="mt-4 text-center text-sm text-gray-500">
-          Hiển thị {startIndex + 1}-{Math.min(endIndex, sortedOrders?.length as number)}{" "}
-          trong {sortedOrders?.length} đơn hàng
+          Hiển thị {startIndex + 1}-
+          {Math.min(endIndex, sortedOrders?.length as number)} trong{" "}
+          {sortedOrders?.length} đơn hàng
         </div>
       </div>
     </UserLayout>

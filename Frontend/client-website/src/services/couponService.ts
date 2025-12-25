@@ -1,6 +1,7 @@
 import privateClient from "@/lib/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { compareDesc } from "date-fns";
 
 export interface Coupon {
   id: number;
@@ -20,9 +21,10 @@ export const couponService = {
   getAllCoupons: async (): Promise<Coupon[]> => {
     const response = await privateClient.get("/coupons");
     const data = response.data.data || response.data;
+
     return data.sort((a: Coupon, b: Coupon) => {
       if (!a.startsAt || !b.startsAt) return 0;
-      return new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime();
+      return compareDesc(new Date(a.startsAt), new Date(b.startsAt));
     });
   },
 
@@ -36,9 +38,10 @@ export const couponService = {
     const data = response.data || [];
     return data.sort((a: Coupon, b: Coupon) => {
       if (!a.startsAt || !b.startsAt) return 0;
-      return new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime();
+      return compareDesc(new Date(a.startsAt), new Date(b.startsAt));
     });
-  },};
+  },
+};
 export const useAllCoupons = () => {
   return useQuery({
     queryKey: ["coupons"],

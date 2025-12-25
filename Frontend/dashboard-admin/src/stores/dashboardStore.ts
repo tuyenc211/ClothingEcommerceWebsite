@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import privateClient from "@/lib/axios";
 import { Role, User } from "./useAuthStore";
-import {Order} from "@/services/orderService";
+import { Order } from "@/services/orderService";
+import { compareDesc, format, subMonths } from "date-fns";
 
 // Dashboard statistics interfaces
 export interface DashboardStats {
@@ -122,10 +123,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
       // Transform orders to RecentOrder format and get latest 5
       const recentOrders: RecentOrder[] = orders
-        .sort(
-          (a: Order, b: Order) =>
-            new Date(b.createdAt || "").getTime() -
-            new Date(a.createdAt || "").getTime()
+        .sort((a: Order, b: Order) =>
+          compareDesc(new Date(a.createdAt || ""), new Date(b.createdAt || ""))
         )
         .slice(0, 5)
         .map((order: Order) => ({
@@ -162,9 +161,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       deliveredOrders.forEach((order: Order) => {
         if (order.createdAt && order.grandTotal) {
           const date = new Date(order.createdAt);
-          const monthKey = `${date.getFullYear()}-${String(
-            date.getMonth() + 1
-          ).padStart(2, "0")}-01`;
+          const monthKey = format(date, "yyyy-MM-01");
           const current = monthlyRevenue.get(monthKey) || 0;
           monthlyRevenue.set(monthKey, current + order.grandTotal);
         }
@@ -172,10 +169,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       const revenueData: RevenueData[] = [];
       const today = new Date();
       for (let i = 11; i >= 0; i--) {
-        const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-        const monthKey = `${date.getFullYear()}-${String(
-          date.getMonth() + 1
-        ).padStart(2, "0")}-01`;
+        const date = subMonths(today, i);
+        const monthKey = format(date, "yyyy-MM-01");
 
         revenueData.push({
           date: monthKey,

@@ -9,6 +9,8 @@ import {
   YAxis,
   ResponsiveContainer,
 } from "recharts";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
 import {
   Card,
   CardContent,
@@ -127,8 +129,11 @@ export function RevenueChart() {
                 tickMargin={10}
                 fontSize={13}
                 tickFormatter={(value) => {
-                  const date = new Date(value);
-                  return date.toLocaleDateString("vi-VN", { month: "short" });
+                  try {
+                    return format(new Date(value), "MMM", { locale: vi });
+                  } catch {
+                    return value;
+                  }
                 }}
               />
               <YAxis
@@ -144,10 +149,7 @@ export function RevenueChart() {
                   <ChartTooltipContent
                     className="bg-white border rounded-lg"
                     labelFormatter={(value) =>
-                      new Date(value).toLocaleDateString("vi-VN", {
-                        month: "long",
-                        year: "numeric",
-                      })
+                      format(new Date(value), "MMMM yyyy", { locale: vi })
                     }
                     formatter={(value: ValueType) =>
                       formatCurrency(Number(value))

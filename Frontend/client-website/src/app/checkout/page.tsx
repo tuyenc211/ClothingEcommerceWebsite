@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { isBefore, isAfter } from "date-fns";
 import {
   Breadcrumb,
   BreadcrumbSeparator,
@@ -73,7 +74,8 @@ export default function CheckoutPage() {
         : null;
 
       const isWithinDateRange =
-        (!startsAt || now >= startsAt) && (!endsAt || now <= endsAt);
+        (!startsAt || !isBefore(now, startsAt)) &&
+        (!endsAt || !isAfter(now, endsAt));
       const meetsMinTotal =
         !appliedCoupon.minOrderTotal || subtotal >= appliedCoupon.minOrderTotal;
 
