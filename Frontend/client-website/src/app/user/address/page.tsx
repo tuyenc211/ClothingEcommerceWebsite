@@ -20,33 +20,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-<<<<<<< HEAD
 
 import { MapPin, Plus } from "lucide-react";
-=======
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Plus, Edit2, Trash2, Star, Check } from "lucide-react";
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 import useAuthStore, { Address } from "@/stores/useAuthStore";
 import { useAddress } from "@/hooks/useAddress";
 import { toast } from "sonner";
 import UserLayout from "@/components/layouts/UserLayout";
-<<<<<<< HEAD
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import AddressCard from "@/app/user/address/_components/AddressCard";
 import AddressDeleteDialog from "@/app/user/address/_components/AddressDeleteDialog";
-=======
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 
 interface AddressFormData {
   line: string;
@@ -67,26 +49,16 @@ export default function AddressManagementPage() {
   } = useAuthStore();
   const {
     provinces,
-<<<<<<< HEAD
     fetchProvinces,
-=======
-      fetchProvinces,
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
     wards,
     isLoadingProvinces,
     isLoadingWards,
     fetchWards,
     clearWards,
   } = useAddress();
-<<<<<<< HEAD
   useEffect(() => {
     fetchProvinces();
   }, [fetchProvinces]);
-=======
-    useEffect(() => {
-        fetchProvinces();
-    }, [fetchProvinces]);
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 
   // States
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -96,7 +68,6 @@ export default function AddressManagementPage() {
   const [deletingAddressId, setDeletingAddressId] = useState<number | null>(
     null
   );
-<<<<<<< HEAD
   const [selectedProvinceCode, setSelectedProvinceCode] = useState("");
   const [selectedWardCode, setSelectedWardCode] = useState("");
 
@@ -119,25 +90,6 @@ export default function AddressManagementPage() {
 
   const addresses = authUser?.addresses || [];
 
-=======
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-    // Form data
-  const [formData, setFormData] = useState<AddressFormData>({
-    line: "",
-    ward: "",
-    province: "",
-    isDefault: false,
-  });
-
-  // Selected codes for API
-  const [selectedProvinceCode, setSelectedProvinceCode] = useState("");
-  const [selectedWardCode, setSelectedWardCode] = useState("");
-
-  const addresses = authUser?.addresses || [];
-
-  // Fetch addresses on mount
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   useEffect(() => {
     const loadAddresses = async () => {
       if (authUser?.id) {
@@ -152,7 +104,6 @@ export default function AddressManagementPage() {
       }
     };
 
-<<<<<<< HEAD
     if (authUser?.id && addresses.length === 0) {
       loadAddresses();
     }
@@ -161,17 +112,6 @@ export default function AddressManagementPage() {
   // Reset form
   const resetFormState = () => {
     reset({
-=======
-    // Only fetch if we haven't loaded addresses yet
-    if (authUser?.id && addresses.length === 0) {
-      loadAddresses();
-    }
-  }, [authUser?.id, fetchAddresses]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Reset form
-  const resetForm = () => {
-    setFormData({
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
       line: "",
       ward: "",
       province: "",
@@ -183,7 +123,6 @@ export default function AddressManagementPage() {
     setEditingAddress(null);
   };
 
-<<<<<<< HEAD
   const handleOpenAddDialog = () => {
     resetFormState();
     setIsDialogOpen(true);
@@ -192,64 +131,29 @@ export default function AddressManagementPage() {
   const handleOpenEditDialog = (address: Address) => {
     setEditingAddress(address);
     reset({
-=======
-  // Handle open add dialog
-  const handleOpenAddDialog = () => {
-    resetForm();
-    setIsDialogOpen(true);
-  };
-
-  // Handle open edit dialog
-  const handleOpenEditDialog = (address: Address) => {
-    setEditingAddress(address);
-    setFormData({
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
       line: address.line,
       ward: address.ward || "",
       province: address.province || "",
       isDefault: address.isDefault,
     });
-<<<<<<< HEAD
     setIsDialogOpen(true);
   };
 
-=======
-
-    // Nếu cần load lại wards dựa trên province
-    // (Lưu ý: không có provinceCode trong address hiện tại, nên không thể fetch lại)
-    setIsDialogOpen(true);
-  };
-
-  // Handle province change
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   const handleProvinceChange = (provinceCode: string) => {
     const selectedProvince = provinces.find((p) => p.code === provinceCode);
     if (selectedProvince) {
       setSelectedProvinceCode(provinceCode);
-<<<<<<< HEAD
       setValue("province", selectedProvince.name, { shouldValidate: true });
       setValue("ward", "", { shouldValidate: true });
-=======
-      setFormData((prev) => ({
-        ...prev,
-        province: selectedProvince.name,
-        ward: "",
-      }));
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
       setSelectedWardCode("");
       fetchWards(provinceCode);
     }
   };
 
-<<<<<<< HEAD
-=======
-  // Handle ward change
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   const handleWardChange = (wardCode: string) => {
     const selectedWard = wards.find((w) => w.code === wardCode);
     if (selectedWard) {
       setSelectedWardCode(wardCode);
-<<<<<<< HEAD
       setValue("ward", selectedWard.name, { shouldValidate: true });
     }
   };
@@ -269,67 +173,6 @@ export default function AddressManagementPage() {
     }
   };
 
-=======
-
-      // Set ward name
-      setFormData((prev) => ({
-        ...prev,
-        ward: selectedWard.name,
-      }));
-    }
-  };
-
-  // Validate form
-  const validateForm = (): boolean => {
-    if (!formData.line.trim()) {
-      toast.error("Vui lòng nhập địa chỉ cụ thể");
-      return false;
-    }
-
-    if (!formData.province) {
-      toast.error("Vui lòng chọn Tỉnh/Thành phố");
-      return false;
-    }
-
-    if (!formData.ward) {
-      toast.error("Vui lòng chọn Xã/Phường");
-      return false;
-    }
-
-    // Validate phone number (Vietnamese format)
-    // Note: This validation should be added if we have phone field in address
-
-    return true;
-  };
-
-  // Handle submit
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) return;
-
-    setIsSubmitting(true);
-
-    try {
-      if (editingAddress) {
-        // Update existing address
-        await updateAddress(editingAddress.id, formData);
-      } else {
-        // Add new address
-        await addAddress(formData);
-      }
-
-      setIsDialogOpen(false);
-      resetForm();
-    } catch (error) {
-      console.error("Error saving address:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Handle delete
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   const handleDeleteConfirm = async () => {
     if (!deletingAddressId) return;
 
@@ -342,10 +185,6 @@ export default function AddressManagementPage() {
     }
   };
 
-<<<<<<< HEAD
-=======
-  // Handle set default
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   const handleSetDefault = async (id: number) => {
     try {
       await setDefaultAddress(id);
@@ -400,7 +239,6 @@ export default function AddressManagementPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {addresses.map((address) => (
-<<<<<<< HEAD
               <AddressCard
                 key={address.id}
                 address={address}
@@ -412,70 +250,6 @@ export default function AddressManagementPage() {
                 onSetDefault={handleSetDefault}
                 isOnlyAddress={addresses.length === 1}
               />
-=======
-              <Card
-                key={address.id}
-                className={`relative ${
-                  address.isDefault ? "border-primary border-1" : ""
-                }`}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-5 w-5 text-primary" />
-                      {address.isDefault && (
-                        <Badge variant="default" className="gap-1">
-                          <Star className="h-3 w-3 fill-current" />
-                          Mặc định
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleOpenEditDialog(address)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setDeletingAddressId(address.id);
-                          setIsDeleteDialogOpen(true);
-                        }}
-                        disabled={address.isDefault && addresses.length === 1}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <p className="font-medium text-gray-900">{address.line}</p>
-                    <p className="text-gray-600 text-sm mt-1">
-                      {[address.ward, address.province]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </p>
-                  </div>
-
-                  {!address.isDefault && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => handleSetDefault(address.id)}
-                    >
-                      <Check className="h-4 w-4 mr-2" />
-                      Đặt làm mặc định
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
             ))}
           </div>
         )}
@@ -494,18 +268,13 @@ export default function AddressManagementPage() {
               </DialogDescription>
             </DialogHeader>
 
-<<<<<<< HEAD
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-=======
-            <form onSubmit={handleSubmit} className="space-y-4">
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
               {/* Province & Ward */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="province">
                     Tỉnh/Thành phố <span className="text-red-500">*</span>
                   </Label>
-<<<<<<< HEAD
                   {/* Hidden input for validation */}
                   <input
                     type="hidden"
@@ -514,8 +283,6 @@ export default function AddressManagementPage() {
                     })}
                   />
 
-=======
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
                   <Select
                     value={selectedProvinceCode}
                     onValueChange={handleProvinceChange}
@@ -537,21 +304,17 @@ export default function AddressManagementPage() {
                       ))}
                     </SelectContent>
                   </Select>
-<<<<<<< HEAD
                   {errors.province && (
                     <p className="text-sm text-red-500">
                       {errors.province.message}
                     </p>
                   )}
-=======
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="ward">
                     Xã/Phường <span className="text-red-500">*</span>
                   </Label>
-<<<<<<< HEAD
                   {/* Hidden input for validation */}
                   <input
                     type="hidden"
@@ -560,8 +323,6 @@ export default function AddressManagementPage() {
                     })}
                   />
 
-=======
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
                   <Select
                     value={selectedWardCode}
                     onValueChange={handleWardChange}
@@ -586,14 +347,11 @@ export default function AddressManagementPage() {
                       ))}
                     </SelectContent>
                   </Select>
-<<<<<<< HEAD
                   {errors.ward && (
                     <p className="text-sm text-red-500">
                       {errors.ward.message}
                     </p>
                   )}
-=======
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
                 </div>
               </div>
 
@@ -605,7 +363,6 @@ export default function AddressManagementPage() {
                 <Input
                   id="line"
                   placeholder="Số nhà, tên đường..."
-<<<<<<< HEAD
                   {...register("line", {
                     required: "Vui lòng nhập địa chỉ cụ thể",
                   })}
@@ -613,13 +370,6 @@ export default function AddressManagementPage() {
                 {errors.line && (
                   <p className="text-sm text-red-500">{errors.line.message}</p>
                 )}
-=======
-                  value={formData.line}
-                  onChange={(e) =>
-                    setFormData({ ...formData, line: e.target.value })
-                  }
-                />
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
                 <p className="text-xs text-gray-500">
                   Ví dụ: Số 1, Ngõ 23, Đường Láng
                 </p>
@@ -627,7 +377,6 @@ export default function AddressManagementPage() {
 
               {/* Set Default */}
               <div className="flex items-center space-x-2">
-<<<<<<< HEAD
                 <Controller
                   name="isDefault"
                   control={control}
@@ -640,16 +389,6 @@ export default function AddressManagementPage() {
                       className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                     />
                   )}
-=======
-                <input
-                  type="checkbox"
-                  id="isDefault"
-                  checked={formData.isDefault}
-                  onChange={(e) =>
-                    setFormData({ ...formData, isDefault: e.target.checked })
-                  }
-                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
                 />
                 <Label htmlFor="isDefault" className="cursor-pointer">
                   Đặt làm địa chỉ mặc định
@@ -662,11 +401,7 @@ export default function AddressManagementPage() {
                   variant="outline"
                   onClick={() => {
                     setIsDialogOpen(false);
-<<<<<<< HEAD
                     resetFormState();
-=======
-                    resetForm();
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
                   }}
                   disabled={isSubmitting}
                 >
@@ -685,7 +420,6 @@ export default function AddressManagementPage() {
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-<<<<<<< HEAD
         <AddressDeleteDialog
           open={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
@@ -695,38 +429,6 @@ export default function AddressManagementPage() {
             setDeletingAddressId(null);
           }}
         />
-=======
-        <AlertDialog
-          open={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Xác nhận xóa địa chỉ</AlertDialogTitle>
-              <AlertDialogDescription>
-                Bạn có chắc chắn muốn xóa địa chỉ này? Hành động này không thể
-                hoàn tác.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel
-                onClick={() => {
-                  setIsDeleteDialogOpen(false);
-                  setDeletingAddressId(null);
-                }}
-              >
-                Hủy
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteConfirm}
-                className="bg-red-500 hover:bg-red-600"
-              >
-                Xóa
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
       </div>
     </UserLayout>
   );

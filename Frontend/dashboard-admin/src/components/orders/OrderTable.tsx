@@ -11,39 +11,17 @@ import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { OrderStatusBadge, PaymentMethodBadge } from "./StatusBadges";
 import { useRouter } from "next/navigation";
-<<<<<<< HEAD
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
   Order,
   OrderStatus,
   useUpdateOrderStatus,
 } from "@/services/orderService";
-=======
-import { formatCurrency } from "@/lib/utils";
-import {Order, OrderStatus, useUpdateOrderStatus} from "@/services/orderService";
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 
 interface OrderTableProps {
   orders: Order[];
 }
 
-<<<<<<< HEAD
-=======
-export const formatDate = (dateString: string) => {
-  try {
-    return new Date(dateString).toLocaleString("vi-VN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return dateString;
-  }
-};
-
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 export function OrderTable({ orders }: OrderTableProps) {
   const router = useRouter();
   const { mutate: updateOrderStatus } = useUpdateOrderStatus();

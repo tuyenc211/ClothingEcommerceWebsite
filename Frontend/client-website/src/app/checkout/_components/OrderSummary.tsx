@@ -7,11 +7,7 @@ import Image from "next/image";
 import { formatPrice } from "@/lib/utils";
 import { CartSummary } from "@/stores/cartStore";
 import { EnrichedCartItem } from "@/types/cart";
-<<<<<<< HEAD
 import { Coupon } from "@/services/couponService";
-=======
-import {Coupon} from "@/services/couponService";
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 
 interface OrderSummaryProps {
   items: EnrichedCartItem[];
@@ -24,11 +20,7 @@ interface OrderSummaryProps {
   onToggleCouponList: () => void;
   onApplyCoupon: (couponCode: string) => void;
   onRemoveCoupon: () => void;
-<<<<<<< HEAD
   onSubmitOrder: (e?: any) => Promise<void>;
-=======
-  onSubmitOrder: () => void;
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   onBackToCart: () => void;
 }
 
@@ -189,15 +181,10 @@ export default function OrderSummary({
           </div>
         )}
         <div className="flex justify-between">
-<<<<<<< HEAD
           <span className="text-gray-600">Phí vận chuyển:</span>
           <span className="font-medium">
             {formatPrice(summary.shippingFee)}
           </span>
-=======
-            <span className="text-gray-600">Phí vận chuyển:</span>
-            <span className="font-medium">{formatPrice(summary.shippingFee)}</span>
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
         </div>
       </div>
 

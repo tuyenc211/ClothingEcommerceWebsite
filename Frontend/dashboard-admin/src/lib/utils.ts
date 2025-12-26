@@ -1,10 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-<<<<<<< HEAD
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-=======
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -16,7 +13,6 @@ export function formatCurrency(amount: number): string {
     currency: "VND",
   }).format(amount);
 }
-<<<<<<< HEAD
 
 export const formatDate = (
   dateString: string | undefined
@@ -28,5 +24,3 @@ export const formatDate = (
     return dateString;
   }
 };
-=======
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c

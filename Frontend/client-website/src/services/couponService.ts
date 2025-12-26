@@ -1,10 +1,7 @@
 import privateClient from "@/lib/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-<<<<<<< HEAD
 import { compareDesc } from "date-fns";
-=======
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 
 export interface Coupon {
   id: number;
@@ -24,16 +21,10 @@ export const couponService = {
   getAllCoupons: async (): Promise<Coupon[]> => {
     const response = await privateClient.get("/coupons");
     const data = response.data.data || response.data;
-<<<<<<< HEAD
 
     return data.sort((a: Coupon, b: Coupon) => {
       if (!a.startsAt || !b.startsAt) return 0;
       return compareDesc(new Date(a.startsAt), new Date(b.startsAt));
-=======
-    return data.sort((a: Coupon, b: Coupon) => {
-      if (!a.startsAt || !b.startsAt) return 0;
-      return new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime();
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
     });
   },
 
@@ -47,16 +38,10 @@ export const couponService = {
     const data = response.data || [];
     return data.sort((a: Coupon, b: Coupon) => {
       if (!a.startsAt || !b.startsAt) return 0;
-<<<<<<< HEAD
       return compareDesc(new Date(a.startsAt), new Date(b.startsAt));
     });
   },
 };
-=======
-      return new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime();
-    });
-  },};
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 export const useAllCoupons = () => {
   return useQuery({
     queryKey: ["coupons"],

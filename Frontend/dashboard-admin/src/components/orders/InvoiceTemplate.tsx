@@ -1,12 +1,8 @@
 "use client";
 
 import { OrderStatusBadge } from "./StatusBadges";
-<<<<<<< HEAD
 import { formatDate } from "@/lib/utils";
 import { vi } from "date-fns/locale";
-=======
-import { format } from "date-fns";
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 import { formatCurrency } from "@/lib/utils";
 import { Order } from "@/services/orderService";
 import { useUserById } from "@/services/usersService";
@@ -17,16 +13,6 @@ interface InvoiceTemplateProps {
 
 export function InvoiceTemplate({ order }: InvoiceTemplateProps) {
   const { data: user } = useUserById(order.userId || order.user?.id || 0);
-<<<<<<< HEAD
-=======
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), "dd/MM/yyyy");
-    } catch {
-      return dateString;
-    }
-  };
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 
   // Parse shipping address snapshot
   const getShippingInfo = () => {

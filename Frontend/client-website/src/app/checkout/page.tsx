@@ -31,14 +31,9 @@ import LoadingSpinner from "@/components/common/LoadingSpinner";
 import { useCreateOrder } from "@/services/orderService";
 import { Coupon, useAvailableCoupons } from "@/services/couponService";
 import { useProductsQuery } from "@/services/productService";
-<<<<<<< HEAD
 import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
 
 export interface ShippingFormData {
-=======
-
-interface ShippingFormData {
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   fullName: string;
   phone: string;
   address: string;
@@ -58,7 +53,6 @@ export default function CheckoutPage() {
   const { fetchProducts } = useProductStore();
   const { data: products } = useProductsQuery();
 
-<<<<<<< HEAD
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const baseSummary = getCartSummary();
   const { data: availableCoupons }: { data: Coupon[] | undefined } =
@@ -71,43 +65,6 @@ export default function CheckoutPage() {
       if (discount > subtotal) {
         discount = subtotal;
       }
-=======
-  // Local state for coupon
-  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
-
-  // Calculate summary locally to include coupon discount
-  const summary = useMemo(() => {
-    const baseSummary = getCartSummary();
-
-    // Recalculate if there's a coupon
-    if (appliedCoupon && appliedCoupon.isActive) {
-      const subtotal = baseSummary.subtotal;
-      let discount = 0;
-
-      const now = new Date();
-      const startsAt = appliedCoupon.startsAt
-        ? new Date(appliedCoupon.startsAt)
-        : null;
-      const endsAt = appliedCoupon.endsAt
-        ? new Date(appliedCoupon.endsAt)
-        : null;
-
-      const isWithinDateRange =
-        (!startsAt || now >= startsAt) && (!endsAt || now <= endsAt);
-      const meetsMinTotal =
-        !appliedCoupon.minOrderTotal || subtotal >= appliedCoupon.minOrderTotal;
-
-      if (isWithinDateRange && meetsMinTotal) {
-        // Percentage discount calculation
-        discount = (subtotal * appliedCoupon.value) / 100;
-
-        // Cap discount at subtotal
-        if (discount > subtotal) {
-          discount = subtotal;
-        }
-      }
-
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
       const subtotalAfterDiscount = subtotal - discount;
       const total = subtotalAfterDiscount + baseSummary.shippingFee;
 
@@ -119,15 +76,8 @@ export default function CheckoutPage() {
     }
 
     return baseSummary;
-<<<<<<< HEAD
   }, [baseSummary, appliedCoupon]);
 
-=======
-  }, [getCartSummary, appliedCoupon]);
-
-  const { data: availableCoupons }: { data: Coupon[] | undefined } =
-    useAvailableCoupons(authUser?.id, summary.subtotal);
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   const {
     provinces,
     wards,
@@ -168,7 +118,6 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-<<<<<<< HEAD
   const isCheckingOutRef = useRef(false);
 
   const methods = useForm<ShippingFormData>({
@@ -183,21 +132,6 @@ export default function CheckoutPage() {
     },
   });
   const { handleSubmit, reset, setValue } = methods;
-=======
-
-  // Ref để track xem có đang thanh toán không (dùng trong cleanup)
-  const isCheckingOutRef = useRef(false);
-  const [formData, setFormData] = useState<ShippingFormData>({
-    fullName: "",
-    phone: "",
-    address: "",
-    ward: "",
-    wardCode: "",
-    province: "",
-    provinceCode: "",
-  });
-
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   const enrichedItems: EnrichedCartItem[] = useMemo(() => {
     return items
       .map((item) => {
@@ -227,11 +161,7 @@ export default function CheckoutPage() {
       if (defaultAddr) {
         setSelectedAddressId(defaultAddr.id);
         setIsNewAddress(false);
-<<<<<<< HEAD
         reset({
-=======
-        setFormData({
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
           fullName: authUser.fullName,
           phone: authUser.phone || "",
           address: defaultAddr.line,
@@ -244,11 +174,7 @@ export default function CheckoutPage() {
         if (!isLoadingAddresses) {
           setIsNewAddress(true);
         }
-<<<<<<< HEAD
         reset({
-=======
-        setFormData({
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
           fullName: authUser.fullName,
           phone: authUser.phone || "",
           address: "",
@@ -261,12 +187,8 @@ export default function CheckoutPage() {
     } else {
       setIsNewAddress(true);
     }
-<<<<<<< HEAD
   }, [authUser, authUser?.addresses, isLoadingAddresses, reset]);
 
-=======
-  }, [authUser, authUser?.addresses, isLoadingAddresses]);
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   useEffect(() => {
     isCheckingOutRef.current = isSubmitting || isProcessingPayment;
   }, [isSubmitting, isProcessingPayment]);
@@ -294,7 +216,6 @@ export default function CheckoutPage() {
     }
   }, [searchParams, router]);
 
-<<<<<<< HEAD
   const handleProvinceChange = (provinceCode: string) => {
     const selectedProvince = provinces.find((p) => p.code === provinceCode);
     setValue("provinceCode", provinceCode);
@@ -303,39 +224,13 @@ export default function CheckoutPage() {
     });
     setValue("wardCode", "");
     setValue("ward", "", { shouldValidate: true });
-=======
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleProvinceChange = (provinceCode: string) => {
-    const selectedProvince = provinces.find((p) => p.code === provinceCode);
-    setFormData((prev) => ({
-      ...prev,
-      provinceCode: provinceCode,
-      province: selectedProvince?.name || "",
-      wardCode: "",
-      ward: "",
-    }));
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
     fetchWards(provinceCode);
   };
 
   const handleWardChange = (wardCode: string) => {
     const selectedWard = wards.find((w) => w.code === wardCode);
-<<<<<<< HEAD
     setValue("wardCode", wardCode);
     setValue("ward", selectedWard?.name || "", { shouldValidate: true });
-=======
-    setFormData((prev) => ({
-      ...prev,
-      wardCode: wardCode,
-      ward: selectedWard?.name || "",
-    }));
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   };
 
   const handleAddressSelect = (addressId: number) => {
@@ -347,11 +242,7 @@ export default function CheckoutPage() {
         (addr) => addr.id === addressId
       );
       if (selectedAddr) {
-<<<<<<< HEAD
         reset({
-=======
-        setFormData({
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
           fullName: authUser.fullName,
           phone: authUser.phone || "",
           address: selectedAddr.line,
@@ -360,10 +251,7 @@ export default function CheckoutPage() {
           province: selectedAddr.province || "",
           provinceCode: "",
         });
-<<<<<<< HEAD
         clearWards();
-=======
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
       }
     }
   };
@@ -371,11 +259,7 @@ export default function CheckoutPage() {
   const handleNewAddress = () => {
     setIsNewAddress(true);
     setSelectedAddressId(null);
-<<<<<<< HEAD
     reset({
-=======
-    setFormData({
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
       fullName: authUser?.fullName || "",
       phone: authUser?.phone || "",
       address: "",
@@ -384,10 +268,6 @@ export default function CheckoutPage() {
       province: "",
       provinceCode: "",
     });
-<<<<<<< HEAD
-=======
-    clearWards();
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   };
 
   const handleApplyCoupon = (couponCode: string) => {
@@ -406,46 +286,16 @@ export default function CheckoutPage() {
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
   };
-<<<<<<< HEAD
 
   const onSubmitOrder: SubmitHandler<ShippingFormData> = async (formData) => {
-=======
-  const validatePhone = (phone: string): boolean => {
-    // Phone VN: 10 số, bắt đầu bằng 0
-    const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
-    return phoneRegex.test(phone);
-  };
-  const handleSubmitOrder = async () => {
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
     if (!authUser?.id) {
       toast.error("Vui lòng đăng nhập để đặt hàng");
       router.push("/user/login");
       return;
     }
-<<<<<<< HEAD
     setIsSubmitting(true);
 
     try {
-=======
-
-    if (!formData.address || !formData.fullName || !formData.phone) {
-      toast.error("Vui lòng điền đầy đủ thông tin giao hàng");
-      return;
-    }
-    if (!validatePhone(formData.phone)) {
-      toast.error("Số điện thoại không hợp lệ");
-      return;
-    }
-    if (!formData.province || !formData.ward) {
-      toast.error("Vui lòng chọn tỉnh/thành phố và xã/phường");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // Create order request matching backend structure
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
       const orderRequest = {
         paymentMethod: paymentMethod,
         shippingAddress: {
@@ -568,7 +418,6 @@ export default function CheckoutPage() {
           <h1 className="text-xl md:text-2xl font-semibold">Thanh toán</h1>
         </div>
 
-<<<<<<< HEAD
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmitOrder)}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -666,101 +515,6 @@ export default function CheckoutPage() {
             </div>
           </form>
         </FormProvider>
-=======
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Shipping + Payment */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Shipping Address */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-primary" />
-                    <CardTitle>Thông tin giao hàng</CardTitle>
-                  </div>
-                  {authUser && (
-                    <Link href="/user/address">
-                      <Button variant="outline" size="sm">
-                        <Settings className="w-4 h-4 mr-2" />
-                        Quản lý địa chỉ
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {isLoadingAddresses ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="flex flex-col items-center space-y-3">
-                      <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
-                      <p className="text-sm text-gray-600">
-                        Đang tải địa chỉ...
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <ShippingAddressForm
-                    authUser={authUser}
-                    formData={formData}
-                    selectedAddressId={selectedAddressId}
-                    isNewAddress={isNewAddress}
-                    provinces={provinces}
-                    wards={wards}
-                    isLoadingProvinces={isLoadingProvinces}
-                    isLoadingWards={isLoadingWards}
-                    onInputChange={handleInputChange}
-                    onProvinceChange={handleProvinceChange}
-                    onWardChange={handleWardChange}
-                    onAddressSelect={handleAddressSelect}
-                    onNewAddress={handleNewAddress}
-                  />
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Payment */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-primary" />
-                  <CardTitle>Phương thức thanh toán</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <PaymentMethodSelector
-                  paymentMethod={paymentMethod}
-                  onPaymentMethodChange={setPaymentMethod}
-                />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right: Order Summary */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-4">
-              <CardHeader>
-                <CardTitle>Đơn hàng ({items.length} sản phẩm)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <OrderSummary
-                  items={enrichedItems}
-                  summary={summary}
-                  appliedCoupon={appliedCoupon}
-                  availableCoupons={availableCoupons || []}
-                  showCouponList={showCouponList}
-                  isSubmitting={isSubmitting}
-                  paymentMethod={paymentMethod}
-                  onToggleCouponList={() => setShowCouponList(!showCouponList)}
-                  onApplyCoupon={handleApplyCoupon}
-                  onRemoveCoupon={handleRemoveCoupon}
-                  onSubmitOrder={handleSubmitOrder}
-                  onBackToCart={() => router.push("/cart")}
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
       </div>
     </div>
   );

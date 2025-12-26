@@ -13,16 +13,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -34,10 +24,7 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Coupon, useCouponStore } from "@/stores/couponStore";
 import CustomModal from "@/components/common/CustomModal";
-<<<<<<< HEAD
 import { formatDate } from "@/lib/utils";
-=======
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 
 export default function CouponListPage() {
   const { coupons, deleteCoupon, getCouponStatus, fetchCoupons, isLoading } =
@@ -104,19 +91,6 @@ export default function CouponListPage() {
     }
   };
 
-  const handleDeleteCancel = () => {
-    setDeleteDialog({ open: false, couponId: null, couponCode: "" });
-  };
-
-<<<<<<< HEAD
-=======
-  // Format date
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString("vi-VN");
-  };
-
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   // Pagination calculation
   const totalPages = Math.ceil(coupons.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -311,7 +285,6 @@ export default function CouponListPage() {
       )}
 
       {/* Delete Confirmation Dialog */}
-<<<<<<< HEAD
       <CustomModal
         open={deleteDialog.open}
         onClose={() =>
@@ -324,12 +297,6 @@ export default function CouponListPage() {
         cancelText="Hủy"
         variant="destructive"
       />
-=======
-        <CustomModal open={deleteDialog.open} onClose={()=> setDeleteDialog({open:false, couponId: null,couponCode:""})} onConfirm={handleDeleteConfirm} title={"Xo max giảm giá"}  description="Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác."
-                     confirmText="Xóa"
-                     cancelText="Hủy"
-                     variant="destructive"/>
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
     </div>
   );
 }

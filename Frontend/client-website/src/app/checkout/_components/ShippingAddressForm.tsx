@@ -11,41 +11,17 @@ import {
 } from "@/components/ui/select";
 import { User } from "@/stores/useAuthStore";
 import { Province, Ward } from "@/hooks/useAddress";
-<<<<<<< HEAD
 import { useFormContext, Controller } from "react-hook-form";
 import { ShippingFormData } from "@/app/checkout/page";
 
 interface ShippingAddressFormProps {
   authUser: User | null;
-=======
-
-interface ShippingFormData {
-  fullName: string;
-  phone: string;
-  address: string;
-  ward: string;
-  wardCode: string;
-  province: string;
-  provinceCode: string;
-  note?: string;
-}
-
-interface ShippingAddressFormProps {
-  authUser: User | null;
-  formData: ShippingFormData;
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   selectedAddressId: number | null;
   isNewAddress: boolean;
   provinces: Province[];
   wards: Ward[];
   isLoadingProvinces: boolean;
   isLoadingWards: boolean;
-<<<<<<< HEAD
-=======
-  onInputChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => void;
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   onProvinceChange: (provinceCode: string) => void;
   onWardChange: (wardCode: string) => void;
   onAddressSelect: (addressId: number) => void;
@@ -54,26 +30,17 @@ interface ShippingAddressFormProps {
 
 export default function ShippingAddressForm({
   authUser,
-<<<<<<< HEAD
-=======
-  formData,
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   selectedAddressId,
   isNewAddress,
   provinces,
   wards,
   isLoadingProvinces,
   isLoadingWards,
-<<<<<<< HEAD
-=======
-  onInputChange,
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   onProvinceChange,
   onWardChange,
   onAddressSelect,
   onNewAddress,
 }: ShippingAddressFormProps) {
-<<<<<<< HEAD
   const {
     register,
     control,
@@ -81,14 +48,6 @@ export default function ShippingAddressForm({
     watch,
   } = useFormContext<ShippingFormData>();
   const provinceCode = watch("provinceCode");
-=======
-  console.log("🏢 ShippingAddressForm - Provinces:", provinces.length);
-  console.log(
-    "🏢 ShippingAddressForm - isLoadingProvinces:",
-    isLoadingProvinces
-  );
-  console.log("🏢 ShippingAddressForm - isNewAddress:", isNewAddress);
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 
   return (
     <div className="space-y-4">
@@ -103,7 +62,6 @@ export default function ShippingAddressForm({
               </Label>
               <Input
                 id="fullName"
-<<<<<<< HEAD
                 placeholder="Nhập họ và tên"
                 {...register("fullName", {
                   required: "Vui lòng nhập họ và tên",
@@ -114,13 +72,6 @@ export default function ShippingAddressForm({
                   {errors.fullName.message}
                 </p>
               )}
-=======
-                name="fullName"
-                value={formData.fullName}
-                onChange={onInputChange}
-                placeholder="Nhập họ và tên"
-              />
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">
@@ -128,7 +79,6 @@ export default function ShippingAddressForm({
               </Label>
               <Input
                 id="phone"
-<<<<<<< HEAD
                 placeholder="Nhập số điện thoại"
                 {...register("phone", {
                   required: "Vui lòng nhập số điện thoại",
@@ -141,13 +91,6 @@ export default function ShippingAddressForm({
               {errors.phone && (
                 <p className="text-sm text-red-500">{errors.phone.message}</p>
               )}
-=======
-                name="phone"
-                value={formData.phone}
-                onChange={onInputChange}
-                placeholder="Nhập số điện thoại"
-              />
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
             </div>
           </div>
         </div>
@@ -237,7 +180,6 @@ export default function ShippingAddressForm({
               <Label htmlFor="province">
                 Tỉnh/ Thành phố <span className="text-red-500">*</span>
               </Label>
-<<<<<<< HEAD
               {/* Hidden input for validation */}
               <input
                 type="hidden"
@@ -275,34 +217,12 @@ export default function ShippingAddressForm({
                   {errors.province.message}
                 </p>
               )}
-=======
-              <Select
-                value={formData.provinceCode}
-                onValueChange={onProvinceChange}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      isLoadingProvinces ? "Đang tải..." : "Chọn tỉnh/thành phố"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent className="max-h-60 overflow-y-auto">
-                  {provinces.map((province) => (
-                    <SelectItem key={province.code} value={province.code}>
-                      {province.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="ward">
                 Xã/ Phường <span className="text-red-500">*</span>
               </Label>
-<<<<<<< HEAD
               {/* Hidden input for validation */}
               <input
                 type="hidden"
@@ -342,32 +262,6 @@ export default function ShippingAddressForm({
               {errors.ward && (
                 <p className="text-sm text-red-500">{errors.ward.message}</p>
               )}
-=======
-              <Select
-                value={formData.wardCode}
-                onValueChange={onWardChange}
-                disabled={!formData.provinceCode}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      !formData.provinceCode
-                        ? "Chọn tỉnh/thành phố trước"
-                        : isLoadingWards
-                        ? "Đang tải..."
-                        : "Chọn xã/phường"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent className="max-h-60 overflow-y-auto">
-                  {wards.map((ward) => (
-                    <SelectItem key={ward.code} value={ward.code}>
-                      {ward.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
             </div>
           </div>
 
@@ -377,7 +271,6 @@ export default function ShippingAddressForm({
             </Label>
             <Input
               id="address"
-<<<<<<< HEAD
               placeholder="Số nhà, tên đường..."
               {...register("address", {
                 required: "Vui lòng nhập địa chỉ cụ thể",
@@ -386,13 +279,6 @@ export default function ShippingAddressForm({
             {errors.address && (
               <p className="text-sm text-red-500">{errors.address.message}</p>
             )}
-=======
-              name="address"
-              value={formData.address}
-              onChange={onInputChange}
-              placeholder="Số nhà, tên đường..."
-            />
->>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
           </div>
         </div>
       )}
