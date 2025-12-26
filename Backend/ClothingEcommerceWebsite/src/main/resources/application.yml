@@ -1,6 +1,5 @@
 server:
   port: 8088
-
 spring:
   datasource:
     # url: jdbc:mysql://root:WxxYnviAdTLJKHpsvBnPvMsxtIicyAGE@maglev.proxy.rlwy.net:12850/clothingshop
