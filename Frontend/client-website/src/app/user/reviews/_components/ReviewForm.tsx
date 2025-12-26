@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,63 +16,68 @@ import {
 import useAuthStore from "@/stores/useAuthStore";
 import { toast } from "sonner";
 import { Rating, RatingButton } from "@/components/ui/shadcn-io/rating";
-import { useCreateReview, useReviewsByUser } from "@/services/reviewsService";
+import { useCreateReview } from "@/services/reviewsService";
+import { useForm, Controller, SubmitHandler } from "react-hook-form";
 
 interface ReviewFormProps {
   productId: number;
   orderId?: number;
 }
 
+interface ReviewFormValues {
+  rating: number;
+  title: string;
+  content: string;
+}
+
 export default function ReviewForm({ productId, orderId }: ReviewFormProps) {
   const { authUser } = useAuthStore();
   const { mutate: addReview, isPending: isLoading } = useCreateReview();
-
   const [isOpen, setIsOpen] = useState(false);
-  const [rating, setRating] = useState(0);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
 
-    if (!authUser) {
-      toast.error("Vui lòng đăng nhập để đánh giá");
-      return;
-    }
-    if (rating === 0) {
-      toast.error("Vui lòng chọn số sao đánh giá");
-      return;
-    }
-    if (!content.trim()) {
-      toast.error("Vui lòng nhập nội dung đánh giá");
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+    setValue,
+  } = useForm<ReviewFormValues>({
+    defaultValues: {
+      rating: 0,
+      title: "",
+      content: "",
+    },
+  });
 
+  const onSubmit: SubmitHandler<ReviewFormValues> = async (data) => {
     try {
       addReview({
-        user_id: authUser.id,
+        user_id: authUser?.id,
         product_id: productId,
         order_id: orderId,
-        rating,
-        title: title.trim() || undefined,
-        content: content.trim(),
+        rating: data.rating,
+        title: data.title.trim() || undefined,
+        content: data.content.trim(),
       });
       toast.success("Đánh giá của bạn đã được gửi thành công!");
       setIsOpen(false);
-      resetForm();
+      reset();
     } catch (error) {
       console.error("Error submitting review:", error);
     }
   };
 
-  const resetForm = () => {
-    setRating(0);
-    setTitle("");
-    setContent("");
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      reset();
+    }
   };
 
   if (!authUser) return null;
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" className="gap-2">
           <Star className="w-4 h-4" />
@@ -85,18 +90,39 @@ export default function ReviewForm({ productId, orderId }: ReviewFormProps) {
           <DialogTitle>Viết đánh giá</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Rating Stars - dùng component Rating/RatingButton */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Rating Stars */}
           <div className="space-y-2">
             <Label>
               Đánh giá <span className="text-red-500">*</span>
             </Label>
 
-            <Rating value={rating} onValueChange={setRating} className="gap-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <RatingButton key={i} size={32} className="text-yellow-400" />
-              ))}
-            </Rating>
+            <Controller
+              name="rating"
+              control={control}
+              rules={{
+                required: "Vui lòng chọn số sao đánh giá",
+                min: { value: 1, message: "Vui lòng chọn số sao đánh giá" },
+              }}
+              render={({ field }) => (
+                <Rating
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  className="gap-1"
+                >
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <RatingButton
+                      key={i}
+                      size={32}
+                      className="text-yellow-400"
+                    />
+                  ))}
+                </Rating>
+              )}
+            />
+            {errors.rating && (
+              <p className="text-sm text-red-500">{errors.rating.message}</p>
+            )}
           </div>
 
           {/* Title */}
@@ -104,10 +130,9 @@ export default function ReviewForm({ productId, orderId }: ReviewFormProps) {
             <Label htmlFor="title">Tiêu đề (Tùy chọn)</Label>
             <Input
               id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
               placeholder="Tóm tắt đánh giá của bạn"
               maxLength={255}
+              {...register("title")}
             />
           </div>
 
@@ -118,13 +143,16 @@ export default function ReviewForm({ productId, orderId }: ReviewFormProps) {
             </Label>
             <Textarea
               id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
               placeholder="Chia sẻ chi tiết về trải nghiệm của bạn với sản phẩm này..."
               rows={5}
-              required
+              {...register("content", {
+                required: "Vui lòng nhập nội dung đánh giá",
+              })}
             />
-            <p className="text-xs text-gray-500">{content.length} ký tự</p>
+            {errors.content && (
+              <p className="text-sm text-red-500">{errors.content.message}</p>
+            )}
+            {/* watch content to show length if needed, or remove character count if not critical */}
           </div>
 
           {/* Actions */}
@@ -132,10 +160,7 @@ export default function ReviewForm({ productId, orderId }: ReviewFormProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                setIsOpen(false);
-                resetForm();
-              }}
+              onClick={() => handleOpenChange(false)}
               disabled={isLoading}
             >
               Hủy
