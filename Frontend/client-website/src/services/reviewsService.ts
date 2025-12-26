@@ -1,8 +1,14 @@
 import privateClient from "@/lib/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+<<<<<<< HEAD
 import { Order } from "@/services/orderService";
 interface CreateReviewData {
   user_id: number | undefined;
+=======
+import {Order} from "@/services/orderService";
+interface CreateReviewData {
+  user_id: number;
+>>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
   product_id: number;
   order_id?: number;
   rating: number;
@@ -11,6 +17,7 @@ interface CreateReviewData {
 }
 
 export interface Review {
+<<<<<<< HEAD
   id: number;
   product_id: number;
   user_id: number;
@@ -33,6 +40,30 @@ export interface Review {
     name: string;
     slug: string;
   };
+=======
+    id: number;
+    product_id: number;
+    user_id: number;
+    order?: Order;
+    order_id?: number;
+    rating: number;
+    title?: string;
+    content?: string;
+    is_approved: boolean;
+    createdAt: string;
+
+    // Populated fields from joins
+    user?: {
+        id: number;
+        fullName: string;
+        email?: string;
+    };
+    product?: {
+        id: number;
+        name: string;
+        slug: string;
+    };
+>>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
 }
 export const reviewService = {
   getReviewsByProduct: async (productId: number): Promise<Review[]> => {
@@ -40,7 +71,11 @@ export const reviewService = {
     return response.data;
   },
 
+<<<<<<< HEAD
   getReviewsByUser: async (userId: number | undefined): Promise<Review[]> => {
+=======
+  getReviewsByUser: async (userId: number| undefined): Promise<Review[]> => {
+>>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
     const response = await privateClient.get(`/reviews/user/${userId}`);
     return response.data;
   },

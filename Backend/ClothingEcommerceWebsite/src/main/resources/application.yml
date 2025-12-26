@@ -5,11 +5,19 @@ spring:
     # url: jdbc:mysql://root:WxxYnviAdTLJKHpsvBnPvMsxtIicyAGE@maglev.proxy.rlwy.net:12850/clothingshop
     url: jdbc:mysql://localhost:3306/clothingshop?useSSL=false&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
+<<<<<<< HEAD
     username: root
     # password: WxxYnviAdTLJKHpsvBnPvMsxtIicyAGE
     password: 20112004
   jpa:
     show-sql: no
+=======
+    username: ${DB_USERNAME}
+    # password: WxxYnviAdTLJKHpsvBnPvMsxtIicyAGE
+    password: ${DB_PASSWORD}
+  jpa:
+    show-sql: false
+>>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
     hibernate:
       ddl-auto: none
     properties:
@@ -23,8 +31,13 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
+<<<<<<< HEAD
     username: oganiboss11@gmail.com
     password: ydgndwjksuihurub
+=======
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+>>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
     properties:
       mail:
         smtp:
@@ -32,6 +45,7 @@ spring:
           starttls:
             enable: true
   sendgrid:
+<<<<<<< HEAD
     api-key: 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
     from-email: hoductuyenqp@gmail.com
   cloudinary:
@@ -40,6 +54,16 @@ spring:
   vnpay:
     tmn-code: M5O0LLB4
     secret-key: 5AG7WNH6INYKSRY4PB3XHI2BIWM2FSSV
+=======
+    api-key: ${SENDGRID_API_KEY}
+    from-email: hoductuyenqp@gmail.com
+  cloudinary:
+    api-key: ${CLOUDINARY_API_KEY}
+    api-secret: ${CLOUDINARY_API_SECRET}
+  vnpay:
+    tmn-code: ${VNPAY_TMN_CODE}
+    secret-key: ${VNPAY_SECRET_KEY}
+>>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
     pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
     return-url: http://localhost:8088/api/v1/payment/vn-pay-callback
     # return-url: http://clothingecommercewebsite.onrender.com/api/v1/payment/vn-pay-callback
@@ -57,4 +81,8 @@ openapi:
 jwt:
   accesstoken-expiration: 3600
   refreshtoken-expiration: 86400
+<<<<<<< HEAD
   secretKey: TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=
+=======
+  secretKey: ${JWT_SECRET_KEY}
+>>>>>>> 92c514853ae7da003171660fc573c9d5312c180c
