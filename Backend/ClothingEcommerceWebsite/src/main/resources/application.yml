@@ -9,11 +9,6 @@ spring:
     # password: WxxYnviAdTLJKHpsvBnPvMsxtIicyAGE
     password: 20112004
   jpa:
-    show-sql: no
-    username: ${DB_USERNAME}
-    # password: WxxYnviAdTLJKHpsvBnPvMsxtIicyAGE
-    password: ${DB_PASSWORD}
-  jpa:
     show-sql: false
     hibernate:
       ddl-auto: none
