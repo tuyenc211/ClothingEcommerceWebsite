@@ -1,4 +1,3 @@
-// middleware.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
@@ -9,7 +8,6 @@ export function middleware(request: NextRequest) {
   const matchedRoute = protectedRoutes.find(
     (route) => pathname.startsWith(route.path) && !isLogin
   );
-  // Đã có token mà vào /login -> đẩy về /
   if (refreshToken && isLogin) {
     return NextResponse.redirect(new URL("/", request.url));
   }

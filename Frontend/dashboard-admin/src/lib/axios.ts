@@ -39,7 +39,6 @@ privateClient.interceptors.response.use(
     }
     const path = window.location.pathname;
     const isAuthPage = path.startsWith("/login");
-    // Đang gọi refresh endpoint -> clear token và reject (tránh loop)
     if (originalRequest.url?.includes("/auth/refresh") || isAuthPage) {
       useAuthStore.getState().setAccessToken(null);
       return Promise.reject(error);
@@ -52,8 +51,6 @@ privateClient.interceptors.response.use(
       // Gọi endpoint refresh để lấy access token mới
       const response = await privateClient.get("/auth/refresh");
       const newAccessToken = response.data.accesstoken;
-
-      // Cập nhật token mới vào Zustand (persist middleware tự động lưu vào localStorage)
       useAuthStore.getState().setAccessToken(newAccessToken);
 
       // Retry request ban đầu với token mới
@@ -62,11 +59,7 @@ privateClient.interceptors.response.use(
       }
       return privateClient(originalRequest);
     } catch (refreshError) {
-      // Refresh token hết hạn -> clear token
       useAuthStore.getState().setAccessToken(null);
-
-      // Xóa cart nếu cần
-      localStorage.removeItem("auth-storage");
 
       // Redirect về login
       window.location.replace("/user/login");

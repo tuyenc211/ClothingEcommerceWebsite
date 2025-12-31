@@ -11,15 +11,15 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, ImageIcon, Save, X } from "lucide-react";
 import { toast } from "sonner";
-import { useCouponStore, Coupon } from "@/stores/couponStore";
 import { useState } from "react";
 import Image from "next/image";
+import { useAddCoupon, useAllCoupons, Coupon } from "@/services/couponService";
 
 type FormValues = {
-  code: string; // VARCHAR(50) NOT NULL UNIQUE
-  name: string; // VARCHAR(255) NOT NULL
-  description?: string; // TEXT
-  value: number; // DECIMAL(12,2) NOT NULL
+  code: string;
+  name: string;
+  description?: string;
+  value: number;
   maxUses?: number;
   maxUsesPerUser?: number;
   minOrderTotal?: number;
@@ -32,7 +32,8 @@ export default function AddCouponPage() {
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const { addCoupon, validateCouponCode } = useCouponStore();
+  const { data: allCoupons = [] } = useAllCoupons();
+  const { mutate: addCoupon } = useAddCoupon();
 
   const {
     register,
@@ -56,12 +57,17 @@ export default function AddCouponPage() {
   });
 
   const isActive = watch("isActive");
+  const validateCouponCode = (code: string): boolean => {
+    const existing = allCoupons.find(
+      (c) => c.code.toLowerCase() === code.toLowerCase()
+    );
+    return !existing;
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedImage(file);
-
-      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -69,45 +75,39 @@ export default function AddCouponPage() {
       reader.readAsDataURL(file);
     }
   };
+
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
   };
+
   const onSubmit = async (data: FormValues) => {
-    // Validate coupon code uniqueness
     if (!validateCouponCode(data.code)) {
       toast.error("Mã giảm giá đã tồn tại");
       return;
     }
-
-    // Validate dates if provided
     if (data.startsAt && data.endsAt) {
       if (new Date(data.endsAt) <= new Date(data.startsAt)) {
         toast.error("Ngày kết thúc phải sau ngày bắt đầu");
         return;
       }
     }
-
+    const couponData: Omit<Coupon, "id"> = {
+      code: data.code.toUpperCase(),
+      name: data.name,
+      description: data.description || undefined,
+      value: data.value,
+      minOrderTotal: data.minOrderTotal || undefined,
+      maxUses: data.maxUses || undefined,
+      maxUsesPerUser: data.maxUsesPerUser || undefined,
+      startsAt: data.startsAt || undefined,
+      endsAt: data.endsAt || undefined,
+      isActive: data.isActive,
+    };
     try {
-      // Convert empty strings to undefined for optional fields
-      const couponData: Omit<Coupon, "id"> = {
-        code: data.code.toUpperCase(),
-        name: data.name,
-        description: data.description || undefined,
-        value: data.value,
-        minOrderTotal: data.minOrderTotal || undefined,
-        maxUses: data.maxUses || undefined,
-        maxUsesPerUser: data.maxUsesPerUser || undefined,
-        startsAt: data.startsAt || undefined,
-        endsAt: data.endsAt || undefined,
-        isActive: data.isActive,
-      };
-
-      await addCoupon(couponData, selectedImage || undefined);
-      toast.success("Thêm mã giảm giá thành công!");
+      addCoupon({ couponData, image: selectedImage || undefined });
       router.push("/coupon-list");
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi thêm mã giảm giá");
       console.error("Error adding coupon:", error);
     }
   };

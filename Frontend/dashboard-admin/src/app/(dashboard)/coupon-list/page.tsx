@@ -22,16 +22,27 @@ import {
 } from "@/components/ui/pagination";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { Coupon, useCouponStore } from "@/stores/couponStore";
+
 import CustomModal from "@/components/common/CustomModal";
 import { formatDate } from "@/lib/utils";
+import {Coupon, useAllCoupons, useDeleteCoupon} from "@/services/couponService";
 
+const getCouponStatus =(coupon: Coupon): "active" | "expired" | "upcoming" | "inactive" => {
+    const now = new Date();
+    if (!coupon.startsAt || !coupon.endsAt) return "active";
+    if (!coupon.isActive) return "inactive";
+
+    const startDate = new Date(coupon.startsAt);
+    const endDate = new Date(coupon.endsAt);
+
+    if (now < startDate) return "upcoming";
+    if (now > endDate) return "expired";
+
+    return "active";
+};
 export default function CouponListPage() {
-  const { coupons, deleteCoupon, getCouponStatus, fetchCoupons, isLoading } =
-    useCouponStore();
-  useEffect(() => {
-    fetchCoupons();
-  }, [fetchCoupons]);
+  const { mutate: deleteCoupon } = useDeleteCoupon();
+  const { data: coupons = [], isLoading } = useAllCoupons();
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     couponId: number | null;

@@ -1,6 +1,6 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
-import { InvoiceTemplate } from "@/components/orders/InvoiceTemplate";
+import { InvoiceTemplate } from "@/app/(dashboard)/orders/_components/InvoiceTemplate";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";

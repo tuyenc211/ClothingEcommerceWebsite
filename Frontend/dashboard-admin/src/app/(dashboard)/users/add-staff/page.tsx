@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useUserStore, CreateStaffData } from "@/stores/userStore";
+
 import { useForm } from "react-hook-form";
 import {
   Card,
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import {CreateStaffData, useCreateStaff} from "@/services/usersService";
 
 type StaffFormData = {
   fullName: string;
@@ -27,7 +28,7 @@ type StaffFormData = {
 
 export default function AddStaffPage() {
   const router = useRouter();
-  const { createStaff, isLoading } = useUserStore();
+  const { mutateAsync: createStaff, isPending } = useCreateStaff();
 
   const {
     register,
@@ -60,7 +61,7 @@ export default function AddStaffPage() {
       const ok = await createStaff(payload);
       if (ok) {
         router.push("/users");
-      } 
+      }
     } catch (e) {
       console.error(e);
     }
@@ -218,10 +219,10 @@ export default function AddStaffPage() {
           </Button>
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isPending}
             className="hover:bg-gray-800-700 hover:border-gray-800 hover:text-white"
           >
-            {isLoading ? (
+            {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Đang tạo...

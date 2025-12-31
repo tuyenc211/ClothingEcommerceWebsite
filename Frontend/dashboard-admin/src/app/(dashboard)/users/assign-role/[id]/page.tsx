@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useUserStore } from "@/stores/userStore";
-import { Role, User } from "@/stores/useAuthStore";
 import {
   Card,
   CardContent,
@@ -29,7 +27,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useUserById } from "@/services/usersService";
+import { useAssignRole, useUserById } from "@/services/usersService";
+import {Role} from "@/stores/useAuthStore";
 
 interface RoleOption {
   id: number;
@@ -60,7 +59,7 @@ export default function AssignRolePage() {
   const router = useRouter();
   const params = useParams();
   const id = Number(params?.id);
-  const { assignRoles, isLoading } = useUserStore();
+  const { mutate: assignRoles, isPending } = useAssignRole();
   const { data: user } = useUserById(id);
   const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
 
@@ -75,22 +74,12 @@ export default function AssignRolePage() {
         toast.error("Vai trò không hợp lệ");
         return;
       }
-
-      // Send role object with uppercase name
       const roleToAssign: Role = {
         id: selectedRole.id,
         name: selectedRole.name.toUpperCase(),
       };
-      const success = await assignRoles(user.id, roleToAssign);
-
-      if (success) {
-        toast.success(
-          `Đã phân quyền ${selectedRole.name} cho ${user.fullName}`
-        );
-        router.push("/users");
-      } else {
-        toast.error("Có lỗi xảy ra khi phân quyền");
-      }
+      assignRoles({ userId: user.id, role: roleToAssign });
+      router.push("/users");
     } catch (error) {
       console.error("Error assigning role:", error);
       toast.error("Có lỗi xảy ra khi phân quyền");
@@ -235,10 +224,10 @@ export default function AssignRolePage() {
         <Button
           onClick={handleAssignRole}
           disabled={
-            isLoading || !selectedRoleId || selectedRoleId === currentRole?.id
+            isPending || !selectedRoleId || selectedRoleId === currentRole?.id
           }
         >
-          {isLoading ? (
+          {isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Đang phân quyền...

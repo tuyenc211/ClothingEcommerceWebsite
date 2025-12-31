@@ -1,26 +1,26 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import privateClient from "@/lib/axios";
-import { User } from "@/stores/useAuthStore";
+import { Role, User } from "@/stores/useAuthStore";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
-import { useUserStore } from "@/stores/userStore";
-
+export interface CreateStaffData {
+    fullName: string;
+    email: string;
+    phone?: string;
+    password: string;
+    role: "STAFF";
+    isActive?: boolean;
+}
 export const usersService = {
   getAllUsers: async (): Promise<User[]> => {
     const response = await privateClient.get("/users");
     const data = response.data?.data || response.data || [];
-    useUserStore.setState({ users: data });
     return data;
   },
   getUserById: async (userId: number): Promise<User> => {
     const response = await privateClient.get(`/users/${userId}`);
     const data = response.data?.data || response.data;
     return data;
-  },
-  toggleUserStatus: async (
-    userId: number
-  ): Promise<{ userId: number; wasActive: boolean }> => {
-    throw new Error("Use specific methods lockUser or unlockUser");
   },
   lockUser: async (userId: number) => {
     await privateClient.put(`/users/${userId}/lock`);
@@ -39,14 +39,29 @@ export const usersService = {
       phone: userData.phone,
     });
   },
+  assignRole: async (id: number, role: Role) => {
+    await privateClient.put(`/users/${id}/roles`, {
+      id: role.id,
+      name: role.name.toUpperCase(),
+    });
+  },
+  createStaff: async (staffData: CreateStaffData) => {
+    const response = await privateClient.post("/users/create", {
+      email: staffData.email,
+      password: staffData.password,
+      fullName: staffData.fullName,
+      phone: staffData.phone,
+      roleIds: [1],
+    });
+    const data = response.data?.data || response.data;
+    return data;
+  },
 };
 
 export const useAllUsers = () => {
-  const { users: storeUsers } = useUserStore();
   return useQuery<User[]>({
     queryKey: ["users"],
     queryFn: () => usersService.getAllUsers(),
-    initialData: storeUsers.length > 0 ? storeUsers : undefined,
     staleTime: 5 * 60 * 1000,
   });
 };
@@ -64,7 +79,6 @@ export const useToggleUserStatus = () => {
 
   return useMutation({
     mutationFn: async (userId: number) => {
-      // Get current users from cache to determine the endpoint
       const users = queryClient.getQueryData<User[]>(["users"]) || [];
       const currentUser = users.find((user) => user.id === userId);
 
@@ -139,6 +153,48 @@ export const useUpdateUser = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       toast.success("Cập nhật tài khoản thành công!");
+    },
+  });
+};
+
+export const useAssignRole = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ userId, role }: { userId: number; role: Role }) => {
+      await usersService.assignRole(userId, role);
+      return { userId, role };
+    },
+    onError: (error, variables, context) => {
+      const axiosError = error as AxiosError<{ message: string }>;
+      const errorMessage =
+        axiosError?.response?.data?.message || "Lỗi khi gán vai trò";
+      toast.error(errorMessage);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success("Gán vai trò thành công!");
+    },
+  });
+};
+
+export const useCreateStaff = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (staffData: CreateStaffData) => {
+      const response = await usersService.createStaff(staffData);
+      return response;
+    },
+    onError: (error, variables, context) => {
+      const axiosError = error as AxiosError<{ message: string }>;
+      const errorMessage =
+        axiosError?.response?.data?.message || "Lỗi khi tạo tài khoản";
+      toast.error(errorMessage);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success("Tạo tài khoản nhân viên thành công!");
     },
   });
 };

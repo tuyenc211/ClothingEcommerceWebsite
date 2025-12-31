@@ -41,7 +41,6 @@ import {
   Loader2,
   Search,
 } from "lucide-react";
-import { useUserStore } from "@/stores/userStore";
 import { Role, User } from "@/stores/useAuthStore";
 import EditUserModal from "@/components/common/EditUserModal";
 import Link from "next/link";

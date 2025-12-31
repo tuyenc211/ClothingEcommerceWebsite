@@ -1,5 +1,5 @@
 "use client";
-import { OrderTable } from "@/components/orders/OrderTable";
+import { OrderTable } from "@/app/(dashboard)/orders/_components/OrderTable";
 import {CheckCircle, Clock, DollarSign, ShoppingBag} from "lucide-react";
 import {formatCurrency} from "@/lib/utils";
 import StatCard from "@/components/common/StatCard";

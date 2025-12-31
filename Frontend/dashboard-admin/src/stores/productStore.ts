@@ -21,7 +21,7 @@ export interface ProductVariant {
   sku: string; // VARCHAR(120) NOT NULL UNIQUE
   size_id?: number; // BIGINT references sizes(id)
   color_id?: number; // BIGINT references colors(id)
-  price: number; // DECIMAL(12,2) NOT NULL
+  price: number; 
   inventory?: Inventory;
 }
 
@@ -82,8 +82,6 @@ export const useProductStore = create<ProductState>()(
       products: [],
       isLoading: false,
       error: null,
-
-      // Product CRUD actions
       fetchProducts: async () => {
         set({ isLoading: true, error: null });
         try {

@@ -19,7 +19,7 @@ export function ForgotPasswordForm({
   ...props
 }: React.ComponentProps<"form">) {
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const { forgotPassword, isForgettingPassword } = useAuthStore();
+  const { forgotPassword, isLoading} = useAuthStore();
 
   const {
     register,
@@ -92,9 +92,9 @@ export function ForgotPasswordForm({
             <Button
               type="submit"
               className="w-full"
-              disabled={isForgettingPassword}
+              disabled={isLoading}
             >
-              {isForgettingPassword ? (
+              {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
                   Đang gửi...

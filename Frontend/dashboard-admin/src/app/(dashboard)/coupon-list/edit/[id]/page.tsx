@@ -10,15 +10,15 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, ImageIcon, Save, X } from "lucide-react";
 import Link from "next/link";
-import { useCouponStore, Coupon } from "@/stores/couponStore";
 import { toast } from "sonner";
 import Image from "next/image";
+import {Coupon, useAllCoupons, useCouponById, useUpdateCoupon} from "@/services/couponService";
 
 type FormValues = {
-  code: string; // VARCHAR(50) NOT NULL UNIQUE
-  name: string; // VARCHAR(255) NOT NULL
-  description?: string; // TEXT
-  value: number; // DECIMAL(12,2) NOT NULL
+  code: string;
+  name: string;
+  description?: string;
+  value: number;
   maxUses?: number;
   maxUsesPerUser?: number;
   minOrderTotal?: number;
@@ -31,9 +31,10 @@ export default function EditCouponPage() {
   const router = useRouter();
   const params = useParams();
   const couponId = parseInt(params.id as string);
-  const { getCouponById, updateCoupon, validateCouponCode } = useCouponStore();
+  const { data: coupon, isLoading} = useCouponById(couponId);
+  const { data: allCoupons = [] } = useAllCoupons();
+  const { mutate: updateCoupon, } = useUpdateCoupon();
 
-  const [initialLoading, setInitialLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
@@ -50,40 +51,33 @@ export default function EditCouponPage() {
   const isActive = watch("isActive", true);
 
   useEffect(() => {
-    const loadCoupon = async () => {
-      const coupon = await getCouponById(couponId);
-      if (coupon) {
-        // Format dates for datetime-local input
-        const formatDateForInput = (dateString?: string) => {
-          if (!dateString) return "";
-          const date = new Date(dateString);
-          return date.toISOString().slice(0, 16);
-        };
+    if (coupon) {
+      const formatDateForInput = (dateString?: string) => {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        return date.toISOString().slice(0, 16);
+      };
 
-        reset({
-          code: coupon.code,
-          name: coupon.name,
-          description: coupon.description || "",
-          value: coupon.value,
-          minOrderTotal: coupon.minOrderTotal || undefined,
-          maxUses: coupon.maxUses || undefined,
-          maxUsesPerUser: coupon.maxUsesPerUser || undefined,
-          startsAt: formatDateForInput(coupon.startsAt),
-          endsAt: formatDateForInput(coupon.endsAt),
-          isActive: coupon.isActive,
-        });
-        if (coupon.imageUrl) {
-          setCurrentImageUrl(coupon.imageUrl);
-        }
-      } else {
-        toast.error("Không tìm thấy mã giảm giá");
-        router.push("/coupon-list");
-      }
-      setInitialLoading(false);
-    };
-
-    loadCoupon();
-  }, [couponId, getCouponById, router, reset]);
+      reset({
+        code: coupon.code,
+        name: coupon.name,
+        description: coupon.description || "",
+        value: coupon.value,
+        minOrderTotal: coupon.minOrderTotal || undefined,
+        maxUses: coupon.maxUses || undefined,
+        maxUsesPerUser: coupon.maxUsesPerUser || undefined,
+        startsAt: formatDateForInput(coupon.startsAt),
+        endsAt: formatDateForInput(coupon.endsAt),
+        isActive: coupon.isActive,
+      });
+    }
+  }, [coupon, reset]);
+  const validateCouponCode = (code: string): boolean => {
+    const existing = allCoupons.find(
+      (c) => c.code.toLowerCase() === code.toLowerCase() && c.id !== couponId
+    );
+    return !existing;
+  };
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -106,13 +100,10 @@ export default function EditCouponPage() {
     setRemoveCurrentImage(true);
   };
   const onSubmit = async (data: FormValues) => {
-    // Validate coupon code uniqueness (excluding current coupon)
-    if (!validateCouponCode(data.code, couponId)) {
+    if (!validateCouponCode(data.code)) {
       toast.error("Mã giảm giá đã tồn tại");
       return;
     }
-
-    // Validate dates if provided
     if (data.startsAt && data.endsAt) {
       if (new Date(data.endsAt) <= new Date(data.startsAt)) {
         toast.error("Ngày kết thúc phải sau ngày bắt đầu");
@@ -121,7 +112,6 @@ export default function EditCouponPage() {
     }
 
     try {
-      // Convert empty strings to undefined for optional fields
       const couponData: Partial<Coupon> = {
         code: data.code.toUpperCase(),
         name: data.name,
@@ -135,15 +125,18 @@ export default function EditCouponPage() {
         isActive: data.isActive,
       };
 
-      updateCoupon(couponId, couponData, selectedImage || undefined);
+      updateCoupon({
+        id: couponId,
+        couponData,
+        image: selectedImage || undefined,
+      });
       router.push("/coupon-list");
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi cập nhật mã giảm giá");
       console.error("Error updating coupon:", error);
     }
   };
 
-  if (initialLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -252,7 +245,7 @@ export default function EditCouponPage() {
                       value: 0,
                       message: "Giá trị phải lớn hơn hoặc bằng 0",
                     },
-                      required:"Giắ trị không được để trống"
+                    required: "Giắ trị không được để trống",
                   })}
                   placeholder="VD: 200000"
                   className={errors.minOrderTotal ? "border-red-500" : ""}
@@ -273,7 +266,7 @@ export default function EditCouponPage() {
                   type="number"
                   {...register("maxUses", {
                     min: { value: 1, message: "Số lần sử dụng phải lớn hơn 0" },
-                      required:"Giắ trị không được để trống"
+                    required: "Giắ trị không được để trống",
                   })}
                   placeholder="VD: 1000"
                   disabled={isSubmitting}
@@ -288,7 +281,7 @@ export default function EditCouponPage() {
                   type="number"
                   {...register("maxUsesPerUser", {
                     min: { value: 1, message: "Số lần sử dụng phải lớn hơn 0" },
-                      required:"Giá trị không được để trống"
+                    required: "Giá trị không được để trống",
                   })}
                   placeholder="VD: 1"
                   disabled={isSubmitting}

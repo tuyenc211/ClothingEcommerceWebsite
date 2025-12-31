@@ -18,7 +18,7 @@ export function LoginForm({
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
-  const { login, isLoggingIn, authUser } = useAuthStore();
+  const { login, isLoading, authUser } = useAuthStore();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -64,7 +64,7 @@ export function LoginForm({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoggingIn}
+                  disabled={isLoading}
                 />
               </div>
 
@@ -78,13 +78,13 @@ export function LoginForm({
                   placeholder="Your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoggingIn}
+                  disabled={isLoading}
                 />
               </div>
 
               {/* Nút login với loading */}
-              <Button type="submit" className="w-full" disabled={isLoggingIn}>
-                {isLoggingIn && (
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 Login
