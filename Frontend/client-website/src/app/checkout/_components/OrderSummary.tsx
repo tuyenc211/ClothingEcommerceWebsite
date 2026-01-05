@@ -5,9 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Ticket, Check, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { formatPrice } from "@/lib/utils";
-import { CartSummary } from "@/stores/cartStore";
+import { CartSummary } from "@/types";
 import { EnrichedCartItem } from "@/types/cart";
-import { Coupon } from "@/services/couponService";
+import { Coupon } from "@/types";
 
 interface OrderSummaryProps {
   items: EnrichedCartItem[];

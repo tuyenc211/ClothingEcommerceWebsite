@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import privateClient from "@/lib/axios";
-import { Product, useProductStore } from "@/stores/productStore";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useEffect } from "react";
+import {Product} from "@/types";
+import {useProductStore} from "@/stores/productStore";
 
 // Query key factory
 export const productKeys = {

@@ -11,8 +11,8 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Category } from "@/stores/categoryStore";
-import { ProductImage } from "@/stores/productStore";
+import { Category } from "@/types";
+import { ProductImage } from "@/types";
 import ProductGrid from "@/app/products/_components/ProductGrid";
 import { useCartStore } from "@/stores/cartStore";
 

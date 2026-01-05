@@ -13,7 +13,7 @@ import { Eye } from "lucide-react";
 import { OrderStatusBadge, PaymentMethodBadge } from "./StatusBadges";
 import { useRouter } from "next/navigation";
 import { formatDate, formatPrice } from "@/lib/utils";
-import {Order} from "@/services/orderService";
+import {Order} from "@/types";
 interface OrderTableProps {
   orders: Order[];
 }

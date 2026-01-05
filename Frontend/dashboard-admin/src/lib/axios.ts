@@ -62,7 +62,7 @@ privateClient.interceptors.response.use(
       useAuthStore.getState().setAccessToken(null);
 
       // Redirect về login
-      window.location.replace("/user/login");
+      window.location.replace("/login");
       return Promise.reject(refreshError);
     }
   }

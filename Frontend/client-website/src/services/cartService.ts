@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import privateClient from "@/lib/axios";
-import { CartItem } from "@/stores/cartStore";
 import { toast } from "sonner";
 import useAuthStore from "@/stores/useAuthStore";
 import { AxiosError } from "axios";
+import {CartItem} from "@/types";
 
 export const cartService = {
   getCartItems: async (userId: number): Promise<CartItem[]> => {

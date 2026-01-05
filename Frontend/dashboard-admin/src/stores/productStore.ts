@@ -21,7 +21,7 @@ export interface ProductVariant {
   sku: string; // VARCHAR(120) NOT NULL UNIQUE
   size_id?: number; // BIGINT references sizes(id)
   color_id?: number; // BIGINT references colors(id)
-  price: number; 
+  price: number;
   inventory?: Inventory;
 }
 
@@ -54,9 +54,12 @@ export interface Product {
 }
 interface ProductState {
   products: Product[];
+  currentPage: number;
+  pageSize: number;
+  hasNextPage: boolean;
   isLoading: boolean;
   error: string | null;
-  fetchProducts: () => Promise<void>;
+  fetchProducts: (current?: number, pageSize?: number) => Promise<void>;
   // Product CRUD actions
   addProductWithVariants: (
     productData: Omit<Product, "id" | "variants" | "images" | "slug">,
@@ -80,15 +83,25 @@ export const useProductStore = create<ProductState>()(
   persist(
     (set, get) => ({
       products: [],
+      currentPage: 1,
+      pageSize: 10,
+      hasNextPage: true,
       isLoading: false,
       error: null,
-      fetchProducts: async () => {
+      fetchProducts: async (current = 1, pageSize = 10) => {
         set({ isLoading: true, error: null });
         try {
-          const res = await privateClient.get("/products");
+          const res = await privateClient.get(
+            `/products?current=${current}&pageSize=${pageSize}`
+          );
           const data = Array.isArray(res.data?.data) ? res.data.data : res.data;
-          console.log(data);
-          set({ products: data, isLoading: false });
+          set({
+            products: data,
+            currentPage: current,
+            pageSize,
+            hasNextPage: data.length === pageSize,
+            isLoading: false,
+          });
         } catch (error) {
           const axiosError = error as AxiosError<{ message: string }>;
           const message =
@@ -245,7 +258,6 @@ export const useProductStore = create<ProductState>()(
         const { products } = get();
         return products.find((product) => product.id === id);
       },
-
 
       // Variant management
       getVariantById: (variantId) => {

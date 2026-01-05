@@ -11,7 +11,8 @@ import useAuthStore from "@/stores/useAuthStore";
 
 import { formatPrice } from "@/lib/utils";
 import {useReviewsByUser} from "@/services/reviewsService";
-import {Order, useUserOrders} from "@/services/orderService";
+import {Order} from "@/types";
+import {useUserOrders} from "@/services/orderService";
 interface ReviewableProduct {
   orderId: number;
   orderCode: string;

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { Product, useProductStore } from "@/stores/productStore";
+import {  useProductStore } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import ProductGrid from "@/app/products/_components/ProductGrid";
 import { productKeys, useProductsQuery } from "@/services/productService";

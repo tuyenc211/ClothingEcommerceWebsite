@@ -1,7 +1,7 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ReviewForm from "@/app/user/reviews/_components/ReviewForm";
 import ReviewList from "@/app/user/reviews/_components/ReviewList";
-import {Review} from "@/services/reviewsService";
+import {Review} from "@/types";
 
 interface Product {
   id: number;

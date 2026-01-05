@@ -55,6 +55,7 @@ interface AuthStore {
 
   login: (data: LoginData) => Promise<void>;
   logout: () => Promise<void>;
+  refresh: () => Promise<void>;
   setAccessToken: (token: string | null) => void;
 
   forgotPassword: (email: string) => Promise<void>;

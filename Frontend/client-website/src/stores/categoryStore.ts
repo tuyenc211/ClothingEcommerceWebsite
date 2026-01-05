@@ -3,14 +3,7 @@ import { persist } from "zustand/middleware";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
-export interface Category {
-  id: number;
-  parentId?: Category;
-  name: string;
-  slug: string;
-  isActive: boolean;
-  children?: Category[];
-}
+import { Category } from "@/types";
 
 interface CategoryState {
   categories: Category[];

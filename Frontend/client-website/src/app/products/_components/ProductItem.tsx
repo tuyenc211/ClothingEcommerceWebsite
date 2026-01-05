@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Product } from "@/stores/productStore";
+import { Product } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { toast } from "sonner";
 import { Heart } from "lucide-react";

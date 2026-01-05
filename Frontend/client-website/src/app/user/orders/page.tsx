@@ -12,8 +12,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import UserLayout from "@/components/layouts/UserLayout";
 import useAuthStore from "@/stores/useAuthStore";
-import { Order, useUserOrders } from "@/services/orderService";
+import { useUserOrders } from "@/services/orderService";
 import { useState } from "react";
+import {Order} from "@/types";
 export default function OrdersPage() {
   const { authUser } = useAuthStore();
   const {

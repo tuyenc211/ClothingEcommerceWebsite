@@ -6,7 +6,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import useAuthStore from "@/stores/useAuthStore";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
-import {Review, useDeleteReview} from "@/services/reviewsService";
+import {useDeleteReview} from "@/services/reviewsService";
+import {Review} from "@/types";
 interface ReviewListProps {
   productId: number;
   reviews?: Review[];

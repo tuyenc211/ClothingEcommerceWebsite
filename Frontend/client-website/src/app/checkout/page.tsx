@@ -24,12 +24,12 @@ import PaymentMethodSelector from "@/app/checkout/_components/PaymentMethodSelec
 import OrderSummary from "@/app/checkout/_components/OrderSummary";
 
 import { EnrichedCartItem } from "@/types/cart";
-import { PaymentMethod } from "@/services/orderService";
+import {Coupon, PaymentMethod} from "@/types";
 import { AxiosError } from "axios";
 import { createVNPayPayment } from "@/services/paymentService";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import { useCreateOrder } from "@/services/orderService";
-import { Coupon, useAvailableCoupons } from "@/services/couponService";
+import {  useAvailableCoupons } from "@/services/couponService";
 import { useProductsQuery } from "@/services/productService";
 import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
 

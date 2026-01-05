@@ -22,13 +22,13 @@ import {
 } from "@/components/ui/dialog";
 
 import { MapPin, Plus } from "lucide-react";
-import useAuthStore, { Address } from "@/stores/useAuthStore";
 import { useAddress } from "@/hooks/useAddress";
-import { toast } from "sonner";
 import UserLayout from "@/components/layouts/UserLayout";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import AddressCard from "@/app/user/address/_components/AddressCard";
 import AddressDeleteDialog from "@/app/user/address/_components/AddressDeleteDialog";
+import useAuthStore from "@/stores/useAuthStore";
+import {Address} from "@/types";
 
 interface AddressFormData {
   line: string;

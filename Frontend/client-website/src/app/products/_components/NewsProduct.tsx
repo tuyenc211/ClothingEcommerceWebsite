@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import ProductCarousel from "./ProductCarousel";
 import { convertProductToItemProps } from "./ProductItem";
-import { Product } from "@/stores/productStore";
+import { Product } from "@/types";
 
 interface NewsProductProps {
     products: Product[];

@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Heart, ShoppingCart, Plus, Minus, CreditCard } from "lucide-react";
-import { Product, useProductStore } from "@/stores/productStore";
 import { useCartStore } from "@/stores/cartStore";
 import ProductImageGallery from "@/components/features/images/ThumnailGallery";
 import { formatPrice } from "@/lib/utils";
@@ -24,8 +23,8 @@ import LoadingSpinner from "@/components/common/LoadingSpinner";
 import ColorSelector from "@/app/products/_components/ColorsSelector";
 import SizeSelector from "@/app/products/_components/SizeSelector";
 import ProductTabs from "@/app/products/_components/ProductTabs";
-import {Review, useReviewsByProduct} from "@/services/reviewsService";
-import {Color, Size} from "@/types";
+import { useReviewsByProduct } from "@/services/reviewsService";
+import { Color, Product, Review, Size } from "@/types";
 
 export default function ProductDetailPage() {
   const { productId } = useParams();

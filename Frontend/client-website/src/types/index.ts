@@ -1,27 +1,10 @@
-export interface SignUpData {
-  fullName: string;
-  email: string;
-  password: string;
-  phone: string;
-}
-
-export interface LoginData {
-  email: string;
-  password: string;
-}
-
-export interface ResetPasswordData {
-  password: string;
-  confirmPassword: string;
-}
-export interface Color {
-    id: number;
-    name: string;
-    code: string;
-}
-export interface Size {
-    id: number;
-    code: string;
-    name: string;
-    sortOrder: number;
-}
+export * from "./auth";
+export * from "./user";
+export * from "./category";
+export * from "./product";
+export * from "./order";
+export * from "./review";
+export * from "./cart";
+export * from "./payment";
+export * from "./coupon";
+export * from "./location";

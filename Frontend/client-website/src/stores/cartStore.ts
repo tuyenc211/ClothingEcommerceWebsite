@@ -1,32 +1,9 @@
 import { create } from "zustand";
-import { ProductVariant } from "./productStore";
 import privateClient from "@/lib/axios";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import useAuthStore from "./useAuthStore";
-
-export interface Cart {
-  id: number;
-  userId: number;
-  items: CartItem[];
-}
-
-export interface CartItem {
-  id: number;
-  cart_id: number;
-  variant_id: number;
-  unitPrice: number;
-  quantity: number;
-  variant?: ProductVariant;
-}
-
-export interface CartSummary {
-  subtotal: number;
-  discount: number;
-  shippingFee: number;
-  total: number;
-  itemCount: number;
-}
+import { Cart, CartItem, CartSummary, ProductVariant } from "@/types";
 
 interface CartState {
   currentCart: Cart | null;

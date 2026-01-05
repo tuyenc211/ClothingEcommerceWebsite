@@ -7,7 +7,8 @@ import useAuthStore from "@/stores/useAuthStore";
 import { createVNPayPayment } from "@/services/paymentService";
 import { toast } from "sonner";
 import { Button } from "../../../../components/ui/button";
-import {Order} from "@/services/orderService";
+import {Order} from "@/types";
+
 interface InvoiceTemplateProps {
   order: Order;
 }

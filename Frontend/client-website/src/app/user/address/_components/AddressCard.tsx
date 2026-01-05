@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Edit2, Trash2, Star, Check } from "lucide-react";
-import { Address } from "@/stores/useAuthStore";
+import {Address} from "@/types";
 
 interface AddressCardProps {
   address: Address;

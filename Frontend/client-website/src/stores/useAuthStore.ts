@@ -1,37 +1,10 @@
 import { create } from "zustand";
 import { toast } from "sonner";
-import { SignUpData, LoginData } from "@/types";
+import { SignUpData, LoginData, User, Address, Role } from "@/types";
 import privateClient from "@/lib/axios";
 import { AxiosError } from "axios";
 import { persist } from "zustand/middleware";
 import { useCartStore } from "./cartStore";
-
-export interface Role {
-  id: number;
-  name: string;
-}
-
-export interface Address {
-  id: number;
-  user_id: number;
-  line: string;
-  ward?: string;
-  district?: string;
-  province?: string;
-  country?: string;
-  isDefault: boolean;
-}
-
-export interface User {
-  id: number;
-  email: string;
-  password?: string;
-  fullName: string;
-  phone?: string;
-  isActive: boolean;
-  roles?: Role[];
-  addresses?: Address[];
-}
 
 interface AuthStore {
   authUser: User | null;
@@ -140,10 +113,10 @@ const useAuthStore = create<AuthStore>()(
           console.log("Logout error:", error);
         } finally {
           set({ authUser: null, accessToken: null });
-          useCartStore.setState({ 
-            items: [], 
+          useCartStore.setState({
+            items: [],
             currentCart: null,
-            error: null 
+            error: null,
           });
           toast.success("Đăng xuất thành công");
         }

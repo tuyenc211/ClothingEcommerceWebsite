@@ -2,7 +2,8 @@
 import React, { useState } from "react";
 import ProductGrid from "./ProductGrid";
 import { convertProductToItemProps } from "./ProductItem";
-import { Product } from "@/stores/productStore";
+import {Product} from "@/types";
+
 
 interface FeaturedProductsProps {
     products: Product[];

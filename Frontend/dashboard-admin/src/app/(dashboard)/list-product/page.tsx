@@ -27,15 +27,28 @@ import {
 import CustomModal from "@/components/common/CustomModal";
 import { useProductStore } from "@/stores/productStore";
 import { useCategoryStore } from "@/stores/categoryStore";
-import { Edit, Trash2, MoreHorizontal, Plus } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  MoreHorizontal,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatCurrency } from "@/lib/utils";
-import { usePagination } from "@/lib/usePagination";
-import PaginationBar from "@/components/common/PaginationBar";
 
 export default function ProductListPage() {
-  const { products, fetchProducts, deleteProduct } = useProductStore();
+  const {
+    products,
+    fetchProducts,
+    deleteProduct,
+    isLoading,
+    currentPage,
+    pageSize,
+    hasNextPage,
+  } = useProductStore();
   const { categories, fetchCategories } = useCategoryStore();
   const [deleteModal, setDeleteModal] = useState({
     open: false,
@@ -43,9 +56,21 @@ export default function ProductListPage() {
   });
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(1, 10);
     fetchCategories();
   }, [fetchProducts, fetchCategories]);
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      fetchProducts(currentPage - 1, pageSize);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (hasNextPage) {
+      fetchProducts(currentPage + 1, pageSize);
+    }
+  };
 
   const handleDeleteProduct = (productId: number) => {
     setDeleteModal({ open: true, productId });
@@ -55,25 +80,13 @@ export default function ProductListPage() {
     try {
       await deleteProduct(deleteModal.productId);
       setDeleteModal({ open: false, productId: 0 });
+      // Refetch current page after delete
+      fetchProducts(currentPage, pageSize);
     } catch (error) {
       console.error("Error deleting product:", error);
-      // Error already handled by store with toast
     }
   };
-  const {
-    currentPage,
-    setPage,
-    totalPages,
-    startIndex,
-    endIndex,
-    pageNumbers,
-    slice,
-  } = usePagination({
-    totalItems: products.length,
-    itemsPerPage: 10,
-    showPages: 5,
-  });
-  const paginatedProducts = slice(products);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -95,111 +108,119 @@ export default function ProductListPage() {
       {/* Products Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Danh Sách Sản Phẩm ({products.length})</CardTitle>
+          <CardTitle>Danh Sách Sản Phẩm</CardTitle>
           <CardDescription>Tất cả sản phẩm trong cửa hàng</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>SKU</TableHead>
-                <TableHead>Tên Sản Phẩm</TableHead>
-                <TableHead>Ảnh</TableHead>
-                <TableHead>Giá Gốc</TableHead>
-                <TableHead>Danh Mục</TableHead>
-                <TableHead>Trạng Thái</TableHead>
-                <TableHead className="text-right">Thao Tác</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedProducts.map((product, index) => {
-                const category = categories.find(
-                  (c) => c.id === product.category.id
-                );
-                const firstImage = product.images?.[0];
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>STT</TableHead>
+                  <TableHead>SKU</TableHead>
+                  <TableHead>Tên Sản Phẩm</TableHead>
+                  <TableHead>Ảnh</TableHead>
+                  <TableHead>Giá Gốc</TableHead>
+                  <TableHead>Danh Mục</TableHead>
+                  <TableHead>Trạng Thái</TableHead>
+                  <TableHead className="text-right">Thao Tác</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {products.map((product, index) => {
+                  const category = categories.find(
+                    (c) => c.id === product.category?.id
+                  );
+                  const firstImage = product.images?.[0];
 
-                return (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">
-                      {startIndex + index + 1}
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-mono text-sm">{product.sku}</span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{product.name}</div>
-                      {product.description && (
-                        <div className="text-sm text-muted-foreground truncate max-w-[200px]">
-                          {product.description}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center overflow-hidden">
-                        {firstImage ? (
-                          <Image
-                            src={firstImage.image_url}
-                            alt={product.name}
-                            width={48}
-                            height={48}
-                            className="object-cover w-full h-full"
-                          />
-                        ) : (
-                          <span className="text-xs text-gray-500">IMG</span>
+                  return (
+                    <TableRow key={product.id}>
+                      <TableCell className="font-medium">
+                        {(currentPage - 1) * pageSize + index + 1}
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-mono text-sm">{product.sku}</span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">{product.name}</div>
+                        {product.description && (
+                          <div className="text-sm text-muted-foreground truncate max-w-[200px]">
+                            {product.description}
+                          </div>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-medium">
-                        {formatCurrency(product.basePrice)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">
-                        {category?.name || "Chưa phân loại"}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          product.isPublished ? "success" : "destructive"
-                        }
-                      >
-                        {product.isPublished ? "Hoạt động" : "Không hoạt động"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/product/${product.id}`}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Sửa
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => handleDeleteProduct(product.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Xóa
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                      </TableCell>
+                      <TableCell>
+                        <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center overflow-hidden">
+                          {firstImage ? (
+                            <Image
+                              src={firstImage.image_url}
+                              alt={product.name}
+                              width={48}
+                              height={48}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <span className="text-xs text-gray-500">IMG</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-medium">
+                          {formatCurrency(product.basePrice)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">
+                          {category?.name || "Chưa phân loại"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            product.isPublished ? "success" : "destructive"
+                          }
+                        >
+                          {product.isPublished
+                            ? "Hoạt động"
+                            : "Không hoạt động"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link href={`/product/${product.id}`}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Sửa
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => handleDeleteProduct(product.id)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Xóa
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
 
-          {products.length === 0 && (
+          {!isLoading && products.length === 0 && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
                 Không tìm thấy sản phẩm nào
@@ -208,19 +229,29 @@ export default function ProductListPage() {
           )}
         </CardContent>
       </Card>
-      <PaginationBar
-        currentPage={currentPage}
-        totalPages={totalPages}
-        pageNumbers={pageNumbers}
-        onPageChange={setPage}
-      />
-      {/* Results info */}
-      {products.length > 0 && (
-        <div className="mt-4 text-center text-sm text-gray-500">
-          Hiển thị {startIndex + 1}-{Math.min(endIndex, products.length)} trong
-          số {products.length} sản phẩm
-        </div>
-      )}
+
+      {/* Pagination - Prev/Next */}
+      <div className="flex items-center justify-center gap-4">
+        <Button
+          variant="outline"
+          onClick={handlePrevPage}
+          disabled={currentPage === 1 || isLoading}
+        >
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          Trước
+        </Button>
+        <span className="text-sm text-muted-foreground">
+          Trang {currentPage}
+        </span>
+        <Button
+          variant="outline"
+          onClick={handleNextPage}
+          disabled={!hasNextPage || isLoading}
+        >
+          Tiếp
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
+      </div>
 
       {/* Delete Confirmation Modal */}
       <CustomModal

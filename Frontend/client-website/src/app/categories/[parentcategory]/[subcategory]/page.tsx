@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useCategoryStore } from "@/stores/categoryStore";
 import ProductGrid from "@/app/products/_components/ProductGrid";
 import { convertProductToItemProps } from "@/app/products/_components/ProductItem";
-import { formatPrice, priceRanges } from "@/lib/utils";
+import { priceRanges } from "@/lib/utils";
 import Link from "next/link";
 import {
   Breadcrumb,

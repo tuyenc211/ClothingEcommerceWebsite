@@ -2,21 +2,7 @@ import privateClient from "@/lib/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { compareDesc } from "date-fns";
-
-export interface Coupon {
-  id: number;
-  code: string;
-  name: string;
-  description?: string;
-  value: number;
-  maxUses?: number;
-  maxUsesPerUser?: number;
-  minOrderTotal?: number;
-  startsAt?: string;
-  endsAt?: string;
-  isActive: boolean;
-  imageUrl?: string;
-}
+import { Coupon } from "@/types";
 export const couponService = {
   getAllCoupons: async (): Promise<Coupon[]> => {
     const response = await privateClient.get("/coupons");

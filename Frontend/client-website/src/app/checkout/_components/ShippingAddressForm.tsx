@@ -9,8 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { User } from "@/stores/useAuthStore";
-import { Province, Ward } from "@/hooks/useAddress";
+import { User } from "@/types";
+import { Province, Ward } from "@/types";
 import { useFormContext, Controller } from "react-hook-form";
 import { ShippingFormData } from "@/app/checkout/page";
 

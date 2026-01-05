@@ -10,7 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import UserLayout from "@/components/layouts/UserLayout";
 import { toast } from "sonner";
 import useAuthStore from "@/stores/useAuthStore";
-import {OrderStatus, useCancelOrder, useOrderById} from "@/services/orderService";
+import { useCancelOrder, useOrderById} from "@/services/orderService";
+import {OrderStatus} from "@/types";
 export default function OrderDetailPage() {
   const params = useParams();
   const router = useRouter();
