@@ -1,5 +1,5 @@
 1. Clone dự án
-- Mở terminal và chạy lệnh sau để tải mã nguồn về máy: git clone https://github.com/nguyenhuutruong6666/ClothingEcommerce
+- Mở terminal và chạy lệnh sau để tải mã nguồn về máy: git clone https://github.com/tuyenc211/ClothingEcommerceWebsite
 2. Cấu hình Cơ sở dữ liệu (MySQL)
 - Khởi động Apache và MySQL từ XAMPP Control Panel.
 - Truy cập http://localhost/phpmyadmin và tạo database mới tên là clothingshop
